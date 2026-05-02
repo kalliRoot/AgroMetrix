@@ -114,14 +114,31 @@ header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); b
 /* ── MODAL LOCALIZAÇÃO ── */
 .modal-overlay { position:fixed; inset:0; background:var(--modal-overlay); backdrop-filter:blur(6px); z-index:500; display:flex; align-items:center; justify-content:center; padding:20px; transition:opacity .3s; }
 .modal-overlay.hidden { opacity:0; pointer-events:none; }
-.modal-box { background:var(--surface); border:1px solid var(--border-md); border-radius:var(--radius-lg); padding:32px 28px; max-width:380px; width:100%; box-shadow:var(--shadow-float); text-align:center; }
-.modal-icon { font-size:48px; margin-bottom:16px; }
-.modal-title { font-family:var(--font-display); font-size:22px; color:var(--text-primary); margin-bottom:8px; }
-.modal-sub { font-size:13px; color:var(--text-muted); margin-bottom:24px; line-height:1.6; }
-.btn-primary { width:100%; padding:13px; background:var(--green-600); color:white; border:none; border-radius:var(--radius-md); font-family:var(--font-ui); font-size:14px; font-weight:700; cursor:pointer; transition:all .2s; margin-bottom:10px; }
+.modal-box { background:var(--surface); border:1px solid var(--border-md); border-radius:var(--radius-lg); padding:28px 24px; max-width:390px; width:100%; box-shadow:var(--shadow-float); text-align:center; }
+.modal-icon { font-size:44px; margin-bottom:14px; }
+.modal-title { font-family:var(--font-display); font-size:21px; color:var(--text-primary); margin-bottom:7px; }
+.modal-sub { font-size:13px; color:var(--text-muted); margin-bottom:20px; line-height:1.6; }
+.btn-primary { width:100%; padding:13px; background:var(--green-600); color:white; border:none; border-radius:var(--radius-md); font-family:var(--font-ui); font-size:14px; font-weight:700; cursor:pointer; transition:all .2s; margin-bottom:14px; }
 .btn-primary:hover { background:var(--green-700); transform:translateY(-1px); }
-.btn-secondary { width:100%; padding:11px; background:transparent; color:var(--text-muted); border:1px solid var(--border-md); border-radius:var(--radius-md); font-family:var(--font-ui); font-size:13px; cursor:pointer; transition:all .2s; }
-.btn-secondary:hover { border-color:var(--green-400); color:var(--text-secondary); }
+.modal-divider { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.modal-divider span { font-size:11px; color:var(--text-muted); font-weight:600; white-space:nowrap; }
+.modal-divider::before,.modal-divider::after { content:''; flex:1; height:1px; background:var(--border-md); }
+.modal-search-wrap { position:relative; margin-bottom:6px; text-align:left; }
+.modal-search-wrap input {
+  width:100%; padding:12px 14px 12px 38px;
+  background:var(--surface2); border:1.5px solid var(--border-md);
+  border-radius:var(--radius-md); font-family:var(--font-ui); font-size:14px;
+  color:var(--text-primary); outline:none; transition:border .2s, background .2s;
+}
+.modal-search-wrap input::placeholder { color:var(--text-muted); }
+.modal-search-wrap input:focus { border-color:var(--green-400); background:var(--surface); }
+.modal-search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:15px; pointer-events:none; }
+.modal-search-results {
+  text-align:left; background:var(--surface); border:1px solid var(--border-md);
+  border-radius:var(--radius-md); max-height:190px; overflow-y:auto;
+  display:none; box-shadow:var(--shadow-float); margin-top:4px;
+}
+.modal-search-results.open { display:block; }
 
 /* ── DOWNLOAD BTN ── */
 .download-bar { max-width:960px; margin:0 auto 14px; padding:0 20px; display:flex; justify-content:flex-end; gap:8px; }
@@ -292,10 +309,15 @@ footer a { color:var(--green-500); text-decoration:none; }
 <div class="modal-overlay" id="locModal">
   <div class="modal-box">
     <div class="modal-icon">📍</div>
-    <div class="modal-title">Permitir localização?</div>
-    <div class="modal-sub">O AgroMetrix usa sua localização GPS para exibir dados meteorológicos precisos do seu campo. Nenhum dado é armazenado.</div>
-    <button class="btn-primary" onclick="requestGPS()">📡 Usar minha localização</button>
-    <button class="btn-secondary" onclick="skipModal()">Buscar cidade manualmente</button>
+    <div class="modal-title">Onde você está?</div>
+    <div class="modal-sub">Use sua localização GPS ou busque qualquer cidade, município ou patrimônio do Brasil.</div>
+    <button class="btn-primary" onclick="requestGPS()">📡 Usar minha localização GPS</button>
+    <div class="modal-divider"><span>ou busque manualmente</span></div>
+    <div class="modal-search-wrap">
+      <span class="modal-search-icon">🔍</span>
+      <input type="text" id="modalCityInput" placeholder="Ex: Assis, Londrina, Ribeirão Preto..." autocomplete="off" oninput="onModalCityInput()" onkeydown="onModalCityKey(event)">
+    </div>
+    <div class="modal-search-results" id="modalSearchResults"></div>
   </div>
 </div>
 
@@ -338,8 +360,11 @@ footer a { color:var(--green-500); text-decoration:none; }
 
 <!-- ── DOWNLOAD BAR ── -->
 <div class="download-bar fade-in" id="downloadBar" style="display:none">
-  <button class="btn-download" onclick="downloadReport()">
-    ⬇️ Baixar relatório atual
+  <button class="btn-download" onclick="downloadTXT()" title="Arquivo de texto simples, sem caracteres especiais">
+    <span>&#8681;</span> Baixar TXT
+  </button>
+  <button class="btn-download" onclick="downloadCSV()" title="Abrir no Excel ou Google Sheets" style="background:var(--sky-500)">
+    <span>&#8681;</span> Baixar CSV (Excel)
   </button>
 </div>
 
@@ -536,8 +561,52 @@ function openLocModal(){$('locModal').classList.remove('hidden');}
 function closeLocModal(){$('locModal').classList.add('hidden');}
 function skipModal(){
   closeLocModal();
-  $('cityInput').focus();
   $('loadingScreen').classList.add('hidden');
+  setTimeout(()=>{ const ci=$('cityInput'); if(ci) ci.focus(); }, 100);
+}
+
+// ── Busca DENTRO DO MODAL ─────────────────────────────────────────────────────
+let modalSearchTimeout=null;
+function onModalCityInput(){
+  const q=$('modalCityInput').value.trim();
+  clearTimeout(modalSearchTimeout);
+  if(q.length<2){$('modalSearchResults').classList.remove('open');return;}
+  modalSearchTimeout=setTimeout(()=>searchModalCities(q),350);
+}
+async function searchModalCities(q){
+  try{
+    const url=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&countrycodes=br&format=json&limit=8&addressdetails=1`;
+    const r=await fetch(url,{headers:{'Accept-Language':'pt-BR,pt'}});
+    const results=await r.json();
+    showModalResults(results);
+  }catch(e){console.error(e);}
+}
+function showModalResults(list){
+  const box=$('modalSearchResults');
+  if(!list||!list.length){box.classList.remove('open');return;}
+  box.innerHTML=list.map(item=>{
+    const addr=item.address||{};
+    const city=addr.city||addr.town||addr.village||addr.hamlet||addr.suburb||item.display_name.split(',')[0];
+    const state=addr.state||'';
+    const county=addr.county||'';
+    const sub=state?`${county?county+' · ':''}${state}`:'Brasil';
+    return `<div class="search-item" onclick="selectModalCity(${item.lat},${item.lon},'${escQ(city)}','${escQ(sub)}')">
+      <div class="search-item-name">${city}</div>
+      <div class="search-item-state">${sub}</div>
+    </div>`;
+  }).join('');
+  box.classList.add('open');
+}
+async function selectModalCity(lat,lon,name,state){
+  closeLocModal();
+  $('locationLabel').textContent=state?`${name}, ${state.split(' · ').pop()}`:name;
+  currentLat=lat;currentLon=lon;currentLocName=name;
+  $('loadingScreen').classList.remove('hidden');
+  $('loadingText').textContent='buscando dados…';
+  await fetchWeather(lat,lon,name);
+}
+function onModalCityKey(e){
+  if(e.key==='Escape'){$('modalSearchResults').classList.remove('open');}
 }
 async function requestGPS(){
   closeLocModal();
@@ -839,86 +908,136 @@ function renderDaily(d){
 }
 
 // ── Download relatório ────────────────────────────────────────────────────────
-function downloadReport(){
+function scoreLabel(v){return v>=70?'Favoravel':v>=40?'Moderado':'Desfavoravel';}
+
+function downloadTXT(){
   if(!currentReportData)return;
   const r=currentReportData;
   const now=new Date();
   const dateStr=`${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getFullYear()}`;
   const timeStr=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-
   const {fung,herb,insec,adub}=calcAppIndex(r.wind,r.gust,r.humid,r.rain,r.temp);
-
-  const txt=`╔══════════════════════════════════════════════════════════╗
-║              AGROMETRIX — RELATÓRIO METEOROLÓGICO          ║
-║          Clima certo, aplicação perfeita                   ║
-╚══════════════════════════════════════════════════════════╝
-
-📍 Local       : ${r.locName}
-📅 Data/Hora   : ${dateStr} às ${timeStr}
-🌤 Condição    : ${r.cond}
-📊 Status      : ${r.status}
-
-══════════════════════════════════════════════════════════════
-  DADOS METEOROLÓGICOS ATUAIS
-══════════════════════════════════════════════════════════════
-
-  Temperatura          : ${r.temp}°C
-  Sensação térmica     : ${r.feel}°C
-  Ponto de orvalho     : ${r.dew}°C
-  Delta T              : ${r.dt}°C  →  ${r.dts}
-
-  Umidade relativa     : ${r.humid}%
-  Pressão atmosf.      : ${r.press} hPa
-
-  Vento                : ${r.wind} km/h  (${(r.wind/3.6).toFixed(1)} m/s)
-  Rajadas              : ${r.gust} km/h  (${(r.gust/3.6).toFixed(1)} m/s)
-  Direção do vento     : ${r.windDir} (${r.windDeg}°)
-
-  Precipitação acum.   : ${r.rain} mm
-  Prob. precipitação   : ${r.rainProb}%
-
-  Cobertura de nuvens  : ${r.cloud}%
-  Base das nuvens      : ~${r.cloudBase} m
-  Visibilidade         : ${r.vis} km
-  Índice UV            : ${r.uv}
-
-  Nascer do sol        : ${r.sunrise}
-  Pôr do sol           : ${r.sunset}
-
-══════════════════════════════════════════════════════════════
-  ÍNDICE DE APLICAÇÃO AGRONÔMICA
-══════════════════════════════════════════════════════════════
-
-  🍃 Fungicida         : ${fung}%  ${fung>=70?'✓ Favorável':fung>=40?'⚠ Moderado':'✕ Desfavorável'}
-  🌿 Herbicida         : ${herb}%  ${herb>=70?'✓ Favorável':herb>=40?'⚠ Moderado':'✕ Desfavorável'}
-  🐛 Inseticida        : ${insec}%  ${insec>=70?'✓ Favorável':insec>=40?'⚠ Moderado':'✕ Desfavorável'}
-  💧 Adubo Foliar      : ${adub}%  ${adub>=70?'✓ Favorável':adub>=40?'⚠ Moderado':'✕ Desfavorável'}
-
-══════════════════════════════════════════════════════════════
-  SOBRE O DELTA T
-══════════════════════════════════════════════════════════════
-
-  O Delta T mede a diferença entre temperatura de bulbo seco
-  e bulbo úmido — indica condições de evaporação das gotas.
-
-  • Delta T < 2°C  → Muito úmido, risco de escorrimento
-  • Delta T 2–8°C  → IDEAL para pulverização
-  • Delta T 8–10°C → Atenção, evaporação elevada
-  • Delta T > 10°C → Não recomendado, deriva e evaporação
-
-══════════════════════════════════════════════════════════════
-  Gerado por AgroMetrix  |  open-meteo.com
-  ${dateStr} ${timeStr}
-══════════════════════════════════════════════════════════════
-`;
-
+  const sep='-'.repeat(54);
+  const lines=[
+    'AGROMETRIX - RELATORIO METEOROLOGICO',
+    'Clima certo, aplicacao perfeita',
+    sep,
+    `Local         : ${r.locName}`,
+    `Data          : ${dateStr}`,
+    `Hora          : ${timeStr}`,
+    `Condicao      : ${r.cond}`,
+    `Status        : ${r.status}`,
+    sep,
+    'DADOS METEOROLOGICOS',
+    sep,
+    `Temperatura         : ${r.temp} graus C`,
+    `Sensacao termica    : ${r.feel} graus C`,
+    `Ponto de orvalho    : ${r.dew} graus C`,
+    `Delta T             : ${r.dt} graus C  |  ${r.dts}`,
+    '',
+    `Umidade relativa    : ${r.humid}%`,
+    `Pressao atmosferica : ${r.press} hPa`,
+    '',
+    `Vento               : ${r.wind} km/h  (${(r.wind/3.6).toFixed(1)} m/s)`,
+    `Rajadas             : ${r.gust} km/h  (${(r.gust/3.6).toFixed(1)} m/s)`,
+    `Direcao do vento    : ${r.windDir} (${r.windDeg} graus)`,
+    '',
+    `Precipitacao acum.  : ${r.rain} mm`,
+    `Prob. precipitacao  : ${r.rainProb}%`,
+    '',
+    `Cobertura de nuvens : ${r.cloud}%`,
+    `Base das nuvens     : ${r.cloudBase} m (estimado)`,
+    `Visibilidade        : ${r.vis} km`,
+    `Indice UV           : ${r.uv}`,
+    '',
+    `Nascer do sol       : ${r.sunrise}`,
+    `Por do sol          : ${r.sunset}`,
+    sep,
+    'INDICE DE APLICACAO AGRONOMICA',
+    sep,
+    `Fungicida    : ${fung}%  [${scoreLabel(fung)}]`,
+    `Herbicida    : ${herb}%  [${scoreLabel(herb)}]`,
+    `Inseticida   : ${insec}%  [${scoreLabel(insec)}]`,
+    `Adubo Foliar : ${adub}%  [${scoreLabel(adub)}]`,
+    sep,
+    'SOBRE O DELTA T',
+    sep,
+    'Delta T = temperatura bulbo seco menos bulbo umido.',
+    'Indica a taxa de evaporacao das gotas pulverizadas.',
+    '',
+    '  Delta T < 2 graus   -> Muito umido, risco de escorrimento',
+    '  Delta T 2 a 8 graus -> IDEAL para pulverizacao',
+    '  Delta T 8 a 10 gr.  -> Atencao, evaporacao elevada',
+    '  Delta T > 10 graus  -> Nao recomendado, deriva e evaporacao',
+    sep,
+    `Gerado por AgroMetrix | ${dateStr} ${timeStr}`,
+    'Dados: open-meteo.com',
+    sep,
+  ];
+  const txt=lines.join('\r\n');
   const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url;
-  a.download=`agrometrix_${r.locName.replace(/\s/g,'_')}_${dateStr.replace(/\//g,'-')}.txt`;
+  a.download=`agrometrix_${r.locName.replace(/[\s\/\\]/g,'_')}_${dateStr.replace(/\//g,'-')}.txt`;
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+function downloadCSV(){
+  if(!currentReportData)return;
+  const r=currentReportData;
+  const now=new Date();
+  const dateStr=`${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}`;
+  const timeStr=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const {fung,herb,insec,adub}=calcAppIndex(r.wind,r.gust,r.humid,r.rain,r.temp);
+  const rows=[
+    ['Campo','Valor','Unidade'],
+    ['Local',r.locName,''],
+    ['Data',dateStr,''],
+    ['Hora',timeStr,''],
+    ['Condicao',r.cond,''],
+    ['Status',r.status,''],
+    ['Temperatura',r.temp,'graus C'],
+    ['Sensacao termica',r.feel,'graus C'],
+    ['Ponto de orvalho',r.dew,'graus C'],
+    ['Delta T',r.dt,'graus C'],
+    ['Classificacao Delta T',r.dts,''],
+    ['Umidade relativa',r.humid,'%'],
+    ['Pressao atmosferica',r.press,'hPa'],
+    ['Vento',r.wind,'km/h'],
+    ['Rajadas',r.gust,'km/h'],
+    ['Direcao vento',r.windDir,''],
+    ['Precipitacao acumulada',r.rain,'mm'],
+    ['Probabilidade precipitacao',r.rainProb,'%'],
+    ['Cobertura de nuvens',r.cloud,'%'],
+    ['Base das nuvens',r.cloudBase,'m'],
+    ['Visibilidade',r.vis,'km'],
+    ['Indice UV',r.uv,''],
+    ['Nascer do sol',r.sunrise,''],
+    ['Por do sol',r.sunset,''],
+    ['Indice Fungicida',fung,'%'],
+    ['Indice Herbicida',herb,'%'],
+    ['Indice Inseticida',insec,'%'],
+    ['Indice Adubo Foliar',adub,'%'],
+  ];
+  const csv=rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  const bom='\uFEFF';
+  const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`agrometrix_${r.locName.replace(/[\s\/\\]/g,'_')}_${dateStr}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function downloadReport(){
+  downloadTXT();
 }
 
 // ── Fetch ─────────────────────────────────────────────────────────────────────
