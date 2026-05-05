@@ -4,6 +4,11 @@
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#1f5534">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AgroMetrix">
+<meta name="application-name" content="AgroMetrix">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AgroMetrix — Clima certo, aplicação perfeita</title>
@@ -1300,6 +1305,22 @@ async function fetchWeather(lat,lon,locName){
 
   fetchKp();
 
+  // Salva estado para historico e offline
+  const {fung,herb,insec,adub} = calcAppIndex(wind,gust,humid,rain,temp);
+  window._weatherState = {
+    temp, humid, wind, gust, windDir:windDirLabel(windDeg),
+    dt, rainProb, cloud, uv, press,
+    cond:wmoDesc(code), appScore:Math.round((fung+herb+insec+adub)/4)
+  };
+  localStorage.setItem('agrometrix-last-update', Date.now().toString());
+  localStorage.setItem('agrometrix-last-location', JSON.stringify({lat,lon,name:locName,savedAt:Date.now()}));
+  // Cache offline
+  import('/db.js').then(({cacheWeather,renderHistoryPanel})=>{
+    cacheWeather(lat,lon,d).catch(()=>{});
+  }).catch(()=>{});
+  // Atualiza painel de historico se existir
+  if(typeof renderHistoryPanel==='function') renderHistoryPanel().catch(()=>{});
+
   $('mainCard').style.display='block';
   $('dailySection').style.display='block';
   $('hourlySection').style.display='block';
@@ -1332,9 +1353,43 @@ window.addEventListener('load',()=>{
   },1200);
 });
 </script>
+<div id="networkIndicator" class="network-indicator"></div>
+
 <script type="module">
   import { initPWA } from '/pwa.js';
-  initPWA();
+  import { cacheWeather } from '/db.js';
+  import { injectHistoryStyles, renderHistoryPanel, setWeatherStateGetter } from '/history.js';
+
+  // 1. Inicia PWA (SW + install prompt + rede)
+  await initPWA();
+
+  // 2. Injeta estilos e painel de historico
+  injectHistoryStyles();
+
+  // 3. Expoe estado meteorologico ao history.js
+  setWeatherStateGetter(() => window._weatherState || {});
+
+  // 4. Recupera ultima localizacao salva
+  const lastLoc = JSON.parse(localStorage.getItem('agrometrix-last-location') || 'null');
+  if (lastLoc && (Date.now() - lastLoc.savedAt) < 86400000) {
+    document.getElementById('locationLabel').textContent = lastLoc.name;
+    window.currentLat = lastLoc.lat;
+    window.currentLon = lastLoc.lon;
+    window.currentLocName = lastLoc.name;
+  }
+
+  // 5. Refresca ao voltar para o app (Capacitor)
+  window.addEventListener('agrometrix:app-active', () => {
+    const last = parseInt(localStorage.getItem('agrometrix-last-update') || '0');
+    if (window.currentLat && Date.now() - last > 600000) {
+      fetchWeather(window.currentLat, window.currentLon, window.currentLocName);
+    }
+  });
+
+  // 6. Renderiza historico quando reconecta
+  window.addEventListener('agrometrix:network', e => {
+    if (e.detail.online) renderHistoryPanel();
+  });
 </script>
 </body>
 </html>
