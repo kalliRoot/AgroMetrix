@@ -1,0 +1,39 @@
+{
+  "name": "agrometrix",
+  "version": "3.0.0",
+  "private": true,
+  "description": "AgroMetrix — Clima certo, aplicação perfeita",
+  "scripts": {
+    "dev":             "npx serve . -p 3000 --cors",
+    "build":           "echo 'Static site — no build step needed'",
+    "cap:init":        "npx cap init AgroMetrix com.agrometrix.app --web-dir .",
+    "cap:add:android": "npx cap add android",
+    "cap:add:ios":     "npx cap add ios",
+    "cap:sync":        "npx cap sync",
+    "cap:android":     "npx cap run android",
+    "cap:ios":         "npx cap run ios",
+    "cap:build:android": "npx cap build android",
+    "generate:icons":  "node scripts/generate-icons.js",
+    "generate:splash": "node scripts/generate-splash.js"
+  },
+  "dependencies": {
+    "@capacitor/android":      "^6.0.0",
+    "@capacitor/app":          "^6.0.0",
+    "@capacitor/core":         "^6.0.0",
+    "@capacitor/geolocation":  "^6.0.0",
+    "@capacitor/haptics":      "^6.0.0",
+    "@capacitor/ios":          "^6.0.0",
+    "@capacitor/local-notifications": "^6.0.0",
+    "@capacitor/network":      "^6.0.0",
+    "@capacitor/push-notifications": "^6.0.0",
+    "@capacitor/share":        "^6.0.0",
+    "@capacitor/splash-screen": "^6.0.0",
+    "@capacitor/status-bar":   "^6.0.0",
+    "@capacitor/storage":      "^1.2.5"
+  },
+  "devDependencies": {
+    "@capacitor/cli":          "^6.0.0",
+    "serve":                   "^14.2.0",
+    "sharp":                   "^0.33.0"
+  }
+}

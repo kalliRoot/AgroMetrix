@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroMetrix — Offline</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green-900:#0d2b1a;--green-700:#1f5534;--green-500:#2f8450;--green-400:#3da866;--green-300:#5ec880;--green-100:#d4f5df;
+  --font-display:'DM Serif Display',Georgia,serif;
+  --font-ui:'Syne',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+html,body{height:100%;font-family:var(--font-ui);overflow:hidden}
+body{
+  background:#0a140d;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+
+/* Animated background */
+.bg-grid{
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(61,168,102,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(61,168,102,.05) 1px,transparent 1px);
+  background-size:40px 40px;
+  animation:gridDrift 20s linear infinite;
+}
+@keyframes gridDrift{from{background-position:0 0}to{background-position:40px 40px}}
+
+.orbs{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.15;animation:orbFloat 8s ease-in-out infinite}
+.orb1{width:400px;height:400px;background:#1f5534;top:-100px;left:-100px;animation-delay:0s}
+.orb2{width:300px;height:300px;background:#3da866;bottom:-50px;right:-50px;animation-delay:-4s}
+@keyframes orbFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-30px) scale(1.05)}}
+
+.card{
+  position:relative;z-index:10;
+  text-align:center;padding:48px 40px;max-width:440px;width:90%;
+  background:rgba(17,29,20,.85);
+  border:1px solid rgba(80,180,100,.2);
+  border-radius:28px;
+  backdrop-filter:blur(20px);
+  box-shadow:0 24px 80px rgba(0,0,0,.6);
+}
+
+.wifi-icon{
+  width:80px;height:80px;border-radius:50%;
+  background:rgba(31,85,52,.3);border:2px solid rgba(61,168,102,.3);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 24px;font-size:36px;
+  animation:iconPulse 2.5s ease-in-out infinite;
+}
+@keyframes iconPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(61,168,102,.3)}50%{transform:scale(1.05);box-shadow:0 0 0 12px rgba(61,168,102,.0)}}
+
+.logo{font-family:var(--font-ui);font-size:14px;font-weight:800;color:rgba(255,255,255,.4);letter-spacing:-.3px;margin-bottom:4px}
+.logo span{color:var(--green-400)}
+
+h1{font-family:var(--font-display);font-size:28px;color:white;margin-bottom:10px;line-height:1.2}
+h1 em{color:var(--green-300);font-style:italic}
+
+.sub{font-size:13px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:28px}
+
+.features{display:flex;flex-direction:column;gap:8px;margin-bottom:28px;text-align:left}
+.feat{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;border-radius:12px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  font-size:12px;color:rgba(255,255,255,.6);
+}
+.feat-icon{font-size:16px;flex-shrink:0}
+.feat strong{color:rgba(255,255,255,.85);display:block;font-size:12px;margin-bottom:1px}
+
+.btn-retry{
+  width:100%;padding:14px;border-radius:14px;
+  background:var(--green-700);color:white;border:none;
+  font-family:var(--font-ui);font-size:14px;font-weight:700;
+  cursor:pointer;transition:all .25s;margin-bottom:10px;
+}
+.btn-retry:hover{background:var(--green-500);transform:translateY(-2px);box-shadow:0 8px 24px rgba(31,85,52,.5)}
+
+.btn-secondary{
+  width:100%;padding:11px;border-radius:14px;
+  background:transparent;color:rgba(255,255,255,.4);
+  border:1px solid rgba(255,255,255,.12);
+  font-family:var(--font-ui);font-size:13px;font-weight:500;
+  cursor:pointer;transition:all .25s;
+}
+.btn-secondary:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.7)}
+
+.status-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px}
+.status-dot-offline{width:8px;height:8px;border-radius:50%;background:#e03535;animation:blink 1.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.status-text{font-family:var(--font-mono);font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.08em}
+
+.last-update{font-family:var(--font-mono);font-size:10px;color:rgba(255,255,255,.2);margin-top:20px}
+
+/* Auto-reconexão */
+.reconnect-bar{
+  height:3px;background:rgba(255,255,255,.06);border-radius:2px;
+  margin-top:18px;overflow:hidden;
+}
+.reconnect-fill{
+  height:100%;background:var(--green-500);border-radius:2px;width:0%;
+  animation:reconnectTimer 10s linear infinite;
+}
+@keyframes reconnectTimer{0%{width:0%}100%{width:100%}}
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+</div>
+
+<div class="card">
+  <div class="logo">Agro<span>Metrix</span></div>
+
+  <div class="wifi-icon">📵</div>
+
+  <h1>Sem conexão<br>no <em>momento</em></h1>
+  <p class="sub">
+    O AgroMetrix trabalha offline para você.<br>
+    Dados em cache e operações salvas estão disponíveis.
+  </p>
+
+  <div class="features">
+    <div class="feat">
+      <div class="feat-icon">📊</div>
+      <div>
+        <strong>Dados em cache disponíveis</strong>
+        Última condição meteorológica salva localmente
+      </div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📝</div>
+      <div>
+        <strong>Registro de operações</strong>
+        Salve operações offline — sincroniza ao reconectar
+      </div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📋</div>
+      <div>
+        <strong>Histórico completo</strong>
+        Acesse todos os seus registros anteriores
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-retry" onclick="tryReconnect()">
+    🔄 Tentar reconectar
+  </button>
+  <button class="btn-secondary" onclick="goBack()">
+    ← Voltar ao app
+  </button>
+
+  <div class="status-row">
+    <div class="status-dot-offline"></div>
+    <div class="status-text" id="statusText">SEM CONEXÃO</div>
+  </div>
+
+  <div class="reconnect-bar">
+    <div class="reconnect-fill" id="reconnectFill"></div>
+  </div>
+
+  <div class="last-update" id="lastUpdate"></div>
+</div>
+
+<script>
+  // Exibe última atualização do cache
+  const lastWeather = localStorage.getItem('agrometrix-last-update');
+  if (lastWeather) {
+    const d = new Date(parseInt(lastWeather));
+    document.getElementById('lastUpdate').textContent =
+      `Cache: ${d.toLocaleDateString('pt-BR')} ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
+  }
+
+  // Tenta reconectar automaticamente a cada 10s
+  let attempts = 0;
+  function autoReconnect() {
+    setTimeout(() => {
+      if (navigator.onLine) {
+        document.getElementById('statusText').textContent = 'RECONECTADO — redirecionando…';
+        setTimeout(() => window.location.href = '/', 1000);
+      } else {
+        attempts++;
+        document.getElementById('statusText').textContent = `TENTATIVA ${attempts} — aguardando…`;
+        autoReconnect();
+      }
+    }, 10000);
+  }
+  autoReconnect();
+
+  // Online detection
+  window.addEventListener('online', () => {
+    document.getElementById('statusText').textContent = '✅ ONLINE — carregando…';
+    setTimeout(() => window.location.href = '/', 800);
+  });
+
+  function tryReconnect() {
+    document.getElementById('statusText').textContent = 'VERIFICANDO…';
+    // Força re-fetch
+    fetch('/', { method: 'HEAD', cache: 'no-store' })
+      .then(() => { window.location.href = '/'; })
+      .catch(() => { document.getElementById('statusText').textContent = 'AINDA OFFLINE'; });
+  }
+
+  function goBack() {
+    if (history.length > 1) history.back();
+    else window.location.href = '/';
+  }
+</script>
+</body>
+</html>
