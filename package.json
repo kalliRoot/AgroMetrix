@@ -5,10 +5,15 @@
   "description": "AgroMetrix — Clima certo, aplicação perfeita",
   "scripts": {
     "build": "echo 'Static site — no build needed'",
-    "dev":   "npx serve . -p 3000 --cors"
+    "dev": "npx serve . -p 3000 --cors"
   },
   "devDependencies": {
     "serve": "^14.2.0"
   },
-  "_capacitor_note": "Para build nativo Android/iOS, use um package.json separado em /native/. Ver SETUP.md."
+  "_capacitor_note": "Para build nativo Android/iOS, use um package.json separado em /native/. Ver SETUP.md.",
+  "dependencies": {
+    "@capacitor/android": "^8.3.1",
+    "@capacitor/cli": "^8.3.1",
+    "@capacitor/core": "^8.3.1"
+  }
 }
