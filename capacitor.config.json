@@ -1,7 +1,7 @@
 {
   "appId": "com.agrometrix.app",
   "appName": "AgroMetrix",
-  "webDir": "www"
+  "webDir": "www",
   "bundledWebRuntime": false,
   "server": {
     "androidScheme": "https",
