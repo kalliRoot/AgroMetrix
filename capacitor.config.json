@@ -1,7 +1,7 @@
 {
   "appId": "com.agrometrix.app",
   "appName": "AgroMetrix",
-  "webDir": ".",
+  "webDir": "www"
   "bundledWebRuntime": false,
   "server": {
     "androidScheme": "https",
@@ -16,9 +16,9 @@
   },
   "android": {
     "buildOptions": {
-      "keystorePath":     "release.keystore",
-      "keystoreAlias":    "agrometrix",
-      "releaseType":      "APK"
+      "keystorePath": "release.keystore",
+      "keystoreAlias": "agrometrix",
+      "releaseType": "APK"
     },
     "minSdkVersion": 22,
     "targetSdkVersion": 34,
@@ -33,30 +33,37 @@
   },
   "plugins": {
     "SplashScreen": {
-      "launchShowDuration":      2000,
-      "launchAutoHide":          true,
-      "backgroundColor":         "#0d2b1a",
+      "launchShowDuration": 2000,
+      "launchAutoHide": true,
+      "backgroundColor": "#0d2b1a",
       "androidSplashResourceName": "splash",
-      "androidScaleType":        "CENTER_CROP",
-      "showSpinner":             false,
-      "splashFullScreen":        true,
-      "splashImmersive":         true
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false,
+      "splashFullScreen": true,
+      "splashImmersive": true
     },
     "StatusBar": {
-      "style":           "DARK",
+      "style": "DARK",
       "backgroundColor": "#0d2b1a",
       "overlaysWebView": false
     },
     "Geolocation": {
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "LocalNotifications": {
-      "smallIcon":  "ic_stat_icon_config_sample",
-      "iconColor":  "#3da866",
-      "sound":      "beep.wav"
+      "smallIcon": "ic_stat_icon_config_sample",
+      "iconColor": "#3da866",
+      "sound": "beep.wav"
     },
     "PushNotifications": {
-      "presentationOptions": ["badge", "sound", "alert"]
+      "presentationOptions": [
+        "badge",
+        "sound",
+        "alert"
+      ]
     }
   }
 }
