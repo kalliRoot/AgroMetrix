@@ -1035,16 +1035,24 @@ function downloadTXT(){
     'Dados: open-meteo.com',
     sep,
   ];
-  const txt=lines.join('\r\n');
+ const filename=`agrometrix_${r.locName.replace(/[\s\/\\]/g,'_')}_${dateStr.replace(/\//g,'-')}.txt`;
   const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=`agrometrix_${r.locName.replace(/[\s\/\\]/g,'_')}_${dateStr.replace(/\//g,'-')}.txt`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  if(window.Capacitor?.isNativePlatform()){
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const a=document.createElement('a');
+      a.href=reader.result;
+      a.download=filename;
+      a.click();
+    };
+    reader.readAsDataURL(blob);
+  } else {
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);URL.revokeObjectURL(url);
+  }
 }
 
 function downloadCSV(){
@@ -1084,17 +1092,24 @@ function downloadCSV(){
     ['Indice Inseticida',insec,'%'],
     ['Indice Adubo Foliar',adub,'%'],
   ];
-  const csv=rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
-  const bom='\uFEFF';
+ const filename=`agrometrix_${r.locName.replace(/[\s\/\\]/g,'_')}_${dateStr}.csv`;
   const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=`agrometrix_${r.locName.replace(/[\s\/\\]/g,'_')}_${dateStr}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  if(window.Capacitor?.isNativePlatform()){
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const a=document.createElement('a');
+      a.href=reader.result;
+      a.download=filename;
+      a.click();
+    };
+    reader.readAsDataURL(blob);
+  } else {
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);URL.revokeObjectURL(url);
+  }
 }
 
 function downloadReport(){
