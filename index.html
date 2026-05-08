@@ -388,11 +388,11 @@ footer a { color:var(--green-500); text-decoration:none; }
 
 <!-- ── DOWNLOAD BAR ── -->
 <div class="download-bar fade-in" id="downloadBar" style="display:none">
-  <button class="btn-download" onclick="downloadTXT()" title="Arquivo de texto simples, sem caracteres especiais">
-    <span>&#8681;</span> Baixar TXT
+  <button class="btn-download" onclick="shareOrDownloadTXT()" title="Baixar ou compartilhar relatório TXT">
+    <span>&#8681;</span> Relatório TXT
   </button>
-  <button class="btn-download" onclick="downloadCSV()" title="Abrir no Excel ou Google Sheets" style="background:var(--sky-500)">
-    <span>&#8681;</span> Baixar CSV (Excel)
+  <button class="btn-download" onclick="shareOrDownloadCSV()" title="Baixar ou compartilhar CSV Excel" style="background:var(--sky-500)">
+    <span>&#8681;</span> Relatório CSV
   </button>
 </div>
 
@@ -963,11 +963,49 @@ function renderDaily(d){
   });
 }
 
-// ── Download relatório ────────────────────────────────────────────────────────
-function scoreLabel(v){return v>=70?'Favoravel':v>=40?'Moderado':'Desfavoravel';}
 
-function downloadTXT(){
-  if(!currentReportData)return;
+// ── Helper download universal (web + Capacitor) ───────────────────────────────
+function _triggerDownload(blob, filename){
+  if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()){
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const a=document.createElement('a');
+      a.href=reader.result;
+      a.download=filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    };
+    reader.readAsDataURL(blob);
+  } else {
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);URL.revokeObjectURL(url);
+  }
+}
+
+async function _shareFile(blob, filename, title){
+  if(navigator.canShare&&navigator.canShare({files:[new File([blob],filename)]})){
+    try{
+      await navigator.share({
+        files:[new File([blob],filename,{type:blob.type})],
+        title:title,
+        text:'Relatório gerado pelo AgroMetrix'
+      });
+      return true;
+    }catch(e){
+      if(e.name!=='AbortError') _triggerDownload(blob,filename);
+      return false;
+    }
+  }
+  _triggerDownload(blob,filename);
+  return false;
+}
+
+function _buildTXTBlob(){
+  if(!currentReportData)return null;
   const r=currentReportData;
   const now=new Date();
   const dateStr=`${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getFullYear()}`;
@@ -1030,14 +1068,11 @@ function downloadTXT(){
     'Dados: open-meteo.com',
     sep,
   ];
-  const txt=lines.join('\r\n');
-  const _fnameTxt=`agrometrix_${r.locName.replace(/[\s\/\\]/g,'_')}_${dateStr.replace(/\//g,'-')}.txt`;
-  const _blobTxt=new Blob([txt],{type:'text/plain;charset=utf-8'});
-  _triggerDownload(_blobTxt,_fnameTxt);
+  return new Blob([lines.join('\r\n')],{type:'text/plain;charset=utf-8'});
 }
 
-function downloadCSV(){
-  if(!currentReportData)return;
+function _buildCSVBlob(){
+  if(!currentReportData)return null;
   const r=currentReportData;
   const now=new Date();
   const dateStr=`${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}`;
@@ -1045,70 +1080,47 @@ function downloadCSV(){
   const {fung,herb,insec,adub}=calcAppIndex(r.wind,r.gust,r.humid,r.rain,r.temp);
   const rows=[
     ['Campo','Valor','Unidade'],
-    ['Local',r.locName,''],
-    ['Data',dateStr,''],
-    ['Hora',timeStr,''],
-    ['Condicao',r.cond,''],
-    ['Status',r.status,''],
-    ['Temperatura',r.temp,'graus C'],
-    ['Sensacao termica',r.feel,'graus C'],
-    ['Ponto de orvalho',r.dew,'graus C'],
-    ['Delta T',r.dt,'graus C'],
-    ['Classificacao Delta T',r.dts,''],
-    ['Umidade relativa',r.humid,'%'],
-    ['Pressao atmosferica',r.press,'hPa'],
-    ['Vento',r.wind,'km/h'],
-    ['Rajadas',r.gust,'km/h'],
-    ['Direcao vento',r.windDir,''],
-    ['Precipitacao acumulada',r.rain,'mm'],
-    ['Probabilidade precipitacao',r.rainProb,'%'],
-    ['Cobertura de nuvens',r.cloud,'%'],
-    ['Base das nuvens',r.cloudBase,'m'],
-    ['Visibilidade',r.vis,'km'],
-    ['Indice UV',r.uv,''],
-    ['Nascer do sol',r.sunrise,''],
-    ['Por do sol',r.sunset,''],
-    ['Indice Fungicida',fung,'%'],
-    ['Indice Herbicida',herb,'%'],
-    ['Indice Inseticida',insec,'%'],
-    ['Indice Adubo Foliar',adub,'%'],
+    ['Local',r.locName,''],['Data',dateStr,''],['Hora',timeStr,''],
+    ['Condicao',r.cond,''],['Status',r.status,''],
+    ['Temperatura',r.temp,'graus C'],['Sensacao termica',r.feel,'graus C'],
+    ['Ponto de orvalho',r.dew,'graus C'],['Delta T',r.dt,'graus C'],
+    ['Classificacao Delta T',r.dts,''],['Umidade relativa',r.humid,'%'],
+    ['Pressao atmosferica',r.press,'hPa'],['Vento',r.wind,'km/h'],
+    ['Rajadas',r.gust,'km/h'],['Direcao vento',r.windDir,''],
+    ['Precipitacao acumulada',r.rain,'mm'],['Prob precipitacao',r.rainProb,'%'],
+    ['Cobertura de nuvens',r.cloud,'%'],['Base das nuvens',r.cloudBase,'m'],
+    ['Visibilidade',r.vis,'km'],['Indice UV',r.uv,''],
+    ['Nascer do sol',r.sunrise,''],['Por do sol',r.sunset,''],
+    ['Indice Fungicida',fung,'%'],['Indice Herbicida',herb,'%'],
+    ['Indice Inseticida',insec,'%'],['Indice Adubo Foliar',adub,'%'],
   ];
-  const csv=rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
-  const bom='\uFEFF';
-  const _fnameCsv=`agrometrix_${r.locName.replace(/[\s\/\\]/g,'_')}_${dateStr}.csv`;
-  const _blobCsv=new Blob([bom+csv],{type:'text/csv;charset=utf-8'});
-  _triggerDownload(_blobCsv,_fnameCsv);
+  const csv='\uFEFF'+rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  return new Blob([csv],{type:'text/csv;charset=utf-8'});
 }
 
+function scoreLabel(v){return v>=70?'Favoravel':v>=40?'Moderado':'Desfavoravel';}
 
-// ── Helper download universal (web + Capacitor) ──────────────────────────────
-function _triggerDownload(blob, filename){
-  if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()){
-    const reader=new FileReader();
-    reader.onload=()=>{
-      const a=document.createElement('a');
-      a.href=reader.result;
-      a.download=filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    };
-    reader.readAsDataURL(blob);
-  } else {
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;
-    a.download=filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
+async function shareOrDownloadTXT(){
+  const blob=_buildTXTBlob();
+  if(!blob)return;
+  const now=new Date();
+  const dateStr=`${now.getDate().toString().padStart(2,'0')}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getFullYear()}`;
+  const filename=`agrometrix_${(currentReportData.locName||'relatorio').replace(/[\s\/\\]/g,'_')}_${dateStr}.txt`;
+  await _shareFile(blob,filename,'AgroMetrix — Relatório TXT');
 }
 
-function downloadReport(){
-  downloadTXT();
+async function shareOrDownloadCSV(){
+  const blob=_buildCSVBlob();
+  if(!blob)return;
+  const now=new Date();
+  const dateStr=`${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}`;
+  const filename=`agrometrix_${(currentReportData.locName||'relatorio').replace(/[\s\/\\]/g,'_')}_${dateStr}.csv`;
+  await _shareFile(blob,filename,'AgroMetrix — Relatório CSV');
 }
+
+function downloadTXT(){shareOrDownloadTXT();}
+function downloadCSV(){shareOrDownloadCSV();}
+function downloadReport(){shareOrDownloadTXT();}
 
 // ── Kp Index (NOAA) ───────────────────────────────────────────────────────────
 async function fetchKp(){
