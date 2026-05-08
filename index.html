@@ -1101,20 +1101,49 @@ function _buildCSVBlob(){
 function scoreLabel(v){return v>=70?'Favoravel':v>=40?'Moderado':'Desfavoravel';}
 
 async function shareOrDownloadTXT(){
+  if(!currentReportData){alert('Carregue os dados climáticos primeiro!');return;}
   const blob=_buildTXTBlob();
   if(!blob)return;
   const now=new Date();
   const dateStr=`${now.getDate().toString().padStart(2,'0')}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getFullYear()}`;
   const filename=`agrometrix_${(currentReportData.locName||'relatorio').replace(/[\s\/\\]/g,'_')}_${dateStr}.txt`;
+  // No app Android usa compartilhamento nativo
+  if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()){
+    const txt=await blob.text();
+    if(navigator.share){
+      try{
+        await navigator.share({title:'AgroMetrix TXT',text:txt});
+        return;
+      }catch(e){}
+    }
+    // fallback: abre em nova aba
+    const url=URL.createObjectURL(blob);
+    window.open(url,'_blank');
+    return;
+  }
   await _shareFile(blob,filename,'AgroMetrix — Relatório TXT');
 }
 
 async function shareOrDownloadCSV(){
+  if(!currentReportData){alert('Carregue os dados climáticos primeiro!');return;}
   const blob=_buildCSVBlob();
   if(!blob)return;
   const now=new Date();
   const dateStr=`${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}`;
   const filename=`agrometrix_${(currentReportData.locName||'relatorio').replace(/[\s\/\\]/g,'_')}_${dateStr}.csv`;
+  // No app Android usa compartilhamento nativo
+  if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()){
+    const csv=await blob.text();
+    if(navigator.share){
+      try{
+        await navigator.share({title:'AgroMetrix CSV',text:csv});
+        return;
+      }catch(e){}
+    }
+    const url=URL.createObjectURL(blob);
+    window.open(url,'_blank');
+    return;
+  }
   await _shareFile(blob,filename,'AgroMetrix — Relatório CSV');
 }
 
