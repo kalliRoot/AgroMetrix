@@ -32,11 +32,23 @@ export function initMap(containerId, lat, lon) {
     attributionControl: false,
   }).setView([lat || -15.7801, lon || -47.9292], 10);
 
-  // Tile escuro (radar style)
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 18,
-    subdomains: 'abcd',
-  }).addTo(_map);
+  // Tile principal escuro (CartoDB)
+  const darkTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 18, subdomains: 'abcd',
+  });
+
+  // Fallback OpenStreetMap se CartoDB falhar
+  const osmTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+  });
+
+  darkTile.addTo(_map);
+  darkTile.on('tileerror', () => {
+    if (!_map.hasLayer(osmTile)) {
+      _map.removeLayer(darkTile);
+      osmTile.addTo(_map);
+    }
+  });
 
   // Zoom controls posição customizada
   L.control.zoom({ position: 'bottomright' }).addTo(_map);
@@ -50,20 +62,52 @@ export function initMap(containerId, lat, lon) {
 
 // ── Ícone de piloto ───────────────────────────────────────────
 function pilotIcon(status, isUser = false) {
-  const color = status === 'operating' ? '#3da866' : status === 'online' ? '#1e88d0' : '#555';
-  const size  = isUser ? 44 : 36;
-  const pulse = (status === 'operating') ? `
-    <circle cx="18" cy="18" r="16" fill="none" stroke="${color}" stroke-width="1.5" opacity="0.4">
+  const isSOS       = status === 'sos';
+  const isOperating = status === 'operating';
+  const isRequest   = status === 'request'; // peça, bateria, suporte
+
+  let color = '#1e88d0'; // online padrão
+  if (isOperating) color = '#3da866';
+  if (isSOS)       color = '#e03535';
+  if (isRequest)   color = '#2fb362'; // verde piscante para pedido de peça
+
+  const size = isUser ? 48 : 38;
+
+  // Ondas pulsantes para SOS
+  const sosPulse = isSOS ? `
+    <circle cx="19" cy="19" r="17" fill="none" stroke="#e03535" stroke-width="2" opacity="0.6">
+      <animate attributeName="r" from="14" to="26" dur="1.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" from="0.7" to="0" dur="1.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="19" cy="19" r="17" fill="none" stroke="#e03535" stroke-width="1.5" opacity="0.4">
+      <animate attributeName="r" from="14" to="32" dur="1.2s" begin="0.4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" from="0.5" to="0" dur="1.2s" begin="0.4s" repeatCount="indefinite"/>
+    </circle>` : '';
+
+  // Onda verde para pedido de peça/suporte
+  const requestPulse = isRequest ? `
+    <circle cx="19" cy="19" r="17" fill="none" stroke="#2fb362" stroke-width="2" opacity="0.6">
+      <animate attributeName="r" from="14" to="26" dur="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" from="0.6" to="0" dur="1.5s" repeatCount="indefinite"/>
+    </circle>` : '';
+
+  // Onda operando
+  const opPulse = isOperating ? `
+    <circle cx="19" cy="19" r="16" fill="none" stroke="${color}" stroke-width="1.5" opacity="0.4">
       <animate attributeName="r" from="14" to="22" dur="1.8s" repeatCount="indefinite"/>
       <animate attributeName="opacity" from="0.5" to="0" dur="1.8s" repeatCount="indefinite"/>
     </circle>` : '';
 
-  const svg = `<svg width="${size}" height="${size}" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
-    ${pulse}
-    <circle cx="18" cy="18" r="13" fill="${color}" opacity="0.15"/>
-    <circle cx="18" cy="18" r="9" fill="${color}" opacity="0.9"/>
-    ${isUser ? '<circle cx="18" cy="18" r="5" fill="white" opacity="0.9"/>' : ''}
-    ${status === 'operating' ? '<circle cx="18" cy="18" r="4" fill="#0d2b1a"/>' : ''}
+  // Emoji no centro
+  const emoji = isSOS ? '🚨' : isRequest ? '🔧' : isOperating ? '🚁' : '';
+  const emojiEl = emoji ? `<text x="19" y="24" text-anchor="middle" font-size="13">${emoji}</text>` : '';
+
+  const svg = `<svg width="${size}" height="${size}" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
+    ${sosPulse}${requestPulse}${opPulse}
+    <circle cx="19" cy="19" r="14" fill="${color}" opacity="0.15"/>
+    <circle cx="19" cy="19" r="10" fill="${color}" opacity="${isSOS ? '1' : '0.9'}"/>
+    ${isUser ? '<circle cx="19" cy="19" r="5" fill="white" opacity="0.95"/>' : ''}
+    ${emojiEl}
   </svg>`;
 
   return L.divIcon({
@@ -109,6 +153,178 @@ export function upsertPilot(pilot) {
   } else {
     _markers[pilot.id] = L.marker([pilot.lat, pilot.lon], { icon })
       .bindPopup(popupHTML, {
+        className:   'amx-popup',
+        maxWidth:    220,
+        closeButton: false,
+      })
+      .addTo(_map);
+  }
+}
+
+export function removePilot(id) {
+  if (_markers[id]) { _markers[id].remove(); delete _markers[id]; }
+}
+
+// ── Spawnar bots ao redor de uma localização ─────────────────
+export function spawnBots(centerLat, centerLon, weatherState) {
+  const hour    = new Date().getHours();
+  const isDay   = hour >= 5 && hour <= 18;
+  const goodWind = (weatherState?.wind || 0) <= 20;
+
+  // Bots só operam de dia com vento ok
+  const activeBots = BOTS.filter((_, i) => {
+    if (!isDay) return i < 2; // alguns ficam online à noite
+    if (!goodWind) return i < 4; // menos ativos com vento ruim
+    return true;
+  });
+
+  activeBots.forEach((bot, i) => {
+    // Posição aleatória num raio de 5~40km
+    const angle  = (i / activeBots.length) * Math.PI * 2 + Math.random() * 0.5;
+    const radius = (5 + Math.random() * 35) / 111; // graus
+    const lat    = centerLat + Math.cos(angle) * radius;
+    const lon    = centerLon + Math.sin(angle) * radius / Math.cos(centerLat * Math.PI / 180);
+
+    const isOperating = isDay && goodWind && Math.random() > 0.35;
+
+    upsertPilot({
+      ...bot,
+      lat,
+      lon,
+      status: isOperating ? 'operating' : 'online',
+    });
+  });
+}
+
+// ── Atualizar bots periodicamente (movimento sutil) ──────────
+export function startBotUpdates(centerLat, centerLon) {
+  if (_botInterval) clearInterval(_botInterval);
+  _botInterval = setInterval(() => {
+    Object.entries(_markers).forEach(([id, marker]) => {
+      if (!id.startsWith('bot_')) return;
+      const pos = marker.getLatLng();
+      // Movimento pequeno simulando operação
+      const dlat = (Math.random() - 0.5) * 0.003;
+      const dlon = (Math.random() - 0.5) * 0.003;
+      marker.setLatLng([pos.lat + dlat, pos.lng + dlon]);
+    });
+  }, 15000); // a cada 15s
+}
+
+export function stopBotUpdates() {
+  if (_botInterval) clearInterval(_botInterval);
+}
+
+// ── Rastrear localização do usuário ──────────────────────────
+export function startLocationTracking(uid, onUpdate) {
+  let lastLat = null, lastLon = null;
+
+  function update() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(pos => {
+      const { latitude: lat, longitude: lon } = pos.coords;
+      const dist = lastLat
+        ? Math.sqrt(Math.pow((lat - lastLat) * 111000, 2) + Math.pow((lon - lastLon) * 111000, 2))
+        : 9999;
+
+      if (dist >= 300 || !lastLat) {
+        lastLat = lat; lastLon = lon;
+        onUpdate(lat, lon);
+      }
+    }, null, { enableHighAccuracy: true, timeout: 10000 });
+  }
+
+  update();
+  if (_locationInterval) clearInterval(_locationInterval);
+  _locationInterval = setInterval(update, 30000);
+}
+
+export function stopLocationTracking() {
+  if (_locationInterval) clearInterval(_locationInterval);
+}
+
+// ── Modo Operação ─────────────────────────────────────────────
+export function startOperation(weatherState, lat, lon) {
+  _operationActive = true;
+  _operationStart  = Date.now();
+  _operationData   = {
+    startTime:   new Date().toISOString(),
+    lat, lon,
+    weather:     { ...weatherState },
+    pauses:      0,
+    lastActive:  Date.now(),
+  };
+  return _operationData;
+}
+
+export function endOperation(weatherState) {
+  if (!_operationActive) return null;
+  _operationActive = false;
+
+  const duration = Math.round((Date.now() - _operationStart) / 60000); // minutos
+  const score    = calcAMXScore(duration, weatherState, _operationData);
+
+  return {
+    ..._operationData,
+    endTime:  new Date().toISOString(),
+    duration, // minutos
+    score,
+  };
+}
+
+export function isOperating() { return _operationActive; }
+
+// ── AMX Score ─────────────────────────────────────────────────
+export function calcAMXScore(durationMin, weather, opData) {
+  let score = 100;
+  const w   = weather || {};
+
+  // Clima
+  const dt   = w.deltaT || 5;
+  const wind = w.wind   || 0;
+  const hum  = w.humidity || 70;
+  const temp = w.temp   || 25;
+
+  // Delta T ideal 2-8
+  if (dt < 2 || dt > 10) score -= 20;
+  else if (dt > 8)        score -= 10;
+
+  // Vento
+  if (wind > 20) score -= 25;
+  else if (wind > 15) score -= 15;
+  else if (wind > 10) score -= 5;
+
+  // Umidade
+  if (hum > 90) score -= 10;
+  if (hum < 40) score -= 10;
+
+  // Temperatura
+  if (temp > 35) score -= 15;
+  if (temp < 10) score -= 10;
+
+  // Duração mínima coerente (>10 min)
+  if (durationMin < 5)  score -= 30;
+  else if (durationMin < 10) score -= 15;
+
+  // Horário (bônus madrugada penaliza)
+  const hour = new Date().getHours();
+  if (hour >= 0 && hour < 4) score -= 20;
+  if (hour >= 5 && hour <= 9) score += 5; // manhã cedo é ideal
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  return score;
+}
+
+export function amxLabel(score) {
+  if (score >= 90) return { label: 'Excelente', color: '#3da866' };
+  if (score >= 75) return { label: 'Ótimo',     color: '#5ec880' };
+  if (score >= 60) return { label: 'Bom',        color: '#1e88d0' };
+  if (score >= 40) return { label: 'Moderado',   color: '#e07a00' };
+  return               { label: 'Risco',        color: '#e03535' };
+}
+
+export function getMap() { return _map; }
         className:   'amx-popup',
         maxWidth:    220,
         closeButton: false,
