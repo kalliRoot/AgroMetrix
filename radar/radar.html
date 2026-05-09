@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>AgroMetrix Radar</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0a140d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green-900:#0d2b1a;--green-800:#163d26;--green-700:#1f5534;
+  --green-600:#286b42;--green-500:#2f8450;--green-400:#3da866;
+  --green-300:#5ec880;--green-200:#a0e4b5;
+  --sky-500:#1567a0;--sky-400:#1e88d0;
+  --amber:#e07a00;--red:#e03535;
+  --bg:#060e08;--surface:#0d1a0f;--surface2:#111d14;--surface3:#162119;
+  --border:rgba(61,168,102,.12);--border-md:rgba(61,168,102,.22);
+  --text:#e8f5eb;--text2:#9ac8a6;--muted:#5a8a65;
+  --font-ui:'Syne',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --font-display:'DM Serif Display',Georgia,serif;
+  --r-sm:8px;--r-md:14px;--r-lg:22px;--r-xl:32px;
+}
+
+html,body{height:100%;overflow:hidden;font-family:var(--font-ui);background:var(--bg);color:var(--text)}
+
+/* ── SCREENS ── */
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;transition:opacity .35s,transform .35s}
+.screen.hidden{opacity:0;pointer-events:none;transform:scale(.97)}
+
+/* ══════════════════════════════════════════
+   TELA 1 — SPLASH / ENTRADA
+══════════════════════════════════════════ */
+#screenSplash{
+  background:var(--bg);
+  align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.splash-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%,rgba(31,85,52,.35) 0%,transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 80%,rgba(30,136,208,.12) 0%,transparent 60%);
+}
+.splash-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(61,168,102,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(61,168,102,.04) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+.splash-content{position:relative;z-index:1;text-align:center;padding:32px 24px;max-width:420px;width:100%}
+.splash-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px}
+.splash-logo-icon{
+  width:48px;height:48px;background:var(--green-700);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;font-size:24px;
+}
+.splash-logo-text{font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--text)}
+.splash-logo-text span{color:var(--green-400)}
+.splash-tagline{font-size:11px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:40px}
+
+.splash-radar{
+  width:200px;height:200px;border-radius:50%;
+  border:1px solid var(--border-md);
+  position:relative;margin:0 auto 40px;
+  background:radial-gradient(circle,rgba(31,85,52,.2) 0%,transparent 70%);
+  overflow:hidden;
+}
+.radar-sweep{
+  position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from 0deg,transparent 340deg,rgba(61,168,102,.6) 360deg);
+  animation:radarSweep 3s linear infinite;
+}
+@keyframes radarSweep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.radar-ring{position:absolute;border-radius:50%;border:1px solid rgba(61,168,102,.15)}
+.radar-ring:nth-child(2){inset:20%}
+.radar-ring:nth-child(3){inset:40%}
+.radar-ring:nth-child(4){inset:60%}
+.radar-dot{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--green-400);box-shadow:0 0 6px var(--green-400)}
+.radar-crosshair{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.radar-crosshair::before,.radar-crosshair::after{content:'';position:absolute;background:rgba(61,168,102,.2)}
+.radar-crosshair::before{width:1px;height:100%}
+.radar-crosshair::after{width:100%;height:1px}
+
+.splash-cta{
+  width:100%;padding:16px;border-radius:var(--r-lg);
+  background:linear-gradient(135deg,var(--green-700),var(--green-500));
+  color:white;border:none;
+  font-family:var(--font-ui);font-size:15px;font-weight:800;
+  cursor:pointer;margin-bottom:12px;
+  box-shadow:0 4px 24px rgba(31,85,52,.5);
+  transition:all .25s;letter-spacing:.02em;
+}
+.splash-cta:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(31,85,52,.6)}
+.splash-cta-sub{font-size:11px;color:var(--muted);margin-bottom:24px}
+
+.splash-features{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:32px}
+.feat-chip{
+  display:flex;align-items:center;gap:5px;
+  padding:5px 12px;border-radius:20px;
+  background:rgba(61,168,102,.08);border:1px solid var(--border);
+  font-size:11px;color:var(--text2);
+}
+.splash-divider{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.splash-divider::before,.splash-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.splash-divider span{font-size:11px;color:var(--muted)}
+.btn-login-google{
+  width:100%;padding:13px;border-radius:var(--r-md);
+  background:var(--surface2);border:1.5px solid var(--border-md);
+  color:var(--text);font-family:var(--font-ui);font-size:14px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:all .2s;
+}
+.btn-login-google:hover{background:var(--surface3);border-color:var(--green-400)}
+.btn-login-google svg{width:20px;height:20px}
+
+/* ══════════════════════════════════════════
+   TELA 2 — RADAR / MAPA PRINCIPAL
+══════════════════════════════════════════ */
+#screenRadar{flex:1;position:relative}
+#mapContainer{position:absolute;inset:0;z-index:0}
+
+/* Header do radar */
+.radar-header{
+  position:absolute;top:0;left:0;right:0;z-index:100;
+  padding:12px 16px;
+  background:linear-gradient(to bottom,rgba(6,14,8,.95) 0%,rgba(6,14,8,.0) 100%);
+  display:flex;align-items:center;gap:10px;
+}
+.radar-logo-sm{font-size:15px;font-weight:800;color:var(--text);flex:1}
+.radar-logo-sm span{color:var(--green-400)}
+.radar-header-badge{
+  display:flex;align-items:center;gap:5px;
+  padding:5px 12px;border-radius:20px;
+  background:rgba(6,14,8,.8);border:1px solid var(--border-md);
+  font-size:11px;color:var(--text2);backdrop-filter:blur(8px);
+}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green-400);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.btn-icon{
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(6,14,8,.8);border:1px solid var(--border-md);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;cursor:pointer;backdrop-filter:blur(8px);
+  transition:all .2s;flex-shrink:0;
+}
+.btn-icon:hover{border-color:var(--green-400)}
+
+/* Bottom bar */
+.radar-bottom{
+  position:absolute;bottom:0;left:0;right:0;z-index:100;
+  padding:16px 16px 32px;
+  background:linear-gradient(to top,rgba(6,14,8,.98) 0%,rgba(6,14,8,.0) 100%);
+}
+
+/* AMX Score card */
+.amx-card{
+  background:rgba(13,27,16,.9);border:1px solid var(--border-md);
+  border-radius:var(--r-lg);padding:12px 16px;
+  backdrop-filter:blur(12px);margin-bottom:12px;
+  display:flex;align-items:center;gap:12px;
+}
+.amx-score-big{font-family:var(--font-display);font-size:36px;line-height:1;letter-spacing:-1px;color:var(--green-400)}
+.amx-score-label{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.amx-score-desc{font-size:12px;color:var(--text2);margin-top:2px}
+.amx-bar-wrap{flex:1}
+.amx-bar-track{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin:4px 0}
+.amx-bar-fill{height:100%;border-radius:2px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+
+/* Botão operação */
+.btn-operation{
+  width:100%;padding:16px;border-radius:var(--r-lg);
+  border:none;font-family:var(--font-ui);font-size:15px;font-weight:800;
+  cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:10px;
+  letter-spacing:.03em;
+}
+.btn-operation.start{
+  background:linear-gradient(135deg,var(--green-700),var(--green-500));
+  color:white;box-shadow:0 4px 24px rgba(31,85,52,.5);
+}
+.btn-operation.stop{
+  background:linear-gradient(135deg,#7a1a1a,var(--red));
+  color:white;box-shadow:0 4px 24px rgba(224,53,53,.4);
+  animation:opPulse 2s ease-in-out infinite;
+}
+@keyframes opPulse{0%,100%{box-shadow:0 4px 24px rgba(224,53,53,.4)}50%{box-shadow:0 4px 36px rgba(224,53,53,.7)}}
+.btn-operation:hover{transform:translateY(-2px)}
+
+/* Clima mini */
+.weather-mini{
+  display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;
+  scrollbar-width:none;padding-bottom:2px;
+}
+.weather-mini::-webkit-scrollbar{display:none}
+.wm-chip{
+  display:flex;align-items:center;gap:4px;
+  padding:5px 10px;border-radius:20px;white-space:nowrap;
+  background:rgba(13,27,16,.85);border:1px solid var(--border);
+  font-size:10px;color:var(--text2);backdrop-filter:blur(8px);flex-shrink:0;
+}
+.wm-chip.good{border-color:rgba(61,168,102,.4);color:var(--green-300)}
+.wm-chip.warn{border-color:rgba(224,122,0,.4);color:#f5a623}
+.wm-chip.bad {border-color:rgba(224,53,53,.4);color:#ff6b6b}
+
+/* ══════════════════════════════════════════
+   SHEET — PERFIL
+══════════════════════════════════════════ */
+.sheet-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);
+  z-index:500;opacity:0;pointer-events:none;transition:opacity .3s;
+  backdrop-filter:blur(4px);
+}
+.sheet-overlay.open{opacity:1;pointer-events:auto}
+.sheet{
+  position:fixed;bottom:0;left:0;right:0;z-index:501;
+  background:var(--surface);border-radius:24px 24px 0 0;
+  border-top:1px solid var(--border-md);
+  padding:0 0 32px;
+  transform:translateY(100%);transition:transform .4s cubic-bezier(.34,1.2,.64,1);
+  max-height:85vh;overflow-y:auto;
+}
+.sheet.open{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--border-md);margin:12px auto 20px}
+.sheet-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:0 20px;margin-bottom:16px}
+
+/* Perfil */
+.profile-hero{
+  display:flex;align-items:center;gap:14px;
+  padding:0 20px 16px;border-bottom:1px solid var(--border);margin-bottom:16px;
+}
+.profile-avatar{font-size:48px;line-height:1}
+.profile-name{font-size:18px;font-weight:800;color:var(--text);margin-bottom:2px}
+.profile-city{font-size:12px;color:var(--muted)}
+.profile-drone{font-size:11px;color:var(--text2);margin-top:4px}
+.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 20px;margin-bottom:16px}
+.pstat{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--r-md);padding:12px;text-align:center;
+}
+.pstat-val{font-family:var(--font-mono);font-size:20px;font-weight:500;color:var(--green-400)}
+.pstat-label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-top:2px}
+
+.plan-badge{
+  margin:0 20px 16px;padding:12px 16px;
+  border-radius:var(--r-md);border:1px solid;
+  display:flex;align-items:center;gap:10px;
+}
+.plan-badge.trial{background:rgba(224,122,0,.1);border-color:rgba(224,122,0,.3)}
+.plan-badge.paid {background:rgba(61,168,102,.1);border-color:rgba(61,168,102,.3)}
+.plan-badge.expired{background:rgba(224,53,53,.1);border-color:rgba(224,53,53,.3)}
+.plan-badge-icon{font-size:22px}
+.plan-badge-text{flex:1}
+.plan-badge-title{font-size:13px;font-weight:700}
+.plan-badge-sub{font-size:11px;color:var(--muted);margin-top:1px}
+
+.btn-upgrade{
+  margin:0 20px;width:calc(100% - 40px);
+  padding:14px;border-radius:var(--r-md);
+  background:linear-gradient(135deg,var(--green-700),var(--green-500));
+  color:white;border:none;font-family:var(--font-ui);
+  font-size:14px;font-weight:800;cursor:pointer;
+  box-shadow:0 4px 20px rgba(31,85,52,.4);
+  transition:all .2s;
+}
+.btn-upgrade:hover{transform:translateY(-1px)}
+
+.visibility-row{padding:0 20px;margin-top:16px}
+.vis-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.vis-options{display:flex;gap:6px;flex-wrap:wrap}
+.vis-opt{
+  padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;
+  border:1px solid var(--border-md);background:var(--surface2);
+  color:var(--text2);cursor:pointer;transition:all .2s;
+}
+.vis-opt.active{background:var(--green-700);border-color:var(--green-400);color:white}
+
+.btn-logout{
+  margin:16px 20px 0;width:calc(100% - 40px);
+  padding:11px;border-radius:var(--r-md);
+  background:transparent;border:1px solid var(--border-md);
+  color:var(--muted);font-family:var(--font-ui);font-size:13px;
+  font-weight:600;cursor:pointer;transition:all .2s;
+}
+.btn-logout:hover{border-color:var(--red);color:var(--red)}
+
+/* ══════════════════════════════════════════
+   SHEET — PAYWALL
+══════════════════════════════════════════ */
+.paywall-content{padding:0 20px}
+.paywall-icon{font-size:48px;text-align:center;margin-bottom:12px}
+.paywall-title{font-family:var(--font-display);font-size:24px;text-align:center;color:var(--text);margin-bottom:6px}
+.paywall-sub{font-size:13px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:24px}
+.paywall-features{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+.pf-item{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2)}
+.pf-icon{font-size:18px;width:24px;text-align:center}
+.price-row{
+  background:var(--surface2);border:1px solid var(--border-md);
+  border-radius:var(--r-lg);padding:16px;text-align:center;margin-bottom:16px;
+}
+.price-val{font-family:var(--font-display);font-size:38px;color:var(--green-400);line-height:1}
+.price-period{font-size:12px;color:var(--muted);margin-top:2px}
+.price-note{font-size:11px;color:var(--muted);margin-top:6px}
+.btn-pay{
+  width:100%;padding:16px;border-radius:var(--r-lg);
+  background:linear-gradient(135deg,var(--green-700),var(--green-500));
+  color:white;border:none;font-family:var(--font-ui);
+  font-size:15px;font-weight:800;cursor:pointer;
+  box-shadow:0 4px 24px rgba(31,85,52,.5);
+  transition:all .2s;margin-bottom:10px;
+}
+.btn-pay:hover{transform:translateY(-2px)}
+.btn-pay-cancel{
+  width:100%;padding:11px;background:transparent;border:none;
+  font-family:var(--font-ui);font-size:13px;color:var(--muted);cursor:pointer;
+}
+
+/* ══════════════════════════════════════════
+   LEAFLET CUSTOMIZAÇÃO
+══════════════════════════════════════════ */
+.leaflet-popup-content-wrapper{
+  background:rgba(13,27,16,.95)!important;
+  border:1px solid rgba(61,168,102,.3)!important;
+  border-radius:14px!important;color:var(--text)!important;
+  backdrop-filter:blur(12px);
+  box-shadow:0 8px 32px rgba(0,0,0,.5)!important;
+}
+.leaflet-popup-tip{background:rgba(13,27,16,.95)!important}
+.leaflet-popup-close-button{color:var(--muted)!important;font-size:16px!important}
+.leaflet-control-zoom a{
+  background:rgba(13,27,16,.9)!important;color:var(--text)!important;
+  border-color:var(--border-md)!important;backdrop-filter:blur(8px);
+}
+.leaflet-control-zoom a:hover{background:var(--surface2)!important}
+
+/* ── Utils ── */
+.toast-amx{
+  position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-20px);
+  background:rgba(13,27,16,.95);border:1px solid var(--border-md);
+  border-radius:var(--r-md);padding:10px 20px;
+  font-size:12px;color:var(--text);
+  backdrop-filter:blur(12px);z-index:800;
+  opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;
+}
+.toast-amx.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- ══ TELA 1 — SPLASH ══ -->
+<div class="screen" id="screenSplash">
+  <div class="splash-bg"></div>
+  <div class="splash-grid"></div>
+  <div class="splash-content">
+
+    <div class="splash-logo">
+      <div class="splash-logo-icon">🚁</div>
+      <div class="splash-logo-text">Agro<span>Metrix</span></div>
+    </div>
+    <div class="splash-tagline">Radar Operacional Agrícola</div>
+
+    <!-- Radar animado -->
+    <div class="splash-radar">
+      <div class="radar-sweep"></div>
+      <div class="radar-ring"></div>
+      <div class="radar-ring"></div>
+      <div class="radar-ring"></div>
+      <div class="radar-crosshair"></div>
+      <div class="radar-dot" style="top:30%;left:55%"></div>
+      <div class="radar-dot" style="top:60%;left:35%;opacity:.6"></div>
+      <div class="radar-dot" style="top:45%;left:70%;opacity:.8"></div>
+      <div class="radar-dot" style="top:70%;left:60%;opacity:.5"></div>
+    </div>
+
+    <div class="splash-features">
+      <div class="feat-chip">🗺️ Radar ao vivo</div>
+      <div class="feat-chip">🌡️ Clima operacional</div>
+      <div class="feat-chip">📊 AMX Score</div>
+      <div class="feat-chip">🚁 Modo operação</div>
+      <div class="feat-chip">👥 Pilotos próximos</div>
+    </div>
+
+    <button class="splash-cta" onclick="enterRadar()">
+      🚁 Entrar no Radar
+    </button>
+    <div class="splash-cta-sub">7 dias grátis · Depois R$ 19,90/mês · Cancele quando quiser</div>
+
+    <div class="splash-divider"><span>já tenho conta</span></div>
+    <button class="btn-login-google" onclick="loginWithGoogle()">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Entrar com Google
+    </button>
+  </div>
+</div>
+
+<!-- ══ TELA 2 — RADAR ══ -->
+<div class="screen hidden" id="screenRadar">
+
+  <!-- Mapa -->
+  <div id="mapContainer"></div>
+
+  <!-- Header -->
+  <div class="radar-header">
+    <div class="radar-logo-sm">Agro<span>Metrix</span> <span style="font-size:10px;color:var(--muted);font-weight:400">RADAR</span></div>
+    <div class="radar-header-badge">
+      <div class="live-dot"></div>
+      <span id="pilotCount">0 pilotos</span>
+    </div>
+    <button class="btn-icon" onclick="openProfile()" title="Perfil">👤</button>
+  </div>
+
+  <!-- Bottom controls -->
+  <div class="radar-bottom">
+
+    <!-- Chips de clima -->
+    <div class="weather-mini" id="weatherMini">
+      <div class="wm-chip">🌡️ —°C</div>
+      <div class="wm-chip">💨 — km/h</div>
+      <div class="wm-chip">💧 —%</div>
+      <div class="wm-chip">ΔT —°C</div>
+    </div>
+
+    <!-- AMX Score -->
+    <div class="amx-card" id="amxCard">
+      <div>
+        <div class="amx-score-label">AMX Score</div>
+        <div class="amx-score-big" id="amxScoreVal">—</div>
+      </div>
+      <div class="amx-bar-wrap">
+        <div class="amx-score-desc" id="amxScoreDesc">Carregando condições…</div>
+        <div class="amx-bar-track">
+          <div class="amx-bar-fill" id="amxBarFill" style="width:0%;background:var(--green-400)"></div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px" id="amxScoreLabel">—</div>
+      </div>
+    </div>
+
+    <!-- Botão operação -->
+    <button class="btn-operation start" id="btnOperation" onclick="toggleOperation()">
+      🚁 Iniciar Operação
+    </button>
+
+  </div>
+
+</div>
+
+<!-- ══ SHEET — PERFIL ══ -->
+<div class="sheet-overlay" id="profileOverlay" onclick="closeProfile()"></div>
+<div class="sheet" id="profileSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">Meu Perfil</div>
+  <div id="profileContent">
+    <!-- Preenchido dinamicamente -->
+  </div>
+</div>
+
+<!-- ══ SHEET — PAYWALL ══ -->
+<div class="sheet-overlay" id="paywallOverlay"></div>
+<div class="sheet" id="paywallSheet">
+  <div class="sheet-handle"></div>
+  <div class="paywall-content">
+    <div class="paywall-icon">🚁</div>
+    <div class="paywall-title">Acesse o Radar</div>
+    <div class="paywall-sub">
+      Veja pilotos próximos, registre operações e acompanhe seu AMX Score em tempo real.
+    </div>
+    <div class="paywall-features">
+      <div class="pf-item"><span class="pf-icon">🗺️</span> Radar com pilotos próximos ao vivo</div>
+      <div class="pf-item"><span class="pf-icon">📊</span> AMX Score operacional</div>
+      <div class="pf-item"><span class="pf-icon">🚁</span> Modo operação com registro automático</div>
+      <div class="pf-item"><span class="pf-icon">🌡️</span> Alertas climáticos inteligentes</div>
+      <div class="pf-item"><span class="pf-icon">👤</span> Perfil profissional de piloto</div>
+    </div>
+    <div class="price-row">
+      <div class="price-val">R$ 19,90</div>
+      <div class="price-period">por mês · cancele quando quiser</div>
+      <div class="price-note">🎁 7 dias grátis para testar</div>
+    </div>
+    <button class="btn-pay" onclick="startTrial()">
+      🚀 Começar 7 dias grátis
+    </button>
+    <button class="btn-pay-cancel" onclick="closePaywall()">Agora não</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-amx" id="toastAMX"></div>
+
+<script type="module">
+import { firebaseConfig, isFirebaseConfigured } from './firebase-config.js';
+import { initFirebase, loginGoogle, logout, onAuthChange, getProfile, updateProfile, getPlanStatus } from './auth.js';
+import { initMap, upsertPilot, spawnBots, startBotUpdates, startLocationTracking, stopLocationTracking, startOperation, endOperation, isOperating, calcAMXScore, amxLabel } from './radar.js';
+
+// ── Estado global ─────────────────────────────────────────────
+window.AgroRadar = {
+  currentUser:    null,
+  currentProfile: null,
+  planStatus:     null,
+  weatherState:   null,
+  map:            null,
+  lat:            null,
+  lon:            null,
+};
+
+// ── Pega estado climático do AgroMetrix principal ─────────────
+function getWeather() {
+  // Tenta pegar do window._weatherState (definido no index.html)
+  return window._weatherState || JSON.parse(localStorage.getItem('amx_weather') || 'null') || {
+    temp: 24, humidity: 65, wind: 8, deltaT: 5.2, rainProb: 10, cloud: 20,
+    condition: 'Parcialmente nublado'
+  };
+}
+
+// ── Init ──────────────────────────────────────────────────────
+async function init() {
+  if (!isFirebaseConfigured()) {
+    showToast('⚠️ Configure o Firebase em firebase-config.js');
+    return;
+  }
+  await initFirebase();
+  onAuthChange(async (user, profile) => {
+    if (user && profile) {
+      window.AgroRadar.currentUser    = user;
+      window.AgroRadar.currentProfile = profile;
+      window.AgroRadar.planStatus     = getPlanStatus(profile);
+      if (window.AgroRadar.planStatus.active) {
+        showRadar();
+      } else {
+        openPaywall();
+      }
+    }
+  });
+}
+
+// ── Mostrar tela do radar ─────────────────────────────────────
+async function showRadar() {
+  document.getElementById('screenSplash').classList.add('hidden');
+  document.getElementById('screenRadar').classList.remove('hidden');
+
+  // GPS
+  navigator.geolocation?.getCurrentPosition(pos => {
+    window.AgroRadar.lat = pos.coords.latitude;
+    window.AgroRadar.lon = pos.coords.longitude;
+    setupMap(pos.coords.latitude, pos.coords.longitude);
+  }, () => {
+    // Fallback para centro do Brasil
+    setupMap(-15.7801, -47.9292);
+  });
+}
+
+function setupMap(lat, lon) {
+  const map = initMap('mapContainer', lat, lon);
+  window.AgroRadar.map = map;
+
+  // Usuário no mapa
+  const profile = window.AgroRadar.currentProfile;
+  if (profile) {
+    upsertPilot({
+      id:            window.AgroRadar.currentUser.uid,
+      name:          profile.name,
+      photo:         profile.photo || '👨‍✈️',
+      city:          profile.city,
+      drone:         profile.drone,
+      score:         profile.amxScore || 0,
+      hoursTotal:    profile.hoursTotal || 0,
+      opsTotal:      profile.opsTotal   || 0,
+      lat, lon,
+      status:        'online',
+      isCurrentUser: true,
+    });
+  }
+
+  // Bots
+  const weather = getWeather();
+  spawnBots(lat, lon, weather);
+  startBotUpdates(lat, lon);
+
+  // Contador
+  updatePilotCount();
+
+  // Rastrear localização
+  startLocationTracking(window.AgroRadar.currentUser?.uid, (newLat, newLon) => {
+    window.AgroRadar.lat = newLat;
+    window.AgroRadar.lon = newLon;
+    upsertPilot({
+      id: window.AgroRadar.currentUser?.uid,
+      lat: newLat, lon: newLon,
+      status: isOperating() ? 'operating' : 'online',
+    });
+    // Salva no Firestore
+    if (window.AgroRadar.currentUser) {
+      updateProfile(window.AgroRadar.currentUser.uid, { lat: newLat, lon: newLon, lastSeen: window._fsTimestamp?.() });
+    }
+  });
+
+  // AMX Score
+  updateAMXScore(weather);
+  updateWeatherChips(weather);
+}
+
+function updatePilotCount() {
+  const count = document.querySelectorAll('.leaflet-marker-icon').length;
+  document.getElementById('pilotCount').textContent = `${Math.max(count, 8)} pilotos`;
+}
+
+function updateAMXScore(weather) {
+  const score = calcAMXScore(99, weather, {});
+  const { label, color } = amxLabel(score);
+  document.getElementById('amxScoreVal').textContent   = score;
+  document.getElementById('amxScoreDesc').textContent  = `${label} · ${weather.condition || 'Clima atual'}`;
+  document.getElementById('amxScoreLabel').textContent = `AMX ${score}/100`;
+  document.getElementById('amxBarFill').style.width     = score + '%';
+  document.getElementById('amxBarFill').style.background = color;
+  document.getElementById('amxScoreVal').style.color    = color;
+}
+
+function updateWeatherChips(w) {
+  const dtClass = w.deltaT >= 2 && w.deltaT <= 8 ? 'good' : w.deltaT > 10 ? 'bad' : 'warn';
+  const wdClass = w.wind <= 10 ? 'good' : w.wind <= 20 ? 'warn' : 'bad';
+  document.getElementById('weatherMini').innerHTML = `
+    <div class="wm-chip good">🌡️ ${w.temp || '—'}°C</div>
+    <div class="wm-chip ${wdClass}">💨 ${w.wind || '—'} km/h</div>
+    <div class="wm-chip">💧 ${w.humidity || '—'}%</div>
+    <div class="wm-chip ${dtClass}">ΔT ${w.deltaT || '—'}°C</div>
+    ${w.rainProb > 30 ? `<div class="wm-chip warn">🌧️ ${w.rainProb}% chuva</div>` : ''}
+  `;
+}
+
+// ── Operação ──────────────────────────────────────────────────
+window.toggleOperation = function() {
+  const btn = document.getElementById('btnOperation');
+  if (!isOperating()) {
+    const weather = getWeather();
+    startOperation(weather, window.AgroRadar.lat, window.AgroRadar.lon);
+    btn.className = 'btn-operation stop';
+    btn.textContent = '🛑 Finalizar Operação';
+    showToast('🚁 Operação iniciada! AMX Score ativo.');
+    // Atualiza status no mapa
+    upsertPilot({ id: window.AgroRadar.currentUser?.uid, status: 'operating',
+      lat: window.AgroRadar.lat, lon: window.AgroRadar.lon });
+    updateProfile(window.AgroRadar.currentUser?.uid, { status: 'operating' });
+  } else {
+    const weather = getWeather();
+    const result  = endOperation(weather);
+    btn.className = 'btn-operation start';
+    btn.textContent = '🚁 Iniciar Operação';
+    if (result) {
+      const { label } = amxLabel(result.score);
+      showToast(`✅ Operação finalizada! AMX ${result.score} — ${label}`);
+      // Salva operação no Firestore
+      saveOperation(result);
+      updateAMXScore(weather);
+    }
+    upsertPilot({ id: window.AgroRadar.currentUser?.uid, status: 'online',
+      lat: window.AgroRadar.lat, lon: window.AgroRadar.lon });
+    updateProfile(window.AgroRadar.currentUser?.uid, { status: 'online' });
+  }
+};
+
+async function saveOperation(result) {
+  if (!window.AgroRadar.currentUser) return;
+  const uid = window.AgroRadar.currentUser.uid;
+  const db  = window._firebaseDB;
+  if (!db) return;
+  const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  await addDoc(collection(db, 'operations'), {
+    uid,
+    ...result,
+    createdAt: window._fsTimestamp(),
+  });
+  // Atualiza totais no perfil
+  const profile = window.AgroRadar.currentProfile;
+  await updateProfile(uid, {
+    opsTotal:   (profile.opsTotal   || 0) + 1,
+    hoursTotal: (profile.hoursTotal || 0) + Math.round(result.duration / 60 * 10) / 10,
+    amxScore:   Math.round(((profile.amxScore || 0) + result.score) / 2),
+  });
+}
+
+// ── Perfil ────────────────────────────────────────────────────
+window.openProfile = function() {
+  const profile = window.AgroRadar.currentProfile;
+  const plan    = window.AgroRadar.planStatus;
+  if (!profile) return;
+
+  const planClass = plan?.plan === 'paid' ? 'paid' : plan?.plan === 'trial' ? 'trial' : 'expired';
+  const planIcon  = plan?.plan === 'paid' ? '✅' : plan?.plan === 'trial' ? '⏳' : '🔒';
+  const planTitle = plan?.plan === 'paid' ? 'Plano Ativo' : plan?.plan === 'trial' ? `Trial — ${plan.daysLeft} dias restantes` : 'Trial expirado';
+  const planSub   = plan?.plan === 'paid' ? 'Acesso completo ao radar' : plan?.plan === 'trial' ? 'Aproveite o período gratuito' : 'Assine para continuar';
+
+  document.getElementById('profileContent').innerHTML = `
+    <div class="profile-hero">
+      <div class="profile-avatar">${profile.photo ? `<img src="${profile.photo}" style="width:48px;height:48px;border-radius:50%">` : '👨‍✈️'}</div>
+      <div>
+        <div class="profile-name">${profile.name}</div>
+        <div class="profile-city">📍 ${profile.city || 'Cidade não informada'}</div>
+        <div class="profile-drone">🚁 ${profile.drone || 'Drone não informado'}</div>
+      </div>
+    </div>
+    <div class="profile-stats">
+      <div class="pstat"><div class="pstat-val">${profile.amxScore || 0}</div><div class="pstat-label">AMX Score</div></div>
+      <div class="pstat"><div class="pstat-val">${profile.hoursTotal || 0}h</div><div class="pstat-label">Horas</div></div>
+      <div class="pstat"><div class="pstat-val">${profile.opsTotal || 0}</div><div class="pstat-label">Operações</div></div>
+    </div>
+    <div class="plan-badge ${planClass}">
+      <div class="plan-badge-icon">${planIcon}</div>
+      <div class="plan-badge-text">
+        <div class="plan-badge-title">${planTitle}</div>
+        <div class="plan-badge-sub">${planSub}</div>
+      </div>
+    </div>
+    ${plan?.plan !== 'paid' ? `<button class="btn-upgrade" onclick="openPaywall()">🚀 Assinar por R$ 19,90/mês</button>` : ''}
+    <div class="visibility-row">
+      <div class="vis-label">Visibilidade no radar</div>
+      <div class="vis-options">
+        <div class="vis-opt ${profile.visibility==='online'?'active':''}" onclick="setVisibility('online')">🟢 Online</div>
+        <div class="vis-opt ${profile.visibility==='invisible'?'active':''}" onclick="setVisibility('invisible')">⚫ Invisível</div>
+        <div class="vis-opt ${profile.visibility==='sos'?'active':''}" onclick="setVisibility('sos')">🚨 SOS</div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Sair da conta</button>
+  `;
+
+  document.getElementById('profileOverlay').classList.add('open');
+  document.getElementById('profileSheet').classList.add('open');
+};
+
+window.closeProfile = function() {
+  document.getElementById('profileOverlay').classList.remove('open');
+  document.getElementById('profileSheet').classList.remove('open');
+};
+
+window.setVisibility = async function(vis) {
+  if (!window.AgroRadar.currentUser) return;
+  await updateProfile(window.AgroRadar.currentUser.uid, { visibility: vis });
+  window.AgroRadar.currentProfile.visibility = vis;
+  window.openProfile();
+};
+
+window.doLogout = async function() {
+  await logout();
+  window.closeProfile();
+  document.getElementById('screenRadar').classList.add('hidden');
+  document.getElementById('screenSplash').classList.remove('hidden');
+};
+
+// ── Paywall ───────────────────────────────────────────────────
+window.openPaywall = function() {
+  document.getElementById('paywallOverlay').classList.add('open');
+  document.getElementById('paywallSheet').classList.add('open');
+};
+
+window.closePaywall = function() {
+  document.getElementById('paywallOverlay').classList.remove('open');
+  document.getElementById('paywallSheet').classList.remove('open');
+};
+
+window.startTrial = async function() {
+  // Em produção: integrar com Stripe/PagSeguro
+  // Por agora ativa o trial de 7 dias
+  if (window.AgroRadar.currentUser) {
+    const trialEnd = new Date();
+    trialEnd.setDate(trialEnd.getDate() + 7);
+    await updateProfile(window.AgroRadar.currentUser.uid, {
+      plan: 'trial',
+      trialEnd: trialEnd.toISOString(),
+    });
+    window.AgroRadar.planStatus = { active: true, plan: 'trial', daysLeft: 7 };
+    closePaywall();
+    showRadar();
+  }
+};
+
+// ── Login ─────────────────────────────────────────────────────
+window.enterRadar = async function() {
+  if (!isFirebaseConfigured()) {
+    showToast('⚠️ Firebase não configurado ainda');
+    return;
+  }
+  const user = await loginGoogle();
+  if (user) {
+    const profile = await getProfile(user.uid);
+    window.AgroRadar.currentUser    = user;
+    window.AgroRadar.currentProfile = profile;
+    window.AgroRadar.planStatus     = getPlanStatus(profile);
+    if (window.AgroRadar.planStatus.active) {
+      showRadar();
+    } else {
+      openPaywall();
+    }
+  }
+};
+
+window.loginWithGoogle = window.enterRadar;
+
+// ── Toast ─────────────────────────────────────────────────────
+window.showToast = function(msg, duration = 3500) {
+  const el = document.getElementById('toastAMX');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), duration);
+};
+
+function showToast(msg, d) { window.showToast(msg, d); }
+
+// ── Start ─────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
