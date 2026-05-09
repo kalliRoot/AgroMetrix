@@ -544,6 +544,9 @@ async function showRadar() {
   document.getElementById('screenSplash').classList.add('hidden');
   document.getElementById('screenRadar').classList.remove('hidden');
 
+  // Aguarda DOM renderizar antes de iniciar o mapa
+  await new Promise(r => setTimeout(r, 100));
+
   // GPS
   navigator.geolocation?.getCurrentPosition(pos => {
     window.AgroRadar.lat = pos.coords.latitude;
@@ -552,12 +555,19 @@ async function showRadar() {
   }, () => {
     // Fallback para centro do Brasil
     setupMap(-15.7801, -47.9292);
-  });
+  }, { timeout: 8000 });
+
+  // Fallback se GPS demorar muito
+  setTimeout(() => {
+    if (!window.AgroRadar.map) setupMap(-15.7801, -47.9292);
+  }, 5000);
 }
 
 function setupMap(lat, lon) {
   const map = initMap('mapContainer', lat, lon);
   window.AgroRadar.map = map;
+  // Força o Leaflet a recalcular o tamanho
+  setTimeout(() => map.invalidateSize(), 200);
 
   // Usuário no mapa
   const profile = window.AgroRadar.currentProfile;
