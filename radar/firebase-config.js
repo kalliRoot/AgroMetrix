@@ -1,19 +1,13 @@
-// ═══════════════════════════════════════════════════════════════
-//  AgroMetrix Radar — firebase-config.js
-//  ⚠️  SUBSTITUA AS LINHAS ABAIXO COM SEUS DADOS DO FIREBASE
-//  Firebase Console → Configurações → Seus apps → SDK config
-// ═══════════════════════════════════════════════════════════════
-
 export const firebaseConfig = {
-  apiKey:            "COLE_AQUI_SUA_API_KEY",
-  authDomain:        "COLE_AQUI.firebaseapp.com",
-  projectId:         "COLE_AQUI_PROJECT_ID",
-  storageBucket:     "COLE_AQUI.appspot.com",
-  messagingSenderId: "COLE_AQUI_SENDER_ID",
-  appId:             "COLE_AQUI_APP_ID"
+  apiKey:            "AIzaSyCKLsuxwP9KIi51-h1FJuvQFjI0kdnTvio",
+  authDomain:        "agrometrix-radar.firebaseapp.com",
+  projectId:         "agrometrix-radar",
+  storageBucket:     "agrometrix-radar.firebasestorage.app",
+  messagingSenderId: "65595075086",
+  appId:             "1:65595075086:web:1e78e9e5529cb7022caa5f",
+  measurementId:     "G-JNLFZ10WQ9"
 };
 
-// ── Verificação ───────────────────────────────────────────────
 export function isFirebaseConfigured() {
   return !firebaseConfig.apiKey.includes('COLE_AQUI');
 }
