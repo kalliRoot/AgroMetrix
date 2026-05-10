@@ -1094,5 +1094,115 @@ window.addEventListener('amx:check-operation',()=>{
 
 init();
 </script>
+  <script>
+// ==============================================================
+// FUNÇÕES GLOBAIS PARA OS BOTÕES (fora do module)
+// ==============================================================
+
+// Referência para o módulo
+let moduleRef = null;
+
+// Aguarda o módulo carregar
+setTimeout(() => {
+  // Tenta pegar as funções do módulo
+  const scripts = document.querySelectorAll('script[type="module"]');
+  console.log('Procurando módulos...');
+}, 1000);
+
+// Funções globais para os botões
+window.enterRadar = function() {
+  console.log('enterRadar clicado');
+  const btn = document.getElementById('btnEntrar');
+  if (btn) {
+    btn.textContent = '🔄 Carregando...';
+    btn.disabled = true;
+  }
+  
+  // Dispara evento para o módulo
+  window.dispatchEvent(new CustomEvent('amx:enter-radar'));
+};
+
+window.openSheet = function(sheetId) {
+  console.log('openSheet:', sheetId);
+  window.dispatchEvent(new CustomEvent('amx:open-sheet', { detail: { sheetId } }));
+};
+
+window.closeSheet = function(sheetId) {
+  window.dispatchEvent(new CustomEvent('amx:close-sheet', { detail: { sheetId } }));
+};
+
+window.switchTab = function(tab) {
+  console.log('switchTab:', tab);
+  window.dispatchEvent(new CustomEvent('amx:switch-tab', { detail: { tab } }));
+};
+
+window.handleOp = function() {
+  window.dispatchEvent(new CustomEvent('amx:handle-op'));
+};
+
+window.confirmOp = function() {
+  window.dispatchEvent(new CustomEvent('amx:confirm-op'));
+};
+
+window.selChip = function(el, field, val) {
+  window.dispatchEvent(new CustomEvent('amx:sel-chip', { detail: { el, field, val } }));
+};
+
+window.activateSOS = function() {
+  window.dispatchEvent(new CustomEvent('amx:activate-sos'));
+};
+
+window.cancelSOS = function() {
+  window.dispatchEvent(new CustomEvent('amx:cancel-sos'));
+};
+
+window.sendReq = function(type, msg) {
+  window.dispatchEvent(new CustomEvent('amx:send-req', { detail: { type, msg } }));
+};
+
+window.acceptReq = function(uid, name, message) {
+  window.dispatchEvent(new CustomEvent('amx:accept-req', { detail: { uid, name, message } }));
+};
+
+window.sendMsg = function() {
+  window.dispatchEvent(new CustomEvent('amx:send-msg'));
+};
+
+window.saveProfile = function() {
+  window.dispatchEvent(new CustomEvent('amx:save-profile'));
+};
+
+window.setVis = function(vis) {
+  window.dispatchEvent(new CustomEvent('amx:set-vis', { detail: { vis } }));
+};
+
+window.doLogout = function() {
+  window.dispatchEvent(new CustomEvent('amx:do-logout'));
+};
+
+window.startTrial = function() {
+  window.dispatchEvent(new CustomEvent('amx:start-trial'));
+};
+
+window.quickRespond = function(reqId, pilotId, pilotName, type) {
+  window.dispatchEvent(new CustomEvent('amx:quick-respond', { 
+    detail: { reqId, pilotId, pilotName, type } 
+  }));
+};
+
+window.showToast = function(msg, duration) {
+  const t = document.getElementById('toast');
+  if (t) {
+    t.textContent = msg;
+    t.classList.add('on');
+    setTimeout(() => t.classList.remove('on'), duration || 3500);
+  }
+};
+
+// Adicionar event listeners no módulo principal
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM carregado, aguardando módulo...');
+});
+</script>
 </body>
 </html>
