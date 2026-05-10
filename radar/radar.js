@@ -36,24 +36,11 @@ export function initMap(containerId, lat, lon) {
     attributionControl: false,
   }).setView([lat || -15.7801, lon || -47.9292], 10);
 
-  // Tile principal (OpenStreetMap)
   const osmTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '© OpenStreetMap',
   });
   osmTile.addTo(_map);
-
-  // Fallback para CartoDB se OSM falhar
-  osmTile.on('tileerror', () => {
-    if (_map && !_map._cartoAdded) {
-      const cartoTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 18, subdomains: 'abcd',
-      });
-      _map.removeLayer(osmTile);
-      cartoTile.addTo(_map);
-      _map._cartoAdded = true;
-    }
-  });
 
   L.control.zoom({ position: 'bottomright' }).addTo(_map);
   L.control.attribution({ position: 'bottomleft' }).addTo(_map);
@@ -61,7 +48,7 @@ export function initMap(containerId, lat, lon) {
   return _map;
 }
 
-// ── Ícone de piloto (completo) ────────────────────────────────
+// ── Ícone de piloto ───────────────────────────────────────────
 function pilotIcon(status, isUser = false) {
   const isSOS = status === 'sos';
   const isOperating = status === 'operating';
@@ -74,38 +61,49 @@ function pilotIcon(status, isUser = false) {
 
   const size = isUser ? 48 : 40;
 
-  const sosPulse = isSOS ? `
-    <circle cx="20" cy="20" r="15" fill="none" stroke="#e03535" stroke-width="2.5">
+  let svg = `<svg width="${size}" height="${size}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">`;
+  
+  if (isSOS) {
+    svg += `<circle cx="20" cy="20" r="15" fill="none" stroke="#e03535" stroke-width="2.5">
       <animate attributeName="r" from="14" to="28" dur="1s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="0.8;0" dur="1s" repeatCount="indefinite"/>
     </circle>
     <circle cx="20" cy="20" r="15" fill="none" stroke="#e03535" stroke-width="1.5">
       <animate attributeName="r" from="14" to="38" dur="1s" begin="0.35s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="0.5;0" dur="1s" begin="0.35s" repeatCount="indefinite"/>
-    </circle>` : '';
-
-  const requestPulse = isRequest ? `
-    <circle cx="20" cy="20" r="15" fill="none" stroke="#f5a623" stroke-width="2">
+    </circle>`;
+  }
+  
+  if (isRequest) {
+    svg += `<circle cx="20" cy="20" r="15" fill="none" stroke="#f5a623" stroke-width="2">
       <animate attributeName="r" from="14" to="26" dur="1.4s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="0.6;0" dur="1.4s" repeatCount="indefinite"/>
-    </circle>` : '';
-
-  const opPulse = isOperating ? `
-    <circle cx="20" cy="20" r="15" fill="none" stroke="${color}" stroke-width="1.5">
+    </circle>`;
+  }
+  
+  if (isOperating) {
+    svg += `<circle cx="20" cy="20" r="15" fill="none" stroke="${color}" stroke-width="1.5">
       <animate attributeName="r" from="13" to="22" dur="1.8s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="0.5;0" dur="1.8s" repeatCount="indefinite"/>
-    </circle>` : '';
-
-  const emoji = isSOS ? '🚨' : isRequest ? '🔧' : isOperating ? '🚁' : '';
-  const emojiEl = emoji ? `<text x="20" y="25" text-anchor="middle" font-size="13">${emoji}</text>` : '';
-
-  const svg = `<svg width="${size}" height="${size}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-    ${sosPulse}${requestPulse}${opPulse}
-    <circle cx="20" cy="20" r="14" fill="${color}" opacity="0.15"/>
-    <circle cx="20" cy="20" r="10" fill="${color}" opacity="0.95"/>
-    ${isUser ? '<circle cx="20" cy="20" r="5" fill="white" opacity="0.95"/>' : ''}
-    ${emojiEl}
-  </svg>`;
+    </circle>`;
+  }
+  
+  svg += `<circle cx="20" cy="20" r="14" fill="${color}" opacity="0.15"/>
+    <circle cx="20" cy="20" r="10" fill="${color}" opacity="0.95"/>`;
+  
+  if (isUser) {
+    svg += `<circle cx="20" cy="20" r="5" fill="white" opacity="0.95"/>`;
+  }
+  
+  if (isSOS) {
+    svg += `<text x="20" y="25" text-anchor="middle" font-size="13" fill="white">🚨</text>`;
+  } else if (isRequest) {
+    svg += `<text x="20" y="25" text-anchor="middle" font-size="13" fill="white">🔧</text>`;
+  } else if (isOperating) {
+    svg += `<text x="20" y="25" text-anchor="middle" font-size="13" fill="white">🚁</text>`;
+  }
+  
+  svg += `</svg>`;
 
   return L.divIcon({
     html: svg,
@@ -115,7 +113,7 @@ function pilotIcon(status, isUser = false) {
   });
 }
 
-// ── Popup com botões de interação ─────────────────────────────
+// ── Popup com botões ──────────────────────────────────────────
 function buildPopup(pilot) {
   const reqBtn = (pilot.status === 'request' && !pilot.isCurrentUser) ?
     `<button onclick="window.dispatchEvent(new CustomEvent('amx:accept-request', { detail: { pilotId: '${pilot.id}', msg: '${(pilot.requestMsg || '').replace(/'/g, "\\'")}', name: '${pilot.name}' } }))"
@@ -127,6 +125,11 @@ function buildPopup(pilot) {
       style="margin-top:8px;width:100%;padding:7px;border-radius:8px;border:none;background:#e03535;color:white;font-weight:700;font-size:12px;cursor:pointer">
       🚨 Responder SOS</button>` : '';
 
+  let statusText = '🟢 Online';
+  if (pilot.status === 'sos') statusText = '🚨 SOS';
+  else if (pilot.status === 'request') statusText = '🔧 Pedido';
+  else if (pilot.status === 'operating') statusText = '🚁 Operando';
+
   return `<div style="font-family:'Syne',sans-serif;min-width:190px;padding:4px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
       <div style="font-size:24px">${pilot.photo || '👨‍✈️'}</div>
@@ -137,9 +140,7 @@ function buildPopup(pilot) {
     </div>
     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
       <span style="background:#1f5534;color:#5ec880;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700">AMX ${pilot.score || 0}</span>
-      <span style="background:#111d14;color:#9ac8a6;padding:2px 8px;border-radius:6px;font-size:10px">
-        ${pilot.status === 'sos' ? '🚨 SOS' : pilot.status === 'request' ? '🔧 Pedido' : pilot.status === 'operating' ? '🚁 Operando' : '🟢 Online'}
-      </span>
+      <span style="background:#111d14;color:#9ac8a6;padding:2px 8px;border-radius:6px;font-size:10px">${statusText}</span>
     </div>
     ${pilot.requestMsg ? `<div style="font-size:11px;color:#f5a623;margin-bottom:4px">📢 ${pilot.requestMsg}</div>` : ''}
     <div style="font-size:10px;color:#5a8a65">🚁 ${pilot.drone || 'Drone agrícola'}</div>
@@ -176,21 +177,18 @@ export function removePilot(id) {
   }
 }
 
-// ── Listen Pilots (compatível com Firebase ou offline) ────────
+// ── Listen Pilots (compatível) ────────────────────────────────
 export async function listenPilots(centerLat, centerLon, currentUid) {
   _currentUid = currentUid;
   
-  // Limpa pilotos existentes
   Object.keys(_markers).forEach(id => {
     if (!id.startsWith('user_')) removePilot(id);
   });
   
-  // Modo offline: apenas bots
   spawnBots(centerLat, centerLon, { wind: 10, temp: 25 });
   startBotUpdates();
   updatePilotCount();
   
-  // Se Firebase estiver disponível, tenta conectar
   if (window._firebaseDB && typeof firebase !== 'undefined') {
     try {
       const { collection, onSnapshot, query, where } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
@@ -226,7 +224,7 @@ export async function listenPilots(centerLat, centerLon, currentUid) {
       });
       return true;
     } catch (e) {
-      console.log('Modo offline: apenas bots simulados');
+      console.log('Modo offline: apenas bots');
     }
   }
   return false;
@@ -238,7 +236,7 @@ function updatePilotCount() {
   if (el) el.textContent = `${total} pilotos`;
 }
 
-// ── Spawnar bots ──────────────────────────────────────────────
+// ── Bots ──────────────────────────────────────────────────────
 export function spawnBots(lat, lon, weather) {
   const hour = new Date().getHours();
   const isDay = hour >= 5 && hour <= 18;
@@ -267,7 +265,6 @@ export function spawnBots(lat, lon, weather) {
   });
 }
 
-// ── Atualizar bots ────────────────────────────────────────────
 export function startBotUpdates() {
   if (_botInterval) clearInterval(_botInterval);
   _botInterval = setInterval(() => {
@@ -283,7 +280,7 @@ export function stopBotUpdates() {
   if (_botInterval) clearInterval(_botInterval);
 }
 
-// ── Rastrear localização ──────────────────────────────────────
+// ── Localização ───────────────────────────────────────────────
 export function startLocationTracking(uid, onUpdate) {
   let lastLat = null, lastLon = null;
 
@@ -309,7 +306,7 @@ export function stopLocationTracking() {
   if (_locationInterval) clearInterval(_locationInterval);
 }
 
-// ── Operações completas ───────────────────────────────────────
+// ── Operações ─────────────────────────────────────────────────
 export function startOperation(config, weatherState, lat, lon) {
   _operationActive = true;
   _operationStart = Date.now();
@@ -361,7 +358,6 @@ export function registerActivity() {
   _pauseTimer = setTimeout(() => {
     if (_operationActive) {
       _operationData.pauses++;
-      _operationData.pauseStart = Date.now();
     }
   }, 5 * 60 * 1000);
 }
@@ -424,7 +420,7 @@ export function isOperating() { return _operationActive; }
 export function getMap() { return _map; }
 export function getMarkers() { return _markers; }
 
-// ── Funções para manipular bots (teste) ───────────────────────
+// ── Funções para testes com bots ──────────────────────────────
 export function addBotRequest(botId, message) {
   const bot = _markers[botId];
   if (bot && bot._pilotData && bot._pilotData.id?.startsWith('bot_')) {
