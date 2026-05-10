@@ -145,7 +145,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 /* Perfil */
 .pf-hero{display:flex;align-items:center;gap:14px;padding:0 20px 16px;border-bottom:1px solid var(--bd);margin-bottom:16px}
 .pf-av{width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--g7);display:flex;align-items:center;justify-content:center;font-size:26px}
-.pf-av img{width:100%;height:100%;object-fit:cover}
+.pf-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .pf-name{font-size:18px;font-weight:800;color:var(--tx)}
 .pf-city{font-size:11px;color:var(--mt);margin-top:2px}
 .pf-drone{font-size:11px;color:var(--tx2);margin-top:3px}
@@ -570,6 +570,17 @@ function renderActiveRequestsCard() {
 }
 
 // ==============================================================
+// FUNÇÃO PARA CORRIGIR URL DA FOTO DO GOOGLE
+// ==============================================================
+function fixGooglePhoto(url) {
+  if (!url) return null;
+  if (url.includes('googleusercontent.com')) {
+    return url.split('?')[0] + '?sz=150';
+  }
+  return url;
+}
+
+// ==============================================================
 // ESTADO PRINCIPAL
 // ==============================================================
 const R = window.AgroRadar = {
@@ -682,17 +693,6 @@ window.saveProfile = async () => {
 };
 window.setVis = async (vis) => { if(!R.user) return; await updateProfile(R.user.uid, {visibility: vis}); if(R.profile) R.profile.visibility = vis; renderProfile(); };
 window.doLogout = async () => { await logout(); window.closeSheet('shProfile'); $('sRadar').classList.add('off'); $('sSplash').classList.remove('off'); };
-window.enterRadar = async () => {
-  if(!isFirebaseConfigured()){ window.showToast('⚠️ Firebase não configurado'); return; }
-  const btn = $('btnEntrar');
-  if(btn) { btn.textContent='🔄 Conectando…'; btn.disabled=true; }
-  const user = await loginGoogle();
-  if(btn) { btn.textContent='🚁 Entrar no Radar'; btn.disabled=false; }
-  if(!user) return;
-  const profile = await getProfile(user.uid);
-  R.user = user; R.profile = profile; R.plan = getPlanStatus(profile);
-  if(R.plan.active) showRadar(); else window.openSheet('shPaywall');
-};
 window.startTrial = async () => { if(!R.user) return; const te=new Date(); te.setDate(te.getDate()+7); await updateProfile(R.user.uid,{plan:'trial',trialEnd:te.toISOString()}); R.plan={active:true,plan:'trial',daysLeft:7}; window.closeSheet('shPaywall'); showRadar(); };
 window.quickRespond = async (reqId, pilotId, pilotName, type) => {
   playSound('accept');
@@ -717,13 +717,32 @@ function getW() {
 function publishSelf(lat,lon,status) {
   if (!R.user||!R.profile) return;
   const p = R.profile;
+  
+  // CORREÇÃO DA FOTO DO GOOGLE
+  let userPhoto = fixGooglePhoto(p.photo);
+  if (!userPhoto && R.user?.photoURL) {
+    userPhoto = fixGooglePhoto(R.user.photoURL);
+  }
+  
   upsertPilot({
-    id: R.user.uid, name: p.nickname||p.name||'Piloto', photo: p.photo||'👨‍✈️',
-    city: p.city||'', drone: p.drone||'', score: p.amxScore||0,
-    hoursTotal: p.hoursTotal||0, opsTotal: p.opsTotal||0,
-    lat, lon, status, isCurrentUser: true,
+    id: R.user.uid, 
+    name: p.nickname||p.name||'Piloto', 
+    photo: userPhoto || '👨‍✈️',
+    city: p.city||'', 
+    drone: p.drone||'', 
+    score: p.amxScore||0,
+    hoursTotal: p.hoursTotal||0, 
+    opsTotal: p.opsTotal||0,
+    lat, lon, status, 
+    isCurrentUser: true,
   });
-  updateProfile(R.user.uid, { lat, lon, status, nickname: p.nickname||p.name, visibility: p.visibility||'online', lastSeen: window._fsTimestamp?.() });
+  
+  updateProfile(R.user.uid, { 
+    lat, lon, status, 
+    nickname: p.nickname||p.name, 
+    visibility: p.visibility||'online', 
+    lastSeen: window._fsTimestamp?.() 
+  });
 }
 
 function updateAMX(w) {
@@ -840,10 +859,67 @@ async function loadRanking() {
 function renderProfile() {
   const p = R.profile, plan = R.plan;
   if(!p) return;
+  
+  // CORREÇÃO DA FOTO DO GOOGLE
+  let fotoUrl = fixGooglePhoto(p.photo);
+  if (!fotoUrl && R.user?.photoURL) {
+    fotoUrl = fixGooglePhoto(R.user.photoURL);
+  }
+  
+  const fotoHtml = fotoUrl ? `<img src="${fotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.outerHTML='👨‍✈️'">` : '👨‍✈️';
+  
   const pCls = plan?.plan==='paid'?'paid':plan?.plan==='trial'?'trial':'exp';
   const pIcon = plan?.plan==='paid'?'✅':plan?.plan==='trial'?'⏳':'🔒';
   const pTitle = plan?.plan==='paid'?'Plano Ativo':plan?.plan==='trial'?`Trial — ${plan.daysLeft} dias restantes`:'Trial expirado';
-  $('profileContent').innerHTML = `<div class="pf-hero"><div class="pf-av">${p.photo?`<img src="${p.photo}" onerror="this.outerHTML='👨‍✈️'">`:'👨‍✈️'}</div><div><div class="pf-name">${p.nickname||p.name||'Piloto'}</div><div class="pf-city">📍 ${p.city||'Cidade não informada'}</div><div class="pf-drone">🚁 ${p.drone||'Drone não informado'}</div></div></div><div class="pf-stats"><div class="pstat"><div class="pstat-v">${p.amxScore||0}</div><div class="pstat-l">AMX Score</div></div><div class="pstat"><div class="pstat-v">${(p.hoursTotal||0).toFixed(0)}h</div><div class="pstat-l">Horas</div></div><div class="pstat"><div class="pstat-v">${p.opsTotal||0}</div><div class="pstat-l">Operações</div></div></div><div class="inp-g"><label class="inp-l">Nome / Apelido</label><input class="inp" id="pfNick" value="${p.nickname||p.name||''}" placeholder="Como quer ser chamado?"></div><div class="inp-g"><label class="inp-l">Cidade</label><input class="inp" id="pfCity" value="${p.city||''}" placeholder="Sua cidade"></div><div class="inp-g"><label class="inp-l">Drone principal</label><select class="inp" id="pfDrone"><option value="">Selecione…</option>${['DJI T25','DJI T40','DJI T50','XAG P100','XAG V40','EAVision','Pegasus Agri','Outro'].map(d=>`<option ${p.drone===d?'selected':''}>${d}</option>`).join('')}</select></div><div class="plan-b ${pCls}"><div class="plan-icon">${pIcon}</div><div><div class="plan-title">${pTitle}</div><div class="plan-sub">${plan?.plan==='trial'?'Aproveite o período gratuito':plan?.plan==='paid'?'Acesso completo ao radar':'Assine para continuar'}</div></div></div>${plan?.plan!=='paid'?`<button class="btn-prim" onclick="window.openSheet('shPaywall')" style="margin-bottom:10px">🚀 Assinar R$ 19,90/mês</button>`:''}<div class="vis-row"><label class="inp-l">Visibilidade no radar</label><div class="vis-opts"><div class="vis-opt ${p.visibility==='online'?'on':''}" onclick="window.setVis('online')">🟢 Online</div><div class="vis-opt ${p.visibility==='invisible'?'on':''}" onclick="window.setVis('invisible')">⚫ Invisível</div><div class="vis-opt ${p.visibility==='sos'?'on':''}" onclick="window.setVis('sos')">🚨 SOS</div></div></div><button class="btn-prim" onclick="window.saveProfile()" style="margin-top:12px">💾 Salvar perfil</button><button class="btn-sec" onclick="window.doLogout()" style="margin-top:8px">Sair da conta</button>`;
+  
+  $('profileContent').innerHTML = `
+    <div class="pf-hero">
+      <div class="pf-av">${fotoHtml}</div>
+      <div>
+        <div class="pf-name">${p.nickname||p.name||'Piloto'}</div>
+        <div class="pf-city">📍 ${p.city||'Cidade não informada'}</div>
+        <div class="pf-drone">🚁 ${p.drone||'Drone não informado'}</div>
+      </div>
+    </div>
+    <div class="pf-stats">
+      <div class="pstat"><div class="pstat-v">${p.amxScore||0}</div><div class="pstat-l">AMX Score</div></div>
+      <div class="pstat"><div class="pstat-v">${(p.hoursTotal||0).toFixed(0)}h</div><div class="pstat-l">Horas</div></div>
+      <div class="pstat"><div class="pstat-v">${p.opsTotal||0}</div><div class="pstat-l">Operações</div></div>
+    </div>
+    <div class="inp-g">
+      <label class="inp-l">Nome / Apelido</label>
+      <input class="inp" id="pfNick" value="${p.nickname||p.name||''}" placeholder="Como quer ser chamado?">
+    </div>
+    <div class="inp-g">
+      <label class="inp-l">Cidade</label>
+      <input class="inp" id="pfCity" value="${p.city||''}" placeholder="Sua cidade">
+    </div>
+    <div class="inp-g">
+      <label class="inp-l">Drone principal</label>
+      <select class="inp" id="pfDrone">
+        <option value="">Selecione…</option>
+        ${['DJI T25','DJI T40','DJI T50','XAG P100','XAG V40','EAVision','Pegasus Agri','Outro'].map(d=>`<option ${p.drone===d?'selected':''}>${d}</option>`).join('')}
+      </select>
+    </div>
+    <div class="plan-b ${pCls}">
+      <div class="plan-icon">${pIcon}</div>
+      <div>
+        <div class="plan-title">${pTitle}</div>
+        <div class="plan-sub">${plan?.plan==='trial'?'Aproveite o período gratuito':plan?.plan==='paid'?'Acesso completo ao radar':'Assine para continuar'}</div>
+      </div>
+    </div>
+    ${plan?.plan!=='paid'?`<button class="btn-prim" onclick="window.openSheet('shPaywall')" style="margin-bottom:10px">🚀 Assinar R$ 19,90/mês</button>`:''}
+    <div class="vis-row">
+      <label class="inp-l">Visibilidade no radar</label>
+      <div class="vis-opts">
+        <div class="vis-opt ${p.visibility==='online'?'on':''}" onclick="window.setVis('online')">🟢 Online</div>
+        <div class="vis-opt ${p.visibility==='invisible'?'on':''}" onclick="window.setVis('invisible')">⚫ Invisível</div>
+        <div class="vis-opt ${p.visibility==='sos'?'on':''}" onclick="window.setVis('sos')">🚨 SOS</div>
+      </div>
+    </div>
+    <button class="btn-prim" onclick="window.saveProfile()" style="margin-top:12px">💾 Salvar perfil</button>
+    <button class="btn-sec" onclick="window.doLogout()" style="margin-top:8px">Sair da conta</button>
+  `;
 }
 
 function startPilotCounter() { setInterval(() => { const n = document.querySelectorAll('.leaflet-marker-icon').length; $('pilotCount').textContent = `${Math.max(n,8)} pilotos`; }, 3000); }
@@ -871,16 +947,33 @@ function setupMap(lat, lon) {
   startPilotCounter();
 }
 
-async function init() {
-  if (!isFirebaseConfigured()) { window.showToast('⚠️ Firebase não configurado'); return; }
-  await initFirebase();
-  onAuthChange(async (user, profile) => {
-    if (user && profile) {
-      R.user = user; R.profile = profile; R.plan = getPlanStatus(profile);
-      if (R.plan.active) showRadar(); else window.openSheet('shPaywall');
-    }
-  });
-}
+window.enterRadar = async () => {
+  if(!isFirebaseConfigured()){ window.showToast('⚠️ Firebase não configurado'); return; }
+  const btn = $('btnEntrar');
+  if(btn) { btn.textContent='🔄 Conectando…'; btn.disabled=true; }
+  const user = await loginGoogle();
+  if(btn) { btn.textContent='🚁 Entrar no Radar'; btn.disabled=false; }
+  if(!user) return;
+  
+  // CORREÇÃO DA FOTO: ajusta URL do Google
+  if (user.photoURL) {
+    user.photoURL = fixGooglePhoto(user.photoURL);
+  }
+  
+  const profile = await getProfile(user.uid);
+  
+  // Se a foto do perfil estiver com URL antiga, corrige e salva
+  if (profile && profile.photo && profile.photo.includes('=s96-c')) {
+    const novaFoto = fixGooglePhoto(profile.photo);
+    await updateProfile(user.uid, { photo: novaFoto });
+    profile.photo = novaFoto;
+  }
+  
+  R.user = user; 
+  R.profile = profile; 
+  R.plan = getPlanStatus(profile);
+  if(R.plan.active) showRadar(); else window.openSheet('shPaywall');
+};
 
 window.addEventListener('amx:check-operation', () => { if(confirm('Operação ainda em andamento?')) return; if(isOperating()) endOp(); });
 
