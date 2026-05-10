@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
-//  AgroMetrix Radar — radar.js
-//  Mapa Leaflet · Pilotos reais · Bots simulados · Operações
+//  AgroMetrix Radar — radar.js v3.0 (Unificada)
+//  Mapa Leaflet · Pilotos reais · Bots · SOS · Operações
 // ═══════════════════════════════════════════════════════════════
 
 let _map = null;
@@ -9,18 +9,22 @@ let _botInterval = null;
 let _locationInterval = null;
 let _operationActive = false;
 let _operationStart = null;
-let _operationData  = {};
+let _operationData = {};
+let _operationConfig = {};
+let _pauseTimer = null;
+let _autoEndTimer = null;
+let _currentUid = null;
 
 // ── Bots simulados (pilotos realistas) ───────────────────────
 const BOTS = [
-  { id:'bot_001', name:'Carlos Mendonça',   city:'Sorriso, MT',      drone:'DJI Agras T40',  score:87, photo:'👨‍✈️', hoursTotal:1240, opsTotal:312 },
-  { id:'bot_002', name:'Rafael Bueno',      city:'Rondonópolis, MT', drone:'XAG P100 Pro',   score:92, photo:'🧑‍✈️', hoursTotal:890,  opsTotal:198 },
-  { id:'bot_003', name:'Marcos Figueiredo', city:'Lucas do Rio Verde',drone:'DJI Agras T30',  score:74, photo:'👨‍✈️', hoursTotal:560,  opsTotal:143 },
-  { id:'bot_004', name:'Thiago Cavalcante', city:'Primavera do Leste',drone:'XAG V40',        score:95, photo:'🧑‍✈️', hoursTotal:2100, opsTotal:487 },
-  { id:'bot_005', name:'Diego Almeida',     city:'Campo Verde, MT',  drone:'DJI Agras T50',  score:81, photo:'👨‍✈️', hoursTotal:720,  opsTotal:201 },
-  { id:'bot_006', name:'Leandro Souza',     city:'Nova Mutum, MT',   drone:'Pegasus Agri 10',score:68, photo:'🧑‍✈️', hoursTotal:430,  opsTotal:98  },
-  { id:'bot_007', name:'Fabio Martins',     city:'Sapezal, MT',      drone:'DJI Agras T40',  score:89, photo:'👨‍✈️', hoursTotal:1560, opsTotal:389 },
-  { id:'bot_008', name:'Anderson Lima',     city:'Sinop, MT',        drone:'XAG P100 Pro',   score:77, photo:'🧑‍✈️', hoursTotal:680,  opsTotal:167 },
+  { id: 'bot_001', name: 'Carlos Mendonça',   city: 'Sorriso, MT',      drone: 'DJI Agras T40',  score: 87, photo: '👨‍✈️', hoursTotal: 1240, opsTotal: 312 },
+  { id: 'bot_002', name: 'Rafael Bueno',      city: 'Rondonópolis, MT', drone: 'XAG P100 Pro',   score: 92, photo: '🧑‍✈️', hoursTotal: 890,  opsTotal: 198 },
+  { id: 'bot_003', name: 'Marcos Figueiredo', city: 'Lucas do Rio Verde', drone: 'DJI Agras T30', score: 74, photo: '👨‍✈️', hoursTotal: 560,  opsTotal: 143 },
+  { id: 'bot_004', name: 'Thiago Cavalcante', city: 'Primavera do Leste', drone: 'XAG V40',      score: 95, photo: '🧑‍✈️', hoursTotal: 2100, opsTotal: 487 },
+  { id: 'bot_005', name: 'Diego Almeida',     city: 'Campo Verde, MT',   drone: 'DJI Agras T50', score: 81, photo: '👨‍✈️', hoursTotal: 720,  opsTotal: 201 },
+  { id: 'bot_006', name: 'Leandro Souza',     city: 'Nova Mutum, MT',    drone: 'Pegasus Agri 10', score: 68, photo: '🧑‍✈️', hoursTotal: 430,  opsTotal: 98 },
+  { id: 'bot_007', name: 'Fabio Martins',     city: 'Sapezal, MT',       drone: 'DJI Agras T40', score: 89, photo: '👨‍✈️', hoursTotal: 1560, opsTotal: 389 },
+  { id: 'bot_008', name: 'Anderson Lima',     city: 'Sinop, MT',         drone: 'XAG P100 Pro',  score: 77, photo: '🧑‍✈️', hoursTotal: 680,  opsTotal: 167 },
 ];
 
 // ── Inicializar mapa ──────────────────────────────────────────
@@ -32,190 +36,254 @@ export function initMap(containerId, lat, lon) {
     attributionControl: false,
   }).setView([lat || -15.7801, lon || -47.9292], 10);
 
-  // Tile principal escuro (CartoDB)
-  const darkTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 18, subdomains: 'abcd',
-  });
-
-  // Fallback OpenStreetMap se CartoDB falhar
+  // Tile principal (OpenStreetMap)
   const osmTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
+    attribution: '© OpenStreetMap',
   });
+  osmTile.addTo(_map);
 
-  darkTile.addTo(_map);
-  darkTile.on('tileerror', () => {
-    if (!_map.hasLayer(osmTile)) {
-      _map.removeLayer(darkTile);
-      osmTile.addTo(_map);
+  // Fallback para CartoDB se OSM falhar
+  osmTile.on('tileerror', () => {
+    if (_map && !_map._cartoAdded) {
+      const cartoTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 18, subdomains: 'abcd',
+      });
+      _map.removeLayer(osmTile);
+      cartoTile.addTo(_map);
+      _map._cartoAdded = true;
     }
   });
 
-  // Zoom controls posição customizada
   L.control.zoom({ position: 'bottomright' }).addTo(_map);
-
-  // Atribuição discreta
-  L.control.attribution({ position: 'bottomleft', prefix: '' })
-    .addAttribution('© OSM · CartoDB').addTo(_map);
+  L.control.attribution({ position: 'bottomleft' }).addTo(_map);
 
   return _map;
 }
 
-// ── Ícone de piloto ───────────────────────────────────────────
+// ── Ícone de piloto (completo) ────────────────────────────────
 function pilotIcon(status, isUser = false) {
-  const isSOS       = status === 'sos';
+  const isSOS = status === 'sos';
   const isOperating = status === 'operating';
-  const isRequest   = status === 'request'; // peça, bateria, suporte
+  const isRequest = status === 'request';
 
-  let color = '#1e88d0'; // online padrão
+  let color = '#1e88d0';
   if (isOperating) color = '#3da866';
-  if (isSOS)       color = '#e03535';
-  if (isRequest)   color = '#2fb362'; // verde piscante para pedido de peça
+  if (isSOS) color = '#e03535';
+  if (isRequest) color = '#f5a623';
 
-  const size = isUser ? 48 : 38;
+  const size = isUser ? 48 : 40;
 
-  // Ondas pulsantes para SOS
   const sosPulse = isSOS ? `
-    <circle cx="19" cy="19" r="17" fill="none" stroke="#e03535" stroke-width="2" opacity="0.6">
-      <animate attributeName="r" from="14" to="26" dur="1.2s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" from="0.7" to="0" dur="1.2s" repeatCount="indefinite"/>
+    <circle cx="20" cy="20" r="15" fill="none" stroke="#e03535" stroke-width="2.5">
+      <animate attributeName="r" from="14" to="28" dur="1s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;0" dur="1s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="19" cy="19" r="17" fill="none" stroke="#e03535" stroke-width="1.5" opacity="0.4">
-      <animate attributeName="r" from="14" to="32" dur="1.2s" begin="0.4s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" from="0.5" to="0" dur="1.2s" begin="0.4s" repeatCount="indefinite"/>
+    <circle cx="20" cy="20" r="15" fill="none" stroke="#e03535" stroke-width="1.5">
+      <animate attributeName="r" from="14" to="38" dur="1s" begin="0.35s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0" dur="1s" begin="0.35s" repeatCount="indefinite"/>
     </circle>` : '';
 
-  // Onda verde para pedido de peça/suporte
   const requestPulse = isRequest ? `
-    <circle cx="19" cy="19" r="17" fill="none" stroke="#2fb362" stroke-width="2" opacity="0.6">
-      <animate attributeName="r" from="14" to="26" dur="1.5s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" from="0.6" to="0" dur="1.5s" repeatCount="indefinite"/>
+    <circle cx="20" cy="20" r="15" fill="none" stroke="#f5a623" stroke-width="2">
+      <animate attributeName="r" from="14" to="26" dur="1.4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;0" dur="1.4s" repeatCount="indefinite"/>
     </circle>` : '';
 
-  // Onda operando
   const opPulse = isOperating ? `
-    <circle cx="19" cy="19" r="16" fill="none" stroke="${color}" stroke-width="1.5" opacity="0.4">
-      <animate attributeName="r" from="14" to="22" dur="1.8s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" from="0.5" to="0" dur="1.8s" repeatCount="indefinite"/>
+    <circle cx="20" cy="20" r="15" fill="none" stroke="${color}" stroke-width="1.5">
+      <animate attributeName="r" from="13" to="22" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0" dur="1.8s" repeatCount="indefinite"/>
     </circle>` : '';
 
-  // Emoji no centro
   const emoji = isSOS ? '🚨' : isRequest ? '🔧' : isOperating ? '🚁' : '';
-  const emojiEl = emoji ? `<text x="19" y="24" text-anchor="middle" font-size="13">${emoji}</text>` : '';
+  const emojiEl = emoji ? `<text x="20" y="25" text-anchor="middle" font-size="13">${emoji}</text>` : '';
 
-  const svg = `<svg width="${size}" height="${size}" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
+  const svg = `<svg width="${size}" height="${size}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
     ${sosPulse}${requestPulse}${opPulse}
-    <circle cx="19" cy="19" r="14" fill="${color}" opacity="0.15"/>
-    <circle cx="19" cy="19" r="10" fill="${color}" opacity="${isSOS ? '1' : '0.9'}"/>
-    ${isUser ? '<circle cx="19" cy="19" r="5" fill="white" opacity="0.95"/>' : ''}
+    <circle cx="20" cy="20" r="14" fill="${color}" opacity="0.15"/>
+    <circle cx="20" cy="20" r="10" fill="${color}" opacity="0.95"/>
+    ${isUser ? '<circle cx="20" cy="20" r="5" fill="white" opacity="0.95"/>' : ''}
     ${emojiEl}
   </svg>`;
 
   return L.divIcon({
     html: svg,
     className: '',
-    iconSize:   [size, size],
-    iconAnchor: [size/2, size/2],
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
   });
 }
 
-// ── Adicionar/atualizar piloto no mapa ────────────────────────
+// ── Popup com botões de interação ─────────────────────────────
+function buildPopup(pilot) {
+  const reqBtn = (pilot.status === 'request' && !pilot.isCurrentUser) ?
+    `<button onclick="window.dispatchEvent(new CustomEvent('amx:accept-request', { detail: { pilotId: '${pilot.id}', msg: '${(pilot.requestMsg || '').replace(/'/g, "\\'")}', name: '${pilot.name}' } }))"
+      style="margin-top:8px;width:100%;padding:7px;border-radius:8px;border:none;background:#f5a623;color:#0d1a0f;font-weight:700;font-size:12px;cursor:pointer">
+      ✅ Aceitar chamado</button>` : '';
+
+  const sosBtn = (pilot.status === 'sos' && !pilot.isCurrentUser) ?
+    `<button onclick="window.dispatchEvent(new CustomEvent('amx:respond-sos', { detail: { pilotId: '${pilot.id}', name: '${pilot.name}' } }))"
+      style="margin-top:8px;width:100%;padding:7px;border-radius:8px;border:none;background:#e03535;color:white;font-weight:700;font-size:12px;cursor:pointer">
+      🚨 Responder SOS</button>` : '';
+
+  return `<div style="font-family:'Syne',sans-serif;min-width:190px;padding:4px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div style="font-size:24px">${pilot.photo || '👨‍✈️'}</div>
+      <div>
+        <div style="font-weight:700;font-size:14px;color:#e8f5eb">${pilot.name || 'Piloto'}</div>
+        <div style="font-size:10px;color:#5a8a65">${pilot.city || ''}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
+      <span style="background:#1f5534;color:#5ec880;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700">AMX ${pilot.score || 0}</span>
+      <span style="background:#111d14;color:#9ac8a6;padding:2px 8px;border-radius:6px;font-size:10px">
+        ${pilot.status === 'sos' ? '🚨 SOS' : pilot.status === 'request' ? '🔧 Pedido' : pilot.status === 'operating' ? '🚁 Operando' : '🟢 Online'}
+      </span>
+    </div>
+    ${pilot.requestMsg ? `<div style="font-size:11px;color:#f5a623;margin-bottom:4px">📢 ${pilot.requestMsg}</div>` : ''}
+    <div style="font-size:10px;color:#5a8a65">🚁 ${pilot.drone || 'Drone agrícola'}</div>
+    <div style="font-size:10px;color:#5a8a65;margin-top:2px">⏱ ${pilot.hoursTotal || 0}h · ${pilot.opsTotal || 0} ops</div>
+    ${reqBtn}${sosBtn}
+  </div>`;
+}
+
+// ── Adicionar/atualizar piloto ────────────────────────────────
 export function upsertPilot(pilot) {
   if (!_map || !pilot.lat || !pilot.lon) return;
 
-  const isUser = pilot.isCurrentUser === true;
-  const icon   = pilotIcon(pilot.status, isUser);
-
-  const popupHTML = `
-    <div style="font-family:'Syne',sans-serif;min-width:180px;padding:4px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <div style="font-size:28px">${pilot.photo || '👨‍✈️'}</div>
-        <div>
-          <div style="font-weight:700;font-size:13px;color:#e8f5eb">${pilot.name}</div>
-          <div style="font-size:10px;color:#5a8a65">${pilot.city || ''}</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
-        <span style="background:#1f5534;color:#5ec880;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700">
-          AMX ${pilot.score || 0}
-        </span>
-        <span style="background:#111d14;color:#9ac8a6;padding:2px 8px;border-radius:6px;font-size:10px">
-          ${pilot.status === 'operating' ? '🚁 Operando' : '🟢 Online'}
-        </span>
-      </div>
-      <div style="font-size:10px;color:#5a8a65">🚁 ${pilot.drone || 'Drone agrícola'}</div>
-      <div style="font-size:10px;color:#5a8a65;margin-top:2px">⏱ ${pilot.hoursTotal || 0}h · ${pilot.opsTotal || 0} operações</div>
-    </div>`;
+  const icon = pilotIcon(pilot.status || 'online', pilot.isCurrentUser === true);
+  const popup = buildPopup(pilot);
 
   if (_markers[pilot.id]) {
     _markers[pilot.id].setLatLng([pilot.lat, pilot.lon]);
     _markers[pilot.id].setIcon(icon);
-    _markers[pilot.id].setPopupContent(popupHTML);
+    _markers[pilot.id].setPopupContent(popup);
+    _markers[pilot.id]._pilotData = pilot;
   } else {
-    _markers[pilot.id] = L.marker([pilot.lat, pilot.lon], { icon })
-      .bindPopup(popupHTML, {
-        className:   'amx-popup',
-        maxWidth:    220,
-        closeButton: false,
-      })
+    const m = L.marker([pilot.lat, pilot.lon], { icon })
+      .bindPopup(popup, { className: 'amx-popup', maxWidth: 230, closeButton: false })
       .addTo(_map);
+    m._pilotData = pilot;
+    _markers[pilot.id] = m;
   }
 }
 
 export function removePilot(id) {
-  if (_markers[id]) { _markers[id].remove(); delete _markers[id]; }
+  if (_markers[id]) {
+    _markers[id].remove();
+    delete _markers[id];
+  }
 }
 
-// ── Spawnar bots ao redor de uma localização ─────────────────
-export function spawnBots(centerLat, centerLon, weatherState) {
-  const hour    = new Date().getHours();
-  const isDay   = hour >= 5 && hour <= 18;
-  const goodWind = (weatherState?.wind || 0) <= 20;
+// ── Listen Pilots (compatível com Firebase ou offline) ────────
+export async function listenPilots(centerLat, centerLon, currentUid) {
+  _currentUid = currentUid;
+  
+  // Limpa pilotos existentes
+  Object.keys(_markers).forEach(id => {
+    if (!id.startsWith('user_')) removePilot(id);
+  });
+  
+  // Modo offline: apenas bots
+  spawnBots(centerLat, centerLon, { wind: 10, temp: 25 });
+  startBotUpdates();
+  updatePilotCount();
+  
+  // Se Firebase estiver disponível, tenta conectar
+  if (window._firebaseDB && typeof firebase !== 'undefined') {
+    try {
+      const { collection, onSnapshot, query, where } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const q = query(collection(window._firebaseDB, 'pilots'), where('visibility', '!=', 'invisible'));
+      
+      if (window._firestoreUnsub) window._firestoreUnsub();
+      window._firestoreUnsub = onSnapshot(q, (snapshot) => {
+        snapshot.docChanges().forEach(change => {
+          const d = change.doc.data();
+          if (change.type === 'removed' || d.visibility === 'invisible') {
+            removePilot(d.uid);
+            return;
+          }
+          if (!d.lat || !d.lon) return;
+          
+          upsertPilot({
+            id: d.uid,
+            name: d.nickname || d.name || 'Piloto',
+            photo: d.photo || '👨‍✈️',
+            city: d.city || '',
+            drone: d.drone || '',
+            score: d.amxScore || 0,
+            hoursTotal: d.hoursTotal || 0,
+            opsTotal: d.opsTotal || 0,
+            lat: d.lat,
+            lon: d.lon,
+            status: d.status || 'online',
+            requestMsg: d.requestMsg || null,
+            isCurrentUser: d.uid === currentUid,
+          });
+        });
+        updatePilotCount();
+      });
+      return true;
+    } catch (e) {
+      console.log('Modo offline: apenas bots simulados');
+    }
+  }
+  return false;
+}
 
-  // Bots só operam de dia com vento ok
+function updatePilotCount() {
+  const total = Object.keys(_markers).length;
+  const el = document.getElementById('pilotCount');
+  if (el) el.textContent = `${total} pilotos`;
+}
+
+// ── Spawnar bots ──────────────────────────────────────────────
+export function spawnBots(lat, lon, weather) {
+  const hour = new Date().getHours();
+  const isDay = hour >= 5 && hour <= 18;
+  const goodWind = (weather?.wind || 0) <= 20;
+
   const activeBots = BOTS.filter((_, i) => {
-    if (!isDay) return i < 2; // alguns ficam online à noite
-    if (!goodWind) return i < 4; // menos ativos com vento ruim
+    if (!isDay) return i < 2;
+    if (!goodWind) return i < 4;
     return true;
   });
 
   activeBots.forEach((bot, i) => {
-    // Posição aleatória num raio de 5~40km
-    const angle  = (i / activeBots.length) * Math.PI * 2 + Math.random() * 0.5;
-    const radius = (5 + Math.random() * 35) / 111; // graus
-    const lat    = centerLat + Math.cos(angle) * radius;
-    const lon    = centerLon + Math.sin(angle) * radius / Math.cos(centerLat * Math.PI / 180);
-
-    const isOperating = isDay && goodWind && Math.random() > 0.35;
+    const angle = (i / activeBots.length) * Math.PI * 2 + Math.random() * 0.5;
+    const radius = (5 + Math.random() * 35) / 111;
+    const blat = lat + Math.cos(angle) * radius;
+    const blon = lon + Math.sin(angle) * radius / Math.cos(lat * Math.PI / 180);
+    const isOperating = isDay && goodWind && Math.random() > 0.4;
 
     upsertPilot({
       ...bot,
-      lat,
-      lon,
+      lat: blat,
+      lon: blon,
       status: isOperating ? 'operating' : 'online',
+      isCurrentUser: false,
     });
   });
 }
 
-// ── Atualizar bots periodicamente (movimento sutil) ──────────
-export function startBotUpdates(centerLat, centerLon) {
+// ── Atualizar bots ────────────────────────────────────────────
+export function startBotUpdates() {
   if (_botInterval) clearInterval(_botInterval);
   _botInterval = setInterval(() => {
-    Object.entries(_markers).forEach(([id, marker]) => {
+    Object.entries(_markers).forEach(([id, m]) => {
       if (!id.startsWith('bot_')) return;
-      const pos = marker.getLatLng();
-      // Movimento pequeno simulando operação
-      const dlat = (Math.random() - 0.5) * 0.003;
-      const dlon = (Math.random() - 0.5) * 0.003;
-      marker.setLatLng([pos.lat + dlat, pos.lng + dlon]);
+      const p = m.getLatLng();
+      m.setLatLng([p.lat + (Math.random() - 0.5) * 0.003, p.lng + (Math.random() - 0.5) * 0.003]);
     });
-  }, 15000); // a cada 15s
+  }, 15000);
 }
 
 export function stopBotUpdates() {
   if (_botInterval) clearInterval(_botInterval);
 }
 
-// ── Rastrear localização do usuário ──────────────────────────
+// ── Rastrear localização ──────────────────────────────────────
 export function startLocationTracking(uid, onUpdate) {
   let lastLat = null, lastLon = null;
 
@@ -223,9 +291,7 @@ export function startLocationTracking(uid, onUpdate) {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(pos => {
       const { latitude: lat, longitude: lon } = pos.coords;
-      const dist = lastLat
-        ? Math.sqrt(Math.pow((lat - lastLat) * 111000, 2) + Math.pow((lon - lastLon) * 111000, 2))
-        : 9999;
+      const dist = lastLat ? Math.sqrt(Math.pow((lat - lastLat) * 111000, 2) + Math.pow((lon - lastLon) * 111000, 2)) : 9999;
 
       if (dist >= 300 || !lastLat) {
         lastLat = lat; lastLon = lon;
@@ -243,17 +309,24 @@ export function stopLocationTracking() {
   if (_locationInterval) clearInterval(_locationInterval);
 }
 
-// ── Modo Operação ─────────────────────────────────────────────
-export function startOperation(weatherState, lat, lon) {
+// ── Operações completas ───────────────────────────────────────
+export function startOperation(config, weatherState, lat, lon) {
   _operationActive = true;
-  _operationStart  = Date.now();
-  _operationData   = {
-    startTime:   new Date().toISOString(),
+  _operationStart = Date.now();
+  _operationConfig = config || {};
+  _operationData = {
+    startTime: new Date().toISOString(),
     lat, lon,
-    weather:     { ...weatherState },
-    pauses:      0,
-    lastActive:  Date.now(),
+    weather: { ...weatherState },
+    pauses: 0,
+    lastActivity: Date.now(),
   };
+
+  if (_autoEndTimer) clearTimeout(_autoEndTimer);
+  _autoEndTimer = setTimeout(() => {
+    if (_operationActive) window.dispatchEvent(new CustomEvent('amx:check-operation'));
+  }, 4 * 3600 * 1000);
+
   return _operationData;
 }
 
@@ -261,67 +334,119 @@ export function endOperation(weatherState) {
   if (!_operationActive) return null;
   _operationActive = false;
 
-  const duration = Math.round((Date.now() - _operationStart) / 60000); // minutos
-  const score    = calcAMXScore(duration, weatherState, _operationData);
+  if (_autoEndTimer) clearTimeout(_autoEndTimer);
+  if (_pauseTimer) clearTimeout(_pauseTimer);
+
+  const durationMin = Math.round((Date.now() - _operationStart) / 60000);
+  const score = calcAMXScore(durationMin, weatherState, _operationData, _operationConfig);
+  const estimate = calcOperationEstimate(durationMin, _operationConfig, _operationData);
 
   return {
     ..._operationData,
-    endTime:  new Date().toISOString(),
-    duration, // minutos
+    endTime: new Date().toISOString(),
+    durationMin,
     score,
+    estimate,
+    config: _operationConfig,
   };
 }
 
-export function isOperating() { return _operationActive; }
+export function registerActivity() {
+  if (!_operationActive) return;
+  _operationData.lastActivity = Date.now();
+  if (_pauseTimer) {
+    clearTimeout(_pauseTimer);
+    _pauseTimer = null;
+  }
+  _pauseTimer = setTimeout(() => {
+    if (_operationActive) {
+      _operationData.pauses++;
+      _operationData.pauseStart = Date.now();
+    }
+  }, 5 * 60 * 1000);
+}
 
-// ── AMX Score ─────────────────────────────────────────────────
-export function calcAMXScore(durationMin, weather, opData) {
+export function calcOperationEstimate(durationMin, config, opData) {
+  const avgHaPerH = parseFloat(config?.avgHaPerH) || 20;
+  const hoursOp = Math.max(0, (durationMin - (opData?.pauses || 0) * 5)) / 60;
+  const estHa = (hoursOp * avgHaPerH).toFixed(1);
+  const vazao = parseFloat(config?.vazao) || 10;
+  const faixa = parseFloat(config?.faixa) || 9;
+
+  let conf = 100;
+  if (vazao < 3 || vazao > 50) conf -= 30;
+  if (faixa < 4 || faixa > 20) conf -= 20;
+  if (avgHaPerH > 45) conf -= 25;
+  if (durationMin < 10) conf -= 40;
+  conf = Math.max(0, conf);
+
+  return { estHa, hoursOp: hoursOp.toFixed(1), confiability: conf, label: conf >= 80 ? 'Alta' : conf >= 50 ? 'Média' : 'Baixa' };
+}
+
+export function calcAMXScore(durationMin, weather, opData, config) {
   let score = 100;
-  const w   = weather || {};
+  const w = weather || {};
+  const dt = w.deltaT || 5, wind = w.wind || 0, hum = w.humidity || 70, temp = w.temp || 25;
 
-  // Clima
-  const dt   = w.deltaT || 5;
-  const wind = w.wind   || 0;
-  const hum  = w.humidity || 70;
-  const temp = w.temp   || 25;
-
-  // Delta T ideal 2-8
   if (dt < 2 || dt > 10) score -= 20;
-  else if (dt > 8)        score -= 10;
-
-  // Vento
+  else if (dt > 8) score -= 10;
   if (wind > 20) score -= 25;
   else if (wind > 15) score -= 15;
   else if (wind > 10) score -= 5;
-
-  // Umidade
   if (hum > 90) score -= 10;
   if (hum < 40) score -= 10;
-
-  // Temperatura
   if (temp > 35) score -= 15;
   if (temp < 10) score -= 10;
-
-  // Duração mínima coerente (>10 min)
-  if (durationMin < 5)  score -= 30;
+  if (durationMin < 5) score -= 30;
   else if (durationMin < 10) score -= 15;
 
-  // Horário (bônus madrugada penaliza)
   const hour = new Date().getHours();
   if (hour >= 0 && hour < 4) score -= 20;
-  if (hour >= 5 && hour <= 9) score += 5; // manhã cedo é ideal
+  if (hour >= 5 && hour <= 9) score += 5;
 
-  score = Math.max(0, Math.min(100, Math.round(score)));
+  const vazao = parseFloat(config?.vazao) || 10;
+  if (vazao >= 5 && vazao <= 30) score += 5;
+  if ((opData?.pauses || 0) > 3) score -= 10;
 
-  return score;
+  return Math.max(0, Math.min(100, Math.round(score)));
 }
 
 export function amxLabel(score) {
   if (score >= 90) return { label: 'Excelente', color: '#3da866' };
-  if (score >= 75) return { label: 'Ótimo',     color: '#5ec880' };
-  if (score >= 60) return { label: 'Bom',        color: '#1e88d0' };
-  if (score >= 40) return { label: 'Moderado',   color: '#e07a00' };
-  return               { label: 'Risco',        color: '#e03535' };
+  if (score >= 75) return { label: 'Ótimo', color: '#5ec880' };
+  if (score >= 60) return { label: 'Bom', color: '#1e88d0' };
+  if (score >= 40) return { label: 'Moderado', color: '#e07a00' };
+  return { label: 'Risco', color: '#e03535' };
 }
 
+// ── Getters ────────────────────────────────────────────────────
+export function isOperating() { return _operationActive; }
 export function getMap() { return _map; }
+export function getMarkers() { return _markers; }
+
+// ── Funções para manipular bots (teste) ───────────────────────
+export function addBotRequest(botId, message) {
+  const bot = _markers[botId];
+  if (bot && bot._pilotData && bot._pilotData.id?.startsWith('bot_')) {
+    bot._pilotData.status = 'request';
+    bot._pilotData.requestMsg = message;
+    upsertPilot(bot._pilotData);
+  }
+}
+
+export function addBotSOS(botId) {
+  const bot = _markers[botId];
+  if (bot && bot._pilotData && bot._pilotData.id?.startsWith('bot_')) {
+    bot._pilotData.status = 'sos';
+    upsertPilot(bot._pilotData);
+  }
+}
+
+export function clearBotStatus(botId) {
+  const bot = _markers[botId];
+  if (bot && bot._pilotData && bot._pilotData.id?.startsWith('bot_')) {
+    bot._pilotData.status = 'online';
+    bot._pilotData.requestMsg = null;
+    upsertPilot(bot._pilotData);
+  }
+}
