@@ -72,7 +72,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .r-badge{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;background:rgba(6,14,8,.85);border:1px solid var(--bdm);font-size:11px;color:var(--tx2);backdrop-filter:blur(8px)}
 .ldot{width:6px;height:6px;border-radius:50%;background:var(--g4);animation:ldotP 2s infinite}
 @keyframes ldotP{0%,100%{opacity:1}50%{opacity:.3}}
-.ico-btn{width:36px;height:36px;border-radius:50%;background:rgba(6,14,8,.85);border:1px solid var(--bdm);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:all .2s;flex-shrink:0;backdrop-filter:blur(8px);position:relative}
+.ico-btn{width:36px;height:36px;border-radius:50%;background:rgba(6,14,8,.85);border:1px solid var(--bdm);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:all .2s;flex-shrink:0;backdrop-filter:blur(8px)}
 .ico-btn:hover{border-color:var(--g4)}
 .notif-dot{position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:var(--red);color:white;font-size:8px;font-weight:700;display:none;align-items:center;justify-content:center}
 .notif-dot.on{display:flex}
@@ -197,8 +197,7 @@ select.inp{cursor:pointer}
 
 /* Pedidos */
 .req-item{background:var(--s2);border-radius:12px;padding:12px;margin:0 20px 8px;border:1px solid var(--bd)}
-.req-item.sos-req{border-color:rgba(224,53,53,.4);animation:reqPulse 1.5s ease-in-out infinite}
-@keyframes reqPulse{0%,100%{border-left-width:4px;border-left-color:transparent}50%{border-left-width:4px;border-left-color:var(--red)}}
+.req-item.sos-req{border-color:rgba(224,53,53,.4)}
 
 /* Chat */
 .chat-msgs{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:10px;max-height:160px;overflow-y:auto;margin:0 20px 8px;display:flex;flex-direction:column;gap:6px;scrollbar-width:none}
@@ -211,21 +210,6 @@ select.inp{cursor:pointer}
 .chat-inp{flex:1;padding:10px 13px;background:var(--s2);border:1.5px solid var(--bdm);border-radius:12px;font-family:var(--fu);font-size:13px;color:var(--tx);outline:none}
 .chat-inp:focus{border-color:var(--g4)}
 .chat-send{width:40px;height:40px;border-radius:50%;background:var(--g6);border:none;color:white;font-size:16px;cursor:pointer;flex-shrink:0}
-
-/* Card de Pedidos Ativos (flutuante) */
-.active-reqs-card{position:fixed;bottom:80px;left:12px;right:12px;z-index:150;background:rgba(11,22,13,.98);border:1px solid var(--bdm);border-radius:16px;padding:10px;backdrop-filter:blur(12px);max-height:280px;overflow-y:auto;display:none;box-shadow:0 8px 32px rgba(0,0,0,.5)}
-.active-reqs-card.on{display:block}
-.active-reqs-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mt);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
-.active-reqs-close{background:none;border:none;color:var(--mt);font-size:16px;cursor:pointer}
-.req-item-small{background:var(--s2);border-radius:10px;padding:8px 10px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
-.req-item-small.sos{border-left:3px solid var(--red)}
-.req-item-small.request{border-left:3px solid #f5a623}
-.req-icon{font-size:16px}
-.req-text{flex:1;font-size:11px;color:var(--tx2)}
-.req-text strong{color:var(--tx);font-weight:700}
-.req-btn{padding:4px 10px;border-radius:16px;border:none;font-size:10px;font-weight:700;cursor:pointer}
-.req-btn.sos{background:var(--red);color:white}
-.req-btn.request{background:#f5a623;color:#0d1a0f}
 
 /* Paywall */
 .pw-wrap{padding:0 20px;text-align:center}
@@ -284,15 +268,6 @@ select.inp{cursor:pointer}
       <div class="notif-dot" id="reqDot">!</div>
     </div>
     <button class="ico-btn" onclick="openSheet('shProfile')" title="Perfil">👤</button>
-  </div>
-
-  <!-- Card de Pedidos Ativos (flutuante) -->
-  <div class="active-reqs-card" id="activeReqsCard">
-    <div class="active-reqs-title">
-      <span>📢 PEDIDOS ATIVOS</span>
-      <button class="active-reqs-close" onclick="document.getElementById('activeReqsCard').classList.remove('on')">✕</button>
-    </div>
-    <div id="activeReqsList"></div>
   </div>
 
   <!-- SOS Bar -->
@@ -479,7 +454,7 @@ select.inp{cursor:pointer}
     </div>
     <div class="pw-price">
       <div class="pw-price-v">R$ 19,90</div>
-      <div class="fw-price-p">por mês · cancele quando quiser</div>
+      <div class="pw-price-p">por mês · cancele quando quiser</div>
       <div class="pw-price-n">🎁 7 dias grátis para testar</div>
     </div>
     <button class="btn-prim" onclick="startTrial()" style="margin-bottom:8px">🚀 Começar 7 dias grátis</button>
@@ -494,134 +469,24 @@ select.inp{cursor:pointer}
 import { firebaseConfig, isFirebaseConfigured } from './firebase-config.js';
 import { initFirebase, loginGoogle, logout, onAuthChange, getProfile, updateProfile, getPlanStatus } from './auth.js';
 import { initMap, upsertPilot, spawnBots, startBotUpdates, startLocationTracking, listenPilots,
-         startOperation, endOperation, isOperating, calcAMXScore, calcOperationEstimate, amxLabel, addNotificationBadge } from './radar.js';
+         startOperation, endOperation, isOperating, calcAMXScore, calcOperationEstimate, amxLabel } from './radar.js';
 
-// ==============================================================
-// SISTEMA DE ÁUDIO (Sons estilo Uber)
-// ==============================================================
-let audioCtx = null;
-let audioEnabled = false;
-
-function initAudio() {
-  if (audioEnabled) return;
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContext) return;
-  audioCtx = new AudioContext();
-  audioEnabled = true;
-}
-
-function playSound(type) {
-  if (!audioEnabled || !audioCtx) return;
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-  
-  const now = audioCtx.currentTime;
-  const frequencies = {
-    request: [523.25, 659.25, 783.99],
-    sos: [880, 880, 880, 440, 440, 440],
-    accept: [523.25, 659.25, 783.99, 1046.50],
-    message: [440, 440]
-  };
-  const durations = {
-    request: [0.2, 0.2, 0.3],
-    sos: [0.15, 0.15, 0.15, 0.15, 0.15, 0.3],
-    accept: [0.1, 0.1, 0.1, 0.4],
-    message: [0.05, 0.05]
-  };
-  
-  const freqs = frequencies[type] || frequencies.request;
-  const durs = durations[type] || durations.request;
-  
-  for (let i = 0; i < freqs.length; i++) {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.frequency.value = freqs[i];
-    gain.gain.value = 0.25;
-    osc.start(now + (durs[i] || 0.2) * i);
-    gain.gain.exponentialRampToValueAtTime(0.00001, now + (durs[i] || 0.2) * (i + 1));
-    osc.stop(now + (durs[i] || 0.2) * (i + 1));
-  }
-}
-
-// Ativar áudio no primeiro clique
-document.body.addEventListener('click', function initFirst() {
-  initAudio();
-  document.body.removeEventListener('click', initFirst);
-});
-
-// ==============================================================
-// SISTEMA DE PEDIDOS ATIVOS (sem duplicação)
-// ==============================================================
-let activeRequestsList = [];
-
-function addToActiveRequests(req) {
-  const exists = activeRequestsList.some(r => r.id === req.id);
-  if (!exists) {
-    activeRequestsList.push(req);
-    renderActiveRequestsCard();
-  }
-}
-
-function removeFromActiveRequests(reqId) {
-  activeRequestsList = activeRequestsList.filter(r => r.id !== reqId);
-  renderActiveRequestsCard();
-}
-
-function renderActiveRequestsCard() {
-  const card = document.getElementById('activeReqsCard');
-  const listDiv = document.getElementById('activeReqsList');
-  
-  if (activeRequestsList.length === 0) {
-    card.classList.remove('on');
-    return;
-  }
-  
-  card.classList.add('on');
-  const recent = activeRequestsList.slice(-4);
-  listDiv.innerHTML = recent.map(req => `
-    <div class="req-item-small ${req.type === 'sos' ? 'sos' : 'request'}">
-      <div class="req-icon">${req.type === 'sos' ? '🚨' : '🔧'}</div>
-      <div class="req-text"><strong>${req.pilotName}</strong>: ${req.message.substring(0, 40)}${req.message.length > 40 ? '...' : ''}</div>
-      <button class="req-btn ${req.type}" onclick="quickRespond('${req.id}','${req.pilotId}','${req.pilotName.replace(/'/g, "\\'")}','${req.type}')">
-        ${req.type === 'sos' ? 'Responder' : 'Aceitar'}
-      </button>
-    </div>
-  `).join('');
-}
-
-window.quickRespond = async (reqId, pilotId, pilotName, type) => {
-  playSound('accept');
-  showToast(`✅ Você respondeu ao ${type === 'sos' ? 'SOS' : 'chamado'} de ${pilotName}!`);
-  addNotificationBadge(pilotId, 'accept', `${R.profile?.nickname || 'Alguém'} respondeu seu pedido`, R.profile?.nickname);
-  removeFromActiveRequests(reqId);
-  
-  // Abrir chat com o piloto
-  R.chatTarget = { uid: pilotId, name: pilotName };
-  document.getElementById('chatName').textContent = pilotName;
-  document.getElementById('chatSection').style.display = 'block';
-  await listenChat(pilotId);
-  openSheet('shReq');
-};
-
-// ==============================================================
-// ESTADO PRINCIPAL
-// ==============================================================
+// ── Estado ─────────────────────────────────────────────────────
 const R = window.AgroRadar = {
   user:null, profile:null, plan:null,
   lat:null, lon:null, map:null, weather:null,
   opCfg:{}, chatTarget:null, chatUnsub:null, sosActive:false,
 };
 
-// UI Helpers
-const $ = id => document.getElementById(id);
+// ── UI Helpers ─────────────────────────────────────────────────
+const $  = id => document.getElementById(id);
 const ov = id => id.replace('sh','ov');
 
 window.openSheet = id => {
   $(ov(id)).classList.add('on');
   $(id).classList.add('on');
   if (id === 'shProfile') renderProfile();
-  if (id === 'shReq') loadRequests();
+  if (id === 'shReq')     loadRequests();
 };
 window.closeSheet = id => {
   $(ov(id)).classList.remove('on');
@@ -649,7 +514,7 @@ window.selChip = (el, field, val) => {
   R.opCfg[field] = val;
 };
 
-// Init
+// ── Init ───────────────────────────────────────────────────────
 async function init() {
   if (!isFirebaseConfigured()) { showToast('⚠️ Firebase não configurado'); return; }
   await initFirebase();
@@ -661,6 +526,7 @@ async function init() {
   });
 }
 
+// ── Radar ──────────────────────────────────────────────────────
 async function showRadar() {
   $('sSplash').classList.add('off');
   $('sRadar').classList.remove('off');
@@ -685,10 +551,15 @@ function setupMap(lat,lon) {
   R.weather = getW();
   setTimeout(()=>R.map?.invalidateSize(),300);
 
+  // Publica usuário no mapa E no Firestore imediatamente
   publishSelf(lat,lon,'online');
+
+  // Bots e pilotos reais
   spawnBots(lat,lon,R.weather);
   startBotUpdates();
   listenPilots(lat,lon,R.user.uid);
+
+  // GPS contínuo
   startLocationTracking(R.user.uid,(nlat,nlon)=>{
     R.lat=nlat; R.lon=nlon;
     publishSelf(nlat,nlon, isOperating()?'operating':'online');
@@ -754,7 +625,7 @@ function updateClima(w) {
   `;
 }
 
-// Operação
+// ── Operação ───────────────────────────────────────────────────
 window.handleOp = ()=> isOperating() ? endOp() : openSheet('shOpConfig');
 
 window.confirmOp = ()=>{
@@ -763,7 +634,6 @@ window.confirmOp = ()=>{
   closeSheet('shOpConfig');
   startOperation(c,getW(),R.lat,R.lon);
   setBtn(true);
-  playSound('accept');
   showToast('🚁 Operação iniciada!');
   publishSelf(R.lat,R.lon,'operating');
 };
@@ -820,11 +690,10 @@ async function saveOp(r){
   R.profile.amxScore=ns; R.profile.opsTotal=(R.profile.opsTotal||0)+1;
 }
 
-// SOS e Pedidos com SONS
+// ── SOS e Pedidos ──────────────────────────────────────────────
 window.activateSOS = async ()=>{
   if(R.sosActive){cancelSOS();return;}
   R.sosActive=true;
-  playSound('sos');
   $('sosBar').classList.add('on');
   publishSelf(R.lat,R.lon,'sos');
   await updateProfile(R.user.uid,{requestMsg:'🚨 SOS — Preciso de ajuda!',sosAt:new Date().toISOString()});
@@ -840,7 +709,6 @@ window.cancelSOS = async ()=>{
 };
 
 window.sendReq = async (type,msg)=>{
-  playSound('request');
   publishSelf(R.lat,R.lon,'request');
   await updateProfile(R.user.uid,{status:'request',requestMsg:msg});
   await saveRequest(type,msg);
@@ -894,31 +762,18 @@ async function listenRequests(){
   const{collection,query,where,limit,onSnapshot}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
   const q=query(collection(db,'requests'),where('status','==','open'),limit(20));
   onSnapshot(q,snap=>{
-    const reqs=snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>r.uid!==R.user?.uid);
+    const reqs=snap.docs.map(d=>d.data()).filter(r=>r.uid!==R.user?.uid);
     const dot=$('reqDot');
     if(reqs.length>0)dot.classList.add('on'); else dot.classList.remove('on');
-    
-    // Atualizar card de pedidos ativos
-    reqs.forEach(r => {
-      addToActiveRequests({
-        id: r.id,
-        pilotId: r.uid,
-        pilotName: r.pilotName,
-        message: r.message,
-        type: r.type
-      });
-    });
   });
 }
 
 window.acceptReq = (uid,name,message)=>{
-  playSound('accept');
   R.chatTarget={uid,name};
   $('chatName').textContent=name;
   $('chatSection').style.display='block';
   listenChat(uid);
   showToast(`✅ Aceitou ajudar ${name}!`);
-  addNotificationBadge(uid, 'accept', `${R.profile?.nickname || 'Alguém'} aceitou seu pedido`, R.profile?.nickname);
 };
 
 async function listenChat(uid){
@@ -942,7 +797,6 @@ async function listenChat(uid){
 window.sendMsg = async()=>{
   const inp=$('chatInp'), txt=inp.value.trim();
   if(!txt||!R.chatTarget)return; inp.value='';
-  playSound('message');
   const db=window._firebaseDB; if(!db)return;
   const chatId=[R.user.uid,R.chatTarget.uid].sort().join('_');
   const{collection,addDoc}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
@@ -952,7 +806,7 @@ window.sendMsg = async()=>{
   });
 };
 
-// Ranking
+// ── Ranking ────────────────────────────────────────────────────
 async function loadRanking(){
   const db=window._firebaseDB;
   let pilots=[];
@@ -985,7 +839,7 @@ async function loadRanking(){
     </div>`).join('');
 }
 
-// Perfil
+// ── Perfil ─────────────────────────────────────────────────────
 function renderProfile(){
   const p=R.profile, plan=R.plan;
   if(!p)return;
@@ -1065,7 +919,7 @@ window.doLogout = async()=>{
   $('sSplash').classList.remove('off');
 };
 
-// Auth
+// ── Auth ───────────────────────────────────────────────────────
 window.enterRadar = async()=>{
   if(!isFirebaseConfigured()){showToast('⚠️ Firebase não configurado');return;}
   const btn=$('btnEntrar');
@@ -1086,7 +940,7 @@ window.startTrial = async()=>{
   closeSheet('shPaywall'); showRadar();
 };
 
-// Auto-check operação
+// ── Auto-check operação ────────────────────────────────────────
 window.addEventListener('amx:check-operation',()=>{
   if(confirm('Operação ainda em andamento?'))return;
   if(isOperating())endOp();
