@@ -1315,23 +1315,87 @@ async function loadRequests(){
   
   if(!reqs.length){
     $('reqList').innerHTML='<div style="padding:16px 20px;text-align:center;color:var(--mt);font-size:12px">Nenhum pedido ativo no momento 🟢</div>';
-    return;
-  }
-  const icons={sos:'🚨',helice:'🚁',battery:'🔋',fuel:'⛽',part:'🔧',support:'🛠️',tow:'🚜'};
-  $('reqList').innerHTML=reqs.map(r => `
-    <div class="req-item ${r.type==='sos'?'sos-req':''}" data-request-id="${r.id}">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="font-size:20px">${icons[r.type]||'🔧'}</span>
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--tx)">${r.pilotName||'Piloto'}</div>
-          <div style="font-size:11px;color:${r.type==='sos'?'#ff8080':'var(--mt)'}">${r.message}</div>
+  } else {
+    const icons={sos:'🚨',helice:'🚁',battery:'🔋',fuel:'⛽',part:'🔧',support:'🛠️',tow:'🚜'};
+    $('reqList').innerHTML=reqs.map(r => `
+      <div class="req-item ${r.type==='sos'?'sos-req':''}" data-request-id="${r.id}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:20px">${icons[r.type]||'🔧'}</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--tx)">${r.pilotName||'Piloto'}</div>
+            <div style="font-size:11px;color:${r.type==='sos'?'#ff8080':'var(--mt)'}">${r.message}</div>
+          </div>
         </div>
-      </div>
-      <button onclick="window.acceptReq('${r.id}','${r.uid}','${(r.pilotName||'').replace(/'/g,"\\'")}','${(r.message||'').replace(/'/g,"\\'")}')"
-        style="width:100%;padding:8px;border-radius:10px;border:none;background:${r.type==='sos'?'var(--red)':'var(--g6)'};color:white;font-family:var(--fu);font-size:12px;font-weight:700;cursor:pointer">
-        ${r.type==='sos'?'🚨 Responder SOS':'✅ Aceitar chamado'}
-      </button>
-    </div>`).join('');
+        <button onclick="window.acceptReq('${r.id}','${r.uid}','${(r.pilotName||'').replace(/'/g,"\\'")}','${(r.message||'').replace(/'/g,"\\'")}')"
+          style="width:100%;padding:8px;border-radius:10px;border:none;background:${r.type==='sos'?'var(--red)':'var(--g6)'};color:white;font-family:var(--fu);font-size:12px;font-weight:700;cursor:pointer">
+          ${r.type==='sos'?'🚨 Responder SOS':'✅ Aceitar chamado'}
+        </button>
+      </div>`).join('');
+  }
+  
+  // Mostrar pedidos próprios em andamento
+  await loadOwnRequests();
+}
+
+window.cancelReq = async (requestId) => {
+  const db = window._firebaseDB;
+  if (!db || !requestId) return;
+  
+  try {
+    const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await updateDoc(doc(db, 'requests', requestId), { status: 'cancelled', updatedAt: window._fsTimestamp?.() });
+    
+    if (R.currentRequestId === requestId) {
+      R.currentRequestId = null;
+      R.sosActive = false;
+      $('sosBar').classList.remove('on');
+    }
+    
+    showToast('✅ Pedido cancelado');
+    await loadOwnRequests();
+  } catch (error) {
+    console.error('❌ Erro ao cancelar pedido:', error);
+    showToast('❌ Erro ao cancelar');
+  }
+};
+
+async function loadOwnRequests() {
+  const db = window._firebaseDB;
+  if (!db || !R.user) return;
+  
+  try {
+    const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const q = query(collection(db, 'requests'), where('uid', '==', R.user.uid), where('status', '==', 'open'));
+    const snap = await getDocs(q);
+    const ownReqs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    
+    if (ownReqs.length > 0) {
+      const icons = { sos: '🚨', helice: '🚁', battery: '🔋', fuel: '⛽', part: '🔧', support: '🛠️', tow: '🚜' };
+      const reqListDiv = $('reqList');
+      
+      const ownSection = `
+        <div style="border-top:1px solid var(--bd);padding:12px 0;margin:12px 0">
+          <div style="font-size:11px;font-weight:700;color:var(--g4);padding:0 20px;margin-bottom:8px">📤 MEUS PEDIDOS EM ANDAMENTO</div>
+          ${ownReqs.map(r => `
+            <div class="req-item" style="background:var(--s2);border:1px solid var(--bd);margin:0 20px 8px;border-radius:10px;padding:12px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <span style="font-size:18px">${icons[r.type] || '🔧'}</span>
+                <div style="flex:1">
+                  <div style="font-size:12px;font-weight:700;color:var(--tx)">Seu Pedido</div>
+                  <div style="font-size:11px;color:var(--mt)">${r.message}</div>
+                </div>
+              </div>
+              <button onclick="window.cancelReq('${r.id}')" style="width:100%;padding:8px;border-radius:8px;border:none;background:#e03535;color:white;font-family:var(--fu);font-size:11px;font-weight:700;cursor:pointer">❌ Cancelar Pedido</button>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      
+      reqListDiv.innerHTML += ownSection;
+    }
+  } catch (error) {
+    console.error('❌ Erro ao carregar pedidos próprios:', error);
+  }
 }
 
 async function listenRequests(){
