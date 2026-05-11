@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
-//  AgroMetrix Radar — radar.js v3.0 (Unificada)
-//  Mapa Leaflet · Pilotos reais · Bots · SOS · Operações
+//  AgroMetrix Radar — radar.js v3.1 (Com Sistema de Chamados)
+//  Mapa Leaflet · Pilotos reais · Bots · SOS · Operações · Chamados
 // ═══════════════════════════════════════════════════════════════
 
 let _map = null;
@@ -14,6 +14,11 @@ let _operationConfig = {};
 let _pauseTimer = null;
 let _autoEndTimer = null;
 let _currentUid = null;
+
+// ── SISTEMA DE CHAMADOS (Máx 1 ativo) ─────────────────────────
+const activeCallsMap = new Map(); // { callId: { uid, timestamp, location, type, accepted } }
+let currentCallId = null;
+let _callTimerInterval = null;
 
 // ── Bots simulados (pilotos realistas) ───────────────────────
 const BOTS = [
@@ -113,15 +118,15 @@ function pilotIcon(status, isUser = false) {
   });
 }
 
-// ── Popup com botões ──────────────────────────────────────────
+// ── Popup com botões (integrado com chamados) ─────────────────
 function buildPopup(pilot) {
   const reqBtn = (pilot.status === 'request' && !pilot.isCurrentUser) ?
-    `<button onclick="window.dispatchEvent(new CustomEvent('amx:accept-request', { detail: { pilotId: '${pilot.id}', msg: '${(pilot.requestMsg || '').replace(/'/g, "\\'")}', name: '${pilot.name}' } }))"
+    `<button onclick="window.acceptCallFromPopup('${pilot.id}', '${(pilot.requestMsg || '').replace(/'/g, "\\'")}', '${pilot.name.replace(/'/g, "\\'")}')"
       style="margin-top:8px;width:100%;padding:7px;border-radius:8px;border:none;background:#f5a623;color:#0d1a0f;font-weight:700;font-size:12px;cursor:pointer">
       ✅ Aceitar chamado</button>` : '';
 
   const sosBtn = (pilot.status === 'sos' && !pilot.isCurrentUser) ?
-    `<button onclick="window.dispatchEvent(new CustomEvent('amx:respond-sos', { detail: { pilotId: '${pilot.id}', name: '${pilot.name}' } }))"
+    `<button onclick="window.respondToSOS('${pilot.id}', '${pilot.name.replace(/'/g, "\\'")}')"
       style="margin-top:8px;width:100%;padding:7px;border-radius:8px;border:none;background:#e03535;color:white;font-weight:700;font-size:12px;cursor:pointer">
       🚨 Responder SOS</button>` : '';
 
@@ -149,6 +154,285 @@ function buildPopup(pilot) {
   </div>`;
 }
 
+// ── Funções do Sistema de Chamados ────────────────────────────
+
+// Criar novo chamado (máximo 1 ativo)
+export async function createCall(type, description) {
+  // Verificar se já existe chamado ativo
+  if (currentCallId) {
+    const existing = activeCallsMap.get(currentCallId);
+    if (existing && !existing.accepted && Date.now() - existing.timestamp < 30000) {
+      showToastMessage('⚠️ Já existe um chamado ativo. Aguarde resolução.', 'warning');
+      return null;
+    }
+  }
+
+  // Parar sons de loop anteriores
+  stopLoopSound();
+
+  const callId = 'call_' + Date.now();
+  currentCallId = callId;
+
+  const userData = window.R || { user: null, profile: null, lat: -15.7801, lon: -47.9292 };
+  
+  activeCallsMap.set(callId, {
+    id: callId,
+    uid: userData.user?.uid || 'unknown',
+    name: userData.profile?.nickname || userData.profile?.name || 'Piloto',
+    type: type,
+    description: description,
+    location: { lat: userData.lat || -15.7801, lon: userData.lon || -47.9292 },
+    timestamp: Date.now(),
+    accepted: false
+  });
+
+  // Auto-reject após 30s se ninguém aceitar
+  setTimeout(() => {
+    const call = activeCallsMap.get(callId);
+    if (call && !call.accepted) {
+      activeCallsMap.delete(callId);
+      if (currentCallId === callId) {
+        currentCallId = null;
+        stopLoopSound();
+      }
+      showToastMessage('⏱️ Ninguém aceitou seu chamado. Tente novamente.', 'info');
+    }
+  }, 30000);
+
+  // Notificar pilotos próximos (todos visíveis)
+  notifyNearbyPilots(callId, type, description);
+  
+  showToastMessage(`📢 Chamado de ${type} enviado para pilotos próximos!`, 'success');
+  playSoundEffect('sos');
+  
+  return callId;
+}
+
+// Notificar pilotos próximos (raio 100km)
+function notifyNearbyPilots(callId, type, description) {
+  const call = activeCallsMap.get(callId);
+  if (!call) return;
+  
+  // Percorrer todos os marcadores (pilotos reais e bots)
+  Object.values(_markers).forEach(marker => {
+    const pilot = marker._pilotData;
+    if (!pilot || pilot.isCurrentUser) return;
+    
+    // Calcular distância
+    const distance = calculateDistance(
+      call.location.lat, call.location.lon,
+      pilot.lat, pilot.lon
+    );
+    
+    // Se estiver dentro de 100km, mostrar notificação
+    if (distance <= 100) {
+      showCallModal(callId, type, description, pilot);
+    }
+  });
+}
+
+// Calcular distância entre dois pontos (km)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Raio da Terra em km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+// Mostrar modal de chamado para o piloto
+function showCallModal(callId, type, description, pilot) {
+  const call = activeCallsMap.get(callId);
+  if (!call || call.accepted) return;
+  
+  const icons = {
+    'tow': '🚜',
+    'maintenance': '🔧',
+    'sos': '🚨',
+    'fuel': '⛽',
+    'weather': '🌦️'
+  };
+  
+  // Criar modal se não existir
+  let modal = document.getElementById('callModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'callModal';
+    modal.innerHTML = `
+      <div id="callModalOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:10001;display:none"></div>
+      <div id="callModalContent" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0d1a0f;border-radius:16px;padding:24px;width:320px;z-index:10002;display:none;border:1px solid #3da866;box-shadow:0 8px 32px rgba(0,0,0,0.4)">
+        <div style="text-align:center;font-size:48px;margin-bottom:12px" id="callModalIcon">🚨</div>
+        <h3 style="color:#e8f5eb;margin:0 0 8px 0;text-align:center" id="callModalTitle">Chamado de Emergência</h3>
+        <p style="color:#9ac8a6;margin:0 0 16px 0;text-align:center;font-size:14px" id="callModalMsg">Mensagem</p>
+        <div style="text-align:center;margin-bottom:20px">
+          <span style="background:#1f5534;color:#5ec880;padding:4px 12px;border-radius:20px;font-size:12px" id="callModalTimer">Expira em 30s</span>
+        </div>
+        <div style="display:flex;gap:12px">
+          <button id="callModalAccept" style="flex:1;padding:12px;background:#3da866;border:none;border-radius:8px;color:white;font-weight:700;cursor:pointer">✅ Aceitar</button>
+          <button id="callModalIgnore" style="flex:1;padding:12px;background:#e03535;border:none;border-radius:8px;color:white;font-weight:700;cursor:pointer">❌ Ignorar</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+  
+  const overlay = document.getElementById('callModalOverlay');
+  const content = document.getElementById('callModalContent');
+  const iconEl = document.getElementById('callModalIcon');
+  const titleEl = document.getElementById('callModalTitle');
+  const msgEl = document.getElementById('callModalMsg');
+  const timerEl = document.getElementById('callModalTimer');
+  
+  iconEl.textContent = icons[type] || '🔧';
+  titleEl.textContent = `Chamado de ${call.name || 'Piloto'}`;
+  msgEl.textContent = description;
+  
+  overlay.style.display = 'block';
+  content.style.display = 'block';
+  
+  // Timer visual
+  let secs = 30;
+  if (_callTimerInterval) clearInterval(_callTimerInterval);
+  _callTimerInterval = setInterval(() => {
+    secs--;
+    timerEl.textContent = `Expira em ${secs}s`;
+    if (secs <= 0) {
+      clearInterval(_callTimerInterval);
+      closeCallModal();
+    }
+  }, 1000);
+  
+  // Sons de alerta
+  playLoopSound('alert', 30000);
+  
+  // Handlers dos botões
+  const acceptBtn = document.getElementById('callModalAccept');
+  const ignoreBtn = document.getElementById('callModalIgnore');
+  
+  const newAcceptBtn = acceptBtn.cloneNode(true);
+  const newIgnoreBtn = ignoreBtn.cloneNode(true);
+  acceptBtn.parentNode.replaceChild(newAcceptBtn, acceptBtn);
+  ignoreBtn.parentNode.replaceChild(newIgnoreBtn, ignoreBtn);
+  
+  newAcceptBtn.onclick = () => {
+    acceptCall(callId, pilot);
+    closeCallModal();
+  };
+  
+  newIgnoreBtn.onclick = () => {
+    closeCallModal();
+  };
+}
+
+function closeCallModal() {
+  const overlay = document.getElementById('callModalOverlay');
+  const content = document.getElementById('callModalContent');
+  if (overlay) overlay.style.display = 'none';
+  if (content) content.style.display = 'none';
+  if (_callTimerInterval) clearInterval(_callTimerInterval);
+  stopLoopSound();
+}
+
+// Aceitar chamado
+export function acceptCall(callId, pilot) {
+  const call = activeCallsMap.get(callId);
+  if (!call || call.accepted) return;
+  
+  call.accepted = true;
+  
+  // Parar sons
+  stopLoopSound();
+  playSoundEffect('accept');
+  
+  // Notificar quem fez o chamado via evento
+  window.dispatchEvent(new CustomEvent('amx:call-accepted', {
+    detail: {
+      callId: callId,
+      fromUid: call.uid,
+      fromName: call.name,
+      acceptedBy: pilot.id,
+      acceptedByName: pilot.name,
+      message: call.description
+    }
+  }));
+  
+  // Abrir chat com quem fez o chamado
+  if (window.openChat) {
+    window.openChat(call.uid);
+  }
+  
+  showToastMessage(`✅ Você aceitou o chamado de ${call.name}! Chat aberto.`, 'success');
+  
+  // Remover chamado
+  activeCallsMap.delete(callId);
+  if (currentCallId === callId) currentCallId = null;
+}
+
+// Função global para aceitar do popup
+window.acceptCallFromPopup = function(pilotId, message, pilotName) {
+  // Encontrar o chamado ativo mais recente
+  const calls = Array.from(activeCallsMap.values());
+  const activeCall = calls.find(c => !c.accepted && Date.now() - c.timestamp < 30000);
+  
+  if (activeCall) {
+    const pilot = _markers[pilotId]?._pilotData;
+    if (pilot) {
+      acceptCall(activeCall.id, pilot);
+    }
+  } else {
+    showToastMessage('❌ Nenhum chamado ativo encontrado.', 'error');
+  }
+};
+
+// Responder SOS
+window.respondToSOS = function(pilotId, pilotName) {
+  showToastMessage(`🚨 Respondendo SOS de ${pilotName}...`, 'warning');
+  playSoundEffect('sos');
+  
+  window.dispatchEvent(new CustomEvent('amx:respond-sos', {
+    detail: { pilotId: pilotId, name: pilotName }
+  }));
+  
+  // Abrir chat com o piloto em SOS
+  if (window.openChat) {
+    window.openChat(pilotId);
+  }
+};
+
+// ── Filtro de Conversas Reais ─────────────────────────────────
+export function loadRealChatsOnly(chats) {
+  if (!Array.isArray(chats)) return [];
+  
+  return chats.filter(chat => {
+    // Descartar IDs que contêm 'demo', 'test', 'fake'
+    if (chat.uid?.includes('demo') || chat.id?.includes('demo')) return false;
+    if (chat.fake === true) return false;
+    
+    // Manter apenas chats com usuários reais
+    return chat.uid && chat.uid.length > 5;
+  });
+}
+
+// ── Pilotos Próximos Helper ───────────────────────────────────
+export function findNearbyPilots(lat, lon, radiusKm) {
+  const nearby = [];
+  
+  Object.values(_markers).forEach(marker => {
+    const pilot = marker._pilotData;
+    if (!pilot || pilot.isCurrentUser) return;
+    
+    const distance = calculateDistance(lat, lon, pilot.lat, pilot.lon);
+    if (distance <= radiusKm) {
+      nearby.push(pilot);
+    }
+  });
+  
+  return nearby;
+}
+
 // ── Adicionar/atualizar piloto ────────────────────────────────
 export function upsertPilot(pilot) {
   if (!_map || !pilot.lat || !pilot.lon) return;
@@ -174,6 +458,82 @@ export function removePilot(id) {
   if (_markers[id]) {
     _markers[id].remove();
     delete _markers[id];
+  }
+}
+
+// ── Utilitários de UI ─────────────────────────────────────────
+function showToastMessage(message, type = 'info') {
+  let toast = document.getElementById('amx-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'amx-toast';
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background: #1f5534;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 10000;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      font-family: 'Syne', sans-serif;
+    `;
+    document.body.appendChild(toast);
+  }
+  
+  toast.textContent = message;
+  toast.style.opacity = '1';
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+  }, 3000);
+}
+
+function playSoundEffect(type) {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    if (type === 'sos') {
+      oscillator.frequency.value = 880;
+      gainNode.gain.value = 0.3;
+      oscillator.start();
+      setTimeout(() => oscillator.stop(), 500);
+    } else if (type === 'accept') {
+      oscillator.frequency.value = 523.25;
+      gainNode.gain.value = 0.2;
+      oscillator.start();
+      setTimeout(() => oscillator.stop(), 300);
+    }
+  } catch(e) { console.log('Sound not supported'); }
+}
+
+let _loopSoundInterval = null;
+function playLoopSound(type, duration) {
+  stopLoopSound();
+  _loopSoundInterval = setInterval(() => {
+    playSoundEffect(type);
+  }, 2000);
+  
+  setTimeout(() => {
+    stopLoopSound();
+  }, duration);
+}
+
+function stopLoopSound() {
+  if (_loopSoundInterval) {
+    clearInterval(_loopSoundInterval);
+    _loopSoundInterval = null;
   }
 }
 
@@ -280,7 +640,7 @@ export function stopBotUpdates() {
   if (_botInterval) clearInterval(_botInterval);
 }
 
-// ── Localização ───────────────────────────────────────────────
+// ── Localização (60s em vez de 30s) ───────────────────────────
 export function startLocationTracking(uid, onUpdate) {
   let lastLat = null, lastLon = null;
 
@@ -299,7 +659,7 @@ export function startLocationTracking(uid, onUpdate) {
 
   update();
   if (_locationInterval) clearInterval(_locationInterval);
-  _locationInterval = setInterval(update, 30000);
+  _locationInterval = setInterval(update, 60000); // 60 segundos!
 }
 
 export function stopLocationTracking() {
@@ -419,6 +779,7 @@ export function amxLabel(score) {
 export function isOperating() { return _operationActive; }
 export function getMap() { return _map; }
 export function getMarkers() { return _markers; }
+export function getActiveCall() { return currentCallId ? activeCallsMap.get(currentCallId) : null; }
 
 // ── Funções para testes com bots ──────────────────────────────
 export function addBotRequest(botId, message) {
@@ -445,4 +806,14 @@ export function clearBotStatus(botId) {
     bot._pilotData.requestMsg = null;
     upsertPilot(bot._pilotData);
   }
+}
+
+// ── Exportar funções globais para compatibilidade ─────────────
+if (typeof window !== 'undefined') {
+  window.createCall = createCall;
+  window.acceptCall = acceptCall;
+  window.findNearbyPilots = findNearbyPilots;
+  window.loadRealChatsOnly = loadRealChatsOnly;
+  window.acceptCallFromPopup = window.acceptCallFromPopup;
+  window.respondToSOS = window.respondToSOS;
 }
