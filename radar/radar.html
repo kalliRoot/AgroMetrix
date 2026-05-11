@@ -72,7 +72,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .r-badge{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;background:rgba(6,14,8,.85);border:1px solid var(--bdm);font-size:11px;color:var(--tx2);backdrop-filter:blur(8px)}
 .ldot{width:6px;height:6px;border-radius:50%;background:var(--g4);animation:ldotP 2s infinite}
 @keyframes ldotP{0%,100%{opacity:1}50%{opacity:.3}}
-.ico-btn{width:36px;height:36px;border-radius:50%;background:rgba(6,14,8,.85);border:1px solid var(--bdm);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:all .2s;flex-shrink:0;backdrop-filter:blur(8px);position:relative}
+.ico-btn{width:36px;height:36px;border-radius:50%;background:rgba(6,14,8,.85);border:1px solid var(--bdm);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:all .2s;flex-shrink:0;backdrop-filter:blur(8px)}
 .ico-btn:hover{border-color:var(--g4)}
 .notif-dot{position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:var(--red);color:white;font-size:8px;font-weight:700;display:none;align-items:center;justify-content:center}
 .notif-dot.on{display:flex}
@@ -197,8 +197,7 @@ select.inp{cursor:pointer}
 
 /* Pedidos */
 .req-item{background:var(--s2);border-radius:12px;padding:12px;margin:0 20px 8px;border:1px solid var(--bd)}
-.req-item.sos-req{border-color:rgba(224,53,53,.4);animation:reqPulse 1.5s ease-in-out infinite}
-@keyframes reqPulse{0%,100%{border-left-width:4px;border-left-color:transparent}50%{border-left-width:4px;border-left-color:var(--red)}}
+.req-item.sos-req{border-color:rgba(224,53,53,.4)}
 
 /* Chat */
 .chat-msgs{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:10px;max-height:160px;overflow-y:auto;margin:0 20px 8px;display:flex;flex-direction:column;gap:6px;scrollbar-width:none}
@@ -211,21 +210,6 @@ select.inp{cursor:pointer}
 .chat-inp{flex:1;padding:10px 13px;background:var(--s2);border:1.5px solid var(--bdm);border-radius:12px;font-family:var(--fu);font-size:13px;color:var(--tx);outline:none}
 .chat-inp:focus{border-color:var(--g4)}
 .chat-send{width:40px;height:40px;border-radius:50%;background:var(--g6);border:none;color:white;font-size:16px;cursor:pointer;flex-shrink:0}
-
-/* Card de Pedidos Ativos (flutuante) */
-.active-reqs-card{position:fixed;bottom:80px;left:12px;right:12px;z-index:150;background:rgba(11,22,13,.98);border:1px solid var(--bdm);border-radius:16px;padding:10px;backdrop-filter:blur(12px);max-height:280px;overflow-y:auto;display:none;box-shadow:0 8px 32px rgba(0,0,0,.5)}
-.active-reqs-card.on{display:block}
-.active-reqs-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mt);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
-.active-reqs-close{background:none;border:none;color:var(--mt);font-size:16px;cursor:pointer}
-.req-item-small{background:var(--s2);border-radius:10px;padding:8px 10px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
-.req-item-small.sos{border-left:3px solid var(--red)}
-.req-item-small.request{border-left:3px solid #f5a623}
-.req-icon{font-size:16px}
-.req-text{flex:1;font-size:11px;color:var(--tx2)}
-.req-text strong{color:var(--tx);font-weight:700}
-.req-btn{padding:4px 10px;border-radius:16px;border:none;font-size:10px;font-weight:700;cursor:pointer}
-.req-btn.sos{background:var(--red);color:white}
-.req-btn.request{background:#f5a623;color:#0d1a0f}
 
 /* Paywall */
 .pw-wrap{padding:0 20px;text-align:center}
@@ -261,10 +245,10 @@ select.inp{cursor:pointer}
       <div class="sp-dot" style="top:44%;left:72%;opacity:.8"></div>
       <div class="sp-dot" style="top:72%;left:58%;opacity:.5"></div>
     </div>
-    <button class="btn-cta" id="btnEntrar" onclick="window.enterRadar()">🚁 Entrar no Radar</button>
+    <button class="btn-cta" id="btnEntrar" onclick="enterRadar()">🚁 Entrar no Radar</button>
     <div class="sp-sub">7 dias grátis · Depois R$ 19,90/mês</div>
     <div class="sp-divider"><span>já tenho conta</span></div>
-    <button class="btn-google" onclick="window.enterRadar()">
+    <button class="btn-google" onclick="enterRadar()">
       <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Entrar com Google
     </button>
@@ -280,35 +264,26 @@ select.inp{cursor:pointer}
     <div class="r-logo">Agro<span>Metrix</span> <span style="font-size:10px;color:var(--mt);font-weight:400">RADAR</span></div>
     <div class="r-badge"><div class="ldot"></div><span id="pilotCount">—</span></div>
     <div style="position:relative">
-      <button class="ico-btn" onclick="window.openSheet('shReq')" title="Pedidos">🔧</button>
+      <button class="ico-btn" onclick="openSheet('shReq')" title="Pedidos">🔧</button>
       <div class="notif-dot" id="reqDot">!</div>
     </div>
-    <button class="ico-btn" onclick="window.openSheet('shProfile')" title="Perfil">👤</button>
-  </div>
-
-  <!-- Card de Pedidos Ativos (flutuante) -->
-  <div class="active-reqs-card" id="activeReqsCard">
-    <div class="active-reqs-title">
-      <span>📢 PEDIDOS ATIVOS</span>
-      <button class="active-reqs-close" onclick="document.getElementById('activeReqsCard').classList.remove('on')">✕</button>
-    </div>
-    <div id="activeReqsList"></div>
+    <button class="ico-btn" onclick="openSheet('shProfile')" title="Perfil">👤</button>
   </div>
 
   <!-- SOS Bar -->
   <div class="sos-bar" id="sosBar">
     <span style="font-size:18px">🚨</span>
     <div class="sos-txt">SOS ATIVO — Aguardando pilotos próximos…</div>
-    <button class="sos-cancel" onclick="window.cancelSOS()">Cancelar</button>
+    <button class="sos-cancel" onclick="cancelSOS()">Cancelar</button>
   </div>
 
   <!-- Nav bottom -->
   <div class="r-nav">
     <div class="nav-tabs">
-      <button class="nav-tab act" id="tab-radar" onclick="window.switchTab('radar')">📡 Radar</button>
-      <button class="nav-tab" id="tab-clima" onclick="window.switchTab('clima')">🌡️ Clima</button>
-      <button class="nav-tab" id="tab-ops" onclick="window.switchTab('ops')">🚁 Ops</button>
-      <button class="nav-tab" id="tab-rank" onclick="window.switchTab('rank')">🏆 Rank</button>
+      <button class="nav-tab act" id="tab-radar" onclick="switchTab('radar')">📡 Radar</button>
+      <button class="nav-tab" id="tab-clima" onclick="switchTab('clima')">🌡️ Clima</button>
+      <button class="nav-tab" id="tab-ops" onclick="switchTab('ops')">🚁 Ops</button>
+      <button class="nav-tab" id="tab-rank" onclick="switchTab('rank')">🏆 Rank</button>
     </div>
 
     <!-- Painel Radar -->
@@ -324,7 +299,7 @@ select.inp{cursor:pointer}
           <div class="amx-bar"><div class="amx-fill" id="amxFill" style="width:0%;background:var(--g4)"></div></div>
         </div>
       </div>
-      <button class="btn-op start" id="btnOp" onclick="window.handleOp()">🚁 Iniciar Operação</button>
+      <button class="btn-op start" id="btnOp" onclick="handleOp()">🚁 Iniciar Operação</button>
     </div>
 
     <!-- Painel Clima -->
@@ -350,14 +325,14 @@ select.inp{cursor:pointer}
     <!-- Painel Ops -->
     <div class="panel" id="pOps">
       <div class="quick-row">
-        <div class="qbtn red" onclick="window.activateSOS()">🚨 SOS</div>
-        <div class="qbtn" onclick="window.sendReq('battery','🔋 Preciso de bateria')">🔋 Bateria</div>
-        <div class="qbtn" onclick="window.sendReq('helice','🚁 Preciso de hélice')">🚁 Hélice</div>
-        <div class="qbtn" onclick="window.sendReq('part','🔧 Preciso de peça')">🔧 Peça</div>
-        <div class="qbtn" onclick="window.sendReq('support','🛠️ Preciso de suporte')">🛠️ Suporte</div>
-        <div class="qbtn" onclick="window.sendReq('fuel','⛽ Abastecimento')">⛽ Combustível</div>
+        <div class="qbtn red" onclick="activateSOS()">🚨 SOS</div>
+        <div class="qbtn" onclick="sendReq('battery','🔋 Preciso de bateria')">🔋 Bateria</div>
+        <div class="qbtn" onclick="sendReq('helice','🚁 Preciso de hélice')">🚁 Hélice</div>
+        <div class="qbtn" onclick="sendReq('part','🔧 Preciso de peça')">🔧 Peça</div>
+        <div class="qbtn" onclick="sendReq('support','🛠️ Preciso de suporte')">🛠️ Suporte</div>
+        <div class="qbtn" onclick="sendReq('fuel','⛽ Abastecimento')">⛽ Combustível</div>
       </div>
-      <button class="btn-op start" id="btnOp2" onclick="window.handleOp()">🚁 Iniciar Operação</button>
+      <button class="btn-op start" id="btnOp2" onclick="handleOp()">🚁 Iniciar Operação</button>
     </div>
 
     <!-- Painel Ranking -->
@@ -370,7 +345,7 @@ select.inp{cursor:pointer}
 </div>
 
 <!-- ══ SHEET PERFIL ══ -->
-<div class="overlay" id="ovProfile" onclick="window.closeSheet('shProfile')"></div>
+<div class="overlay" id="ovProfile" onclick="closeSheet('shProfile')"></div>
 <div class="sheet" id="shProfile">
   <div class="sh-handle"></div>
   <div class="sh-title">Meu Perfil</div>
@@ -378,7 +353,7 @@ select.inp{cursor:pointer}
 </div>
 
 <!-- ══ SHEET OP CONFIG ══ -->
-<div class="overlay" id="ovOpConfig" onclick="window.closeSheet('shOpConfig')"></div>
+<div class="overlay" id="ovOpConfig" onclick="closeSheet('shOpConfig')"></div>
 <div class="sheet" id="shOpConfig">
   <div class="sh-handle"></div>
   <div class="sh-title">⚙️ Configurar Operação</div>
@@ -386,45 +361,45 @@ select.inp{cursor:pointer}
   <div class="inp-g">
     <label class="inp-l">Drone utilizado</label>
     <div class="op-chip-row" id="droneChips">
-      <div class="op-chip" onclick="window.selChip(this,'drone','DJI T25')">DJI T25</div>
-      <div class="op-chip" onclick="window.selChip(this,'drone','DJI T40')">DJI T40</div>
-      <div class="op-chip" onclick="window.selChip(this,'drone','DJI T50')">DJI T50</div>
-      <div class="op-chip" onclick="window.selChip(this,'drone','XAG P100')">XAG P100</div>
-      <div class="op-chip" onclick="window.selChip(this,'drone','XAG V40')">XAG V40</div>
-      <div class="op-chip" onclick="window.selChip(this,'drone','EAVision')">EAVision</div>
-      <div class="op-chip" onclick="window.selChip(this,'drone','Outro')">Outro</div>
+      <div class="op-chip" onclick="selChip(this,'drone','DJI T25')">DJI T25</div>
+      <div class="op-chip" onclick="selChip(this,'drone','DJI T40')">DJI T40</div>
+      <div class="op-chip" onclick="selChip(this,'drone','DJI T50')">DJI T50</div>
+      <div class="op-chip" onclick="selChip(this,'drone','XAG P100')">XAG P100</div>
+      <div class="op-chip" onclick="selChip(this,'drone','XAG V40')">XAG V40</div>
+      <div class="op-chip" onclick="selChip(this,'drone','EAVision')">EAVision</div>
+      <div class="op-chip" onclick="selChip(this,'drone','Outro')">Outro</div>
     </div>
   </div>
 
   <div class="inp-g">
     <label class="inp-l">Faixa média de aplicação</label>
     <div class="op-chip-row" id="faixaChips">
-      <div class="op-chip" onclick="window.selChip(this,'faixa','7')">7 m</div>
-      <div class="op-chip" onclick="window.selChip(this,'faixa','9')">9 m</div>
-      <div class="op-chip" onclick="window.selChip(this,'faixa','11')">11 m</div>
-      <div class="op-chip" onclick="window.selChip(this,'faixa','13')">13 m</div>
+      <div class="op-chip" onclick="selChip(this,'faixa','7')">7 m</div>
+      <div class="op-chip" onclick="selChip(this,'faixa','9')">9 m</div>
+      <div class="op-chip" onclick="selChip(this,'faixa','11')">11 m</div>
+      <div class="op-chip" onclick="selChip(this,'faixa','13')">13 m</div>
     </div>
   </div>
 
   <div class="inp-g">
     <label class="inp-l">Vazão média utilizada</label>
     <div class="op-chip-row" id="vazaoChips">
-      <div class="op-chip" onclick="window.selChip(this,'vazao','5')">5 L/ha</div>
-      <div class="op-chip" onclick="window.selChip(this,'vazao','10')">10 L/ha</div>
-      <div class="op-chip" onclick="window.selChip(this,'vazao','15')">15 L/ha</div>
-      <div class="op-chip" onclick="window.selChip(this,'vazao','20')">20 L/ha</div>
-      <div class="op-chip" onclick="window.selChip(this,'vazao','30')">30 L/ha</div>
+      <div class="op-chip" onclick="selChip(this,'vazao','5')">5 L/ha</div>
+      <div class="op-chip" onclick="selChip(this,'vazao','10')">10 L/ha</div>
+      <div class="op-chip" onclick="selChip(this,'vazao','15')">15 L/ha</div>
+      <div class="op-chip" onclick="selChip(this,'vazao','20')">20 L/ha</div>
+      <div class="op-chip" onclick="selChip(this,'vazao','30')">30 L/ha</div>
     </div>
   </div>
 
   <div class="inp-g">
     <label class="inp-l">Média operacional estimada</label>
     <div class="op-chip-row" id="haChips">
-      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','15')">15 ha/h</div>
-      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','20')">20 ha/h</div>
-      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','25')">25 ha/h</div>
-      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','30')">30 ha/h</div>
-      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','40')">40 ha/h</div>
+      <div class="op-chip" onclick="selChip(this,'avgHaPerH','15')">15 ha/h</div>
+      <div class="op-chip" onclick="selChip(this,'avgHaPerH','20')">20 ha/h</div>
+      <div class="op-chip" onclick="selChip(this,'avgHaPerH','25')">25 ha/h</div>
+      <div class="op-chip" onclick="selChip(this,'avgHaPerH','30')">30 ha/h</div>
+      <div class="op-chip" onclick="selChip(this,'avgHaPerH','40')">40 ha/h</div>
     </div>
   </div>
 
@@ -432,21 +407,21 @@ select.inp{cursor:pointer}
     ⚠️ Sistema gera <strong style="color:var(--tx2)">estimativa operacional coerente</strong>. Vazões extremas reduzem confiabilidade do AMX Score.
   </div>
 
-  <button class="btn-prim" onclick="window.confirmOp()" style="margin-top:14px">🚁 Iniciar Operação</button>
-  <button class="btn-sec" onclick="window.closeSheet('shOpConfig')" style="margin-top:8px">Cancelar</button>
+  <button class="btn-prim" onclick="confirmOp()" style="margin-top:14px">🚁 Iniciar Operação</button>
+  <button class="btn-sec" onclick="closeSheet('shOpConfig')" style="margin-top:8px">Cancelar</button>
 </div>
 
 <!-- ══ SHEET OP RESULTADO ══ -->
-<div class="overlay" id="ovOpResult" onclick="window.closeSheet('shOpResult')"></div>
+<div class="overlay" id="ovOpResult" onclick="closeSheet('shOpResult')"></div>
 <div class="sheet" id="shOpResult">
   <div class="sh-handle"></div>
   <div class="sh-title">📊 Resultado da Operação</div>
   <div id="opResultContent"></div>
-  <button class="btn-prim" onclick="window.closeSheet('shOpResult')" style="margin-top:10px">Fechar</button>
+  <button class="btn-prim" onclick="closeSheet('shOpResult')" style="margin-top:10px">Fechar</button>
 </div>
 
 <!-- ══ SHEET PEDIDOS ══ -->
-<div class="overlay" id="ovReq" onclick="window.closeSheet('shReq')"></div>
+<div class="overlay" id="ovReq" onclick="closeSheet('shReq')"></div>
 <div class="sheet" id="shReq">
   <div class="sh-handle"></div>
   <div class="sh-title">📢 Pedidos e SOS Ativos</div>
@@ -455,8 +430,8 @@ select.inp{cursor:pointer}
     <div class="sh-title" style="margin-top:8px">💬 Chat com <span id="chatName">—</span></div>
     <div class="chat-msgs" id="chatMsgs"></div>
     <div class="chat-input-row">
-      <input class="chat-inp" id="chatInp" placeholder="Mensagem…" onkeydown="if(event.key==='Enter')window.sendMsg()">
-      <button class="chat-send" onclick="window.sendMsg()">➤</button>
+      <input class="chat-inp" id="chatInp" placeholder="Mensagem…" onkeydown="if(event.key==='Enter')sendMsg()">
+      <button class="chat-send" onclick="sendMsg()">➤</button>
     </div>
   </div>
 </div>
@@ -482,8 +457,8 @@ select.inp{cursor:pointer}
       <div class="pw-price-p">por mês · cancele quando quiser</div>
       <div class="pw-price-n">🎁 7 dias grátis para testar</div>
     </div>
-    <button class="btn-prim" onclick="window.startTrial()" style="margin-bottom:8px">🚀 Começar 7 dias grátis</button>
-    <button onclick="window.closeSheet('shPaywall')" style="width:100%;padding:10px;background:none;border:none;color:var(--mt);font-family:var(--fu);font-size:13px;cursor:pointer">Agora não</button>
+    <button class="btn-prim" onclick="startTrial()" style="margin-bottom:8px">🚀 Começar 7 dias grátis</button>
+    <button onclick="closeSheet('shPaywall')" style="width:100%;padding:10px;background:none;border:none;color:var(--mt);font-family:var(--fu);font-size:13px;cursor:pointer">Agora não</button>
   </div>
 </div>
 
@@ -494,335 +469,353 @@ select.inp{cursor:pointer}
 import { firebaseConfig, isFirebaseConfigured } from './firebase-config.js';
 import { initFirebase, loginGoogle, logout, onAuthChange, getProfile, updateProfile, getPlanStatus } from './auth.js';
 import { initMap, upsertPilot, spawnBots, startBotUpdates, startLocationTracking, listenPilots,
-         startOperation, endOperation, isOperating, calcAMXScore, calcOperationEstimate, amxLabel, addNotificationBadge } from './radar.js';
+         startOperation, endOperation, isOperating, calcAMXScore, calcOperationEstimate, amxLabel } from './radar.js';
 
-// ==============================================================
-// SISTEMA DE ÁUDIO
-// ==============================================================
-let audioCtx = null;
-let audioEnabled = false;
-
-function initAudio() {
-  if (audioEnabled) return;
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContext) return;
-  audioCtx = new AudioContext();
-  audioEnabled = true;
-}
-
-function playSound(type) {
-  if (!audioEnabled || !audioCtx) return;
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-  
-  const now = audioCtx.currentTime;
-  const freqs = { request: [523.25,659.25,783.99], sos: [880,880,880,440,440,440], accept: [523.25,659.25,783.99,1046.50], message: [440,440] };
-  const durs = { request: [0.2,0.2,0.3], sos: [0.15,0.15,0.15,0.15,0.15,0.3], accept: [0.1,0.1,0.1,0.4], message: [0.05,0.05] };
-  const f = freqs[type] || freqs.request;
-  const d = durs[type] || durs.request;
-  for (let i = 0; i < f.length; i++) {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.frequency.value = f[i];
-    gain.gain.value = 0.25;
-    osc.start(now + (d[i] || 0.2) * i);
-    gain.gain.exponentialRampToValueAtTime(0.00001, now + (d[i] || 0.2) * (i + 1));
-    osc.stop(now + (d[i] || 0.2) * (i + 1));
-  }
-}
-
-document.body.addEventListener('click', function initFirst() { initAudio(); document.body.removeEventListener('click', initFirst); });
-
-// ==============================================================
-// SISTEMA DE PEDIDOS ATIVOS
-// ==============================================================
-let activeRequestsList = [];
-
-function addToActiveRequests(req) {
-  if (!activeRequestsList.some(r => r.id === req.id)) {
-    activeRequestsList.push(req);
-    renderActiveRequestsCard();
-  }
-}
-
-function removeFromActiveRequests(reqId) {
-  activeRequestsList = activeRequestsList.filter(r => r.id !== reqId);
-  renderActiveRequestsCard();
-}
-
-function renderActiveRequestsCard() {
-  const card = document.getElementById('activeReqsCard');
-  const listDiv = document.getElementById('activeReqsList');
-  if (activeRequestsList.length === 0) { if(card) card.classList.remove('on'); return; }
-  if(card) card.classList.add('on');
-  const recent = activeRequestsList.slice(-4);
-  if(listDiv) {
-    listDiv.innerHTML = recent.map(req => `
-      <div class="req-item-small ${req.type === 'sos' ? 'sos' : 'request'}">
-        <div class="req-icon">${req.type === 'sos' ? '🚨' : '🔧'}</div>
-        <div class="req-text"><strong>${req.pilotName}</strong>: ${req.message.substring(0, 40)}${req.message.length > 40 ? '...' : ''}</div>
-        <button class="req-btn ${req.type}" onclick="window.quickRespond('${req.id}','${req.pilotId}','${req.pilotName.replace(/'/g, "\\'")}','${req.type}')">
-          ${req.type === 'sos' ? 'Responder' : 'Aceitar'}
-        </button>
-      </div>
-    `).join('');
-  }
-}
-
-// ==============================================================
-// ESTADO PRINCIPAL
-// ==============================================================
+// ── Estado ─────────────────────────────────────────────────────
 const R = window.AgroRadar = {
-  user:null, profile:null, plan:null, lat:null, lon:null, map:null, weather:null,
+  user:null, profile:null, plan:null,
+  lat:null, lon:null, map:null, weather:null,
   opCfg:{}, chatTarget:null, chatUnsub:null, sosActive:false,
 };
 
-const $ = id => document.getElementById(id);
+// ── UI Helpers ─────────────────────────────────────────────────
+const $  = id => document.getElementById(id);
 const ov = id => id.replace('sh','ov');
 
-// ==============================================================
-// FUNÇÕES GLOBAIS (expostas no window)
-// ==============================================================
-window.openSheet = (id) => {
+window.openSheet = id => {
   $(ov(id)).classList.add('on');
   $(id).classList.add('on');
   if (id === 'shProfile') renderProfile();
-  if (id === 'shReq') loadRequests();
+  if (id === 'shReq')     loadRequests();
 };
-window.closeSheet = (id) => {
+window.closeSheet = id => {
   $(ov(id)).classList.remove('on');
   $(id).classList.remove('on');
 };
+
 window.showToast = (msg, dur=3500) => {
   const t=$('toast'); t.textContent=msg; t.classList.add('on');
   setTimeout(()=>t.classList.remove('on'), dur);
 };
-window.switchTab = (tab) => {
+
+window.switchTab = tab => {
   ['radar','clima','ops','rank'].forEach(t => {
-    const tb = $('tab-'+t); if(tb) tb.classList.remove('act');
-    const pn = $('p'+t[0].toUpperCase()+t.slice(1)); if(pn) pn.classList.remove('act');
+    $('tab-'+t)?.classList.remove('act');
+    $('p'+t[0].toUpperCase()+t.slice(1)).classList.remove('act');
   });
-  const at = $('tab-'+tab); if(at) at.classList.add('act');
-  const ap = $('p'+tab[0].toUpperCase()+tab.slice(1)); if(ap) ap.classList.add('act');
-  if(tab === 'rank') loadRanking();
+  $('tab-'+tab)?.classList.add('act');
+  $('p'+tab[0].toUpperCase()+tab.slice(1)).classList.add('act');
+  if (tab==='rank') loadRanking();
 };
+
 window.selChip = (el, field, val) => {
-  const parent = el.closest('.op-chip-row');
-  if(parent) parent.querySelectorAll('.op-chip').forEach(c => c.classList.remove('on'));
+  el.closest('.op-chip-row').querySelectorAll('.op-chip').forEach(c=>c.classList.remove('on'));
   el.classList.add('on');
   R.opCfg[field] = val;
 };
-window.handleOp = () => isOperating() ? endOp() : window.openSheet('shOpConfig');
-window.confirmOp = () => {
-  const c = R.opCfg;
-  if(!c.drone||!c.faixa||!c.vazao||!c.avgHaPerH){ window.showToast('⚠️ Preencha todos os campos'); return; }
-  window.closeSheet('shOpConfig');
-  startOperation(c, getW(), R.lat, R.lon);
-  setBtn(true);
-  playSound('accept');
-  window.showToast('🚁 Operação iniciada!');
-  publishSelf(R.lat, R.lon, 'operating');
-};
-window.activateSOS = async () => {
-  if(R.sosActive){ window.cancelSOS(); return; }
-  R.sosActive = true;
-  playSound('sos');
-  const sb = $('sosBar'); if(sb) sb.classList.add('on');
-  publishSelf(R.lat, R.lon, 'sos');
-  await updateProfile(R.user.uid, {requestMsg:'🚨 SOS — Preciso de ajuda!', sosAt:new Date().toISOString()});
-  await saveRequest('sos','🚨 SOS — Preciso de ajuda urgente!');
-  window.showToast('🚨 SOS ativado!', 5000);
-};
-window.cancelSOS = async () => {
-  R.sosActive = false;
-  const sb = $('sosBar'); if(sb) sb.classList.remove('on');
-  const ns = isOperating() ? 'operating' : 'online';
-  await updateProfile(R.user.uid, {status: ns, requestMsg: null, sosAt: null});
-  publishSelf(R.lat, R.lon, ns);
-  window.showToast('✅ SOS cancelado');
-};
-window.sendReq = async (type, msg) => {
-  playSound('request');
-  publishSelf(R.lat, R.lon, 'request');
-  await updateProfile(R.user.uid, {status:'request', requestMsg: msg});
-  await saveRequest(type, msg);
-  window.showToast(`${msg} — Pilotos notificados! 🟢`, 4000);
-  setTimeout(async () => { if(!R.sosActive){ const ns = isOperating() ? 'operating' : 'online'; publishSelf(R.lat,R.lon,ns); await updateProfile(R.user.uid,{status:ns,requestMsg:null}); } }, 300000);
-};
-window.acceptReq = (uid, name, message) => {
-  playSound('accept');
-  R.chatTarget = { uid, name };
-  const cn = $('chatName'); if(cn) cn.textContent = name;
-  const cs = $('chatSection'); if(cs) cs.style.display = 'block';
-  listenChat(uid);
-  window.showToast(`✅ Aceitou ajudar ${name}!`);
-  addNotificationBadge(uid, 'accept', `${R.profile?.nickname || 'Alguém'} aceitou seu pedido`, R.profile?.nickname);
-};
-window.sendMsg = async () => {
-  const inp = $('chatInp');
-  const txt = inp ? inp.value.trim() : '';
-  if(!txt || !R.chatTarget) return;
-  if(inp) inp.value = '';
-  playSound('message');
-  const db = window._firebaseDB; if(!db) return;
-  const chatId = [R.user.uid, R.chatTarget.uid].sort().join('_');
-  const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  await addDoc(collection(db, `chats/${chatId}/messages`), { uid: R.user.uid, name: R.profile?.nickname || R.profile?.name || 'Piloto', text: txt, createdAt: window._fsTimestamp() });
-};
-window.saveProfile = async () => {
-  const uid = R.user?.uid; if(!uid) return;
-  const nickname = $('pfNick')?.value.trim();
-  const city = $('pfCity')?.value.trim();
-  const drone = $('pfDrone')?.value;
-  await updateProfile(uid, { nickname, city, drone });
-  Object.assign(R.profile, { nickname, city, drone });
-  publishSelf(R.lat, R.lon, isOperating() ? 'operating' : 'online');
-  window.showToast('✅ Perfil salvo!');
-  window.closeSheet('shProfile');
-};
-window.setVis = async (vis) => { if(!R.user) return; await updateProfile(R.user.uid, {visibility: vis}); if(R.profile) R.profile.visibility = vis; renderProfile(); };
-window.doLogout = async () => { await logout(); window.closeSheet('shProfile'); $('sRadar').classList.add('off'); $('sSplash').classList.remove('off'); };
-window.enterRadar = async () => {
-  if(!isFirebaseConfigured()){ window.showToast('⚠️ Firebase não configurado'); return; }
-  const btn = $('btnEntrar');
-  if(btn) { btn.textContent='🔄 Conectando…'; btn.disabled=true; }
-  const user = await loginGoogle();
-  if(btn) { btn.textContent='🚁 Entrar no Radar'; btn.disabled=false; }
-  if(!user) return;
-  const profile = await getProfile(user.uid);
-  R.user = user; R.profile = profile; R.plan = getPlanStatus(profile);
-  if(R.plan.active) showRadar(); else window.openSheet('shPaywall');
-};
-window.startTrial = async () => { if(!R.user) return; const te=new Date(); te.setDate(te.getDate()+7); await updateProfile(R.user.uid,{plan:'trial',trialEnd:te.toISOString()}); R.plan={active:true,plan:'trial',daysLeft:7}; window.closeSheet('shPaywall'); showRadar(); };
-window.quickRespond = async (reqId, pilotId, pilotName, type) => {
-  playSound('accept');
-  window.showToast(`✅ Você respondeu ao ${type === 'sos' ? 'SOS' : 'chamado'} de ${pilotName}!`);
-  addNotificationBadge(pilotId, 'accept', `${R.profile?.nickname || 'Alguém'} respondeu seu pedido`, R.profile?.nickname);
-  removeFromActiveRequests(reqId);
-  R.chatTarget = { uid: pilotId, name: pilotName };
-  const cn = $('chatName'); if(cn) cn.textContent = pilotName;
-  const cs = $('chatSection'); if(cs) cs.style.display = 'block';
-  await listenChat(pilotId);
-  window.openSheet('shReq');
-};
 
-// ==============================================================
-// FUNÇÕES INTERNAS
-// ==============================================================
+// ── Init ───────────────────────────────────────────────────────
+async function init() {
+  if (!isFirebaseConfigured()) { showToast('⚠️ Firebase não configurado'); return; }
+  await initFirebase();
+  onAuthChange(async (user, profile) => {
+    if (user && profile) {
+      R.user=user; R.profile=profile; R.plan=getPlanStatus(profile);
+      if (R.plan.active) showRadar(); else openSheet('shPaywall');
+    }
+  });
+}
+
+// ── Radar ──────────────────────────────────────────────────────
+async function showRadar() {
+  $('sSplash').classList.add('off');
+  $('sRadar').classList.remove('off');
+  await new Promise(r=>setTimeout(r,150));
+
+  navigator.geolocation?.getCurrentPosition(pos=>{
+    R.lat=pos.coords.latitude; R.lon=pos.coords.longitude;
+    setupMap(R.lat,R.lon);
+  }, ()=>setupMap(-15.78,-47.93), {timeout:8000,enableHighAccuracy:true});
+
+  setTimeout(()=>{ if(!R.map) setupMap(-15.78,-47.93); },5000);
+}
+
 function getW() {
-  return window._weatherState || JSON.parse(localStorage.getItem('agrometrix_weather')||'null') ||
+  return window._weatherState ||
+    JSON.parse(localStorage.getItem('agrometrix_weather')||'null') ||
     {temp:24,humidity:65,wind:8,deltaT:5.2,rainProb:10,cloud:20,condition:'Parcialmente nublado'};
+}
+
+function setupMap(lat,lon) {
+  R.map = initMap('mapEl',lat,lon);
+  R.weather = getW();
+  setTimeout(()=>R.map?.invalidateSize(),300);
+
+  // Publica usuário no mapa E no Firestore imediatamente
+  publishSelf(lat,lon,'online');
+
+  // Bots e pilotos reais
+  spawnBots(lat,lon,R.weather);
+  startBotUpdates();
+  listenPilots(lat,lon,R.user.uid);
+
+  // GPS contínuo
+  startLocationTracking(R.user.uid,(nlat,nlon)=>{
+    R.lat=nlat; R.lon=nlon;
+    publishSelf(nlat,nlon, isOperating()?'operating':'online');
+  });
+
+  listenRequests();
+  updateAMX(R.weather);
+  updateClima(R.weather);
+  startPilotCounter();
 }
 
 function publishSelf(lat,lon,status) {
   if (!R.user||!R.profile) return;
   const p = R.profile;
   upsertPilot({
-    id: R.user.uid, name: p.nickname||p.name||'Piloto', photo: p.photo||'👨‍✈️',
-    city: p.city||'', drone: p.drone||'', score: p.amxScore||0,
-    hoursTotal: p.hoursTotal||0, opsTotal: p.opsTotal||0,
-    lat, lon, status, isCurrentUser: true,
+    id: R.user.uid,
+    name: p.nickname||p.name||'Piloto',
+    photo: p.photo||'👨‍✈️',
+    city: p.city||'',
+    drone: p.drone||'',
+    score: p.amxScore||0,
+    hoursTotal: p.hoursTotal||0,
+    opsTotal: p.opsTotal||0,
+    lat, lon, status, isCurrentUser:true,
   });
-  updateProfile(R.user.uid, { lat, lon, status, nickname: p.nickname||p.name, visibility: p.visibility||'online', lastSeen: window._fsTimestamp?.() });
+  updateProfile(R.user.uid,{
+    lat, lon, status,
+    nickname: p.nickname||p.name,
+    visibility: p.visibility||'online',
+    lastSeen: window._fsTimestamp?.(),
+  });
+}
+
+function startPilotCounter() {
+  setInterval(()=>{
+    const n = document.querySelectorAll('.leaflet-marker-icon').length;
+    $('pilotCount').textContent = `${Math.max(n,8)} pilotos`;
+  },3000);
 }
 
 function updateAMX(w) {
   const score = calcAMXScore(99,w,{},R.opCfg);
   const {label,color} = amxLabel(score);
-  ['amxNum','amxNum2'].forEach(id => { const el=$(id); if(el){el.textContent=score;el.style.color=color;} });
-  $('amxDesc').textContent = `${label} · ${w.condition||'Clima atual'}`;
+  ['amxNum','amxNum2'].forEach(id=>{
+    const el=$(id); if(el){el.textContent=score;el.style.color=color;}
+  });
+  $('amxDesc').textContent  = `${label} · ${w.condition||'Clima atual'}`;
   $('amxDesc2').textContent = `${label} · ${w.condition||'Clima atual'}`;
-  $('amxLbl').textContent = `AMX ${score}/100`;
-  $('amxFill').style.width = score+'%'; $('amxFill').style.background=color;
+  $('amxLbl').textContent   = `AMX ${score}/100`;
+  $('amxFill').style.width  = score+'%'; $('amxFill').style.background=color;
   $('amxFill2').style.width = score+'%'; $('amxFill2').style.background=color;
 }
 
 function updateClima(w) {
   const dtC = w.deltaT>=2&&w.deltaT<=8?'g':w.deltaT>10?'b':'w';
   const wdC = w.wind<=10?'g':w.wind<=20?'w':'b';
-  $('climaChips').innerHTML = `<div class="wchip g">🌡️ ${w.temp||'—'}°C</div><div class="wchip ${wdC}">💨 ${w.wind||'—'} km/h</div><div class="wchip">💧 ${w.humidity||'—'}%</div><div class="wchip ${dtC}">ΔT ${w.deltaT||'—'}°C</div>${w.rainProb>30?`<div class="wchip w">🌧️ ${w.rainProb}%</div>`:''}`;
+  $('climaChips').innerHTML = `
+    <div class="wchip g">🌡️ ${w.temp||'—'}°C</div>
+    <div class="wchip ${wdC}">💨 ${w.wind||'—'} km/h</div>
+    <div class="wchip">💧 ${w.humidity||'—'}%</div>
+    <div class="wchip ${dtC}">ΔT ${w.deltaT||'—'}°C</div>
+    ${w.rainProb>30?`<div class="wchip w">🌧️ ${w.rainProb}%</div>`:''}
+  `;
 }
 
-function setBtn(active) {
-  ['btnOp','btnOp2'].forEach(id => { const b=$(id); if(b){ b.className='btn-op '+(active?'stop':'start'); b.innerHTML=active?'🛑 Finalizar Operação':'🚁 Iniciar Operação'; } });
-}
+// ── Operação ───────────────────────────────────────────────────
+window.handleOp = ()=> isOperating() ? endOp() : openSheet('shOpConfig');
 
-function endOp() {
+window.confirmOp = ()=>{
+  const c=R.opCfg;
+  if(!c.drone||!c.faixa||!c.vazao||!c.avgHaPerH){showToast('⚠️ Preencha todos os campos');return;}
+  closeSheet('shOpConfig');
+  startOperation(c,getW(),R.lat,R.lon);
+  setBtn(true);
+  showToast('🚁 Operação iniciada!');
+  publishSelf(R.lat,R.lon,'operating');
+};
+
+function endOp(){
   const result = endOperation(getW());
   setBtn(false);
   publishSelf(R.lat,R.lon,'online');
   if(result){ showResult(result); saveOp(result); updateAMX(getW()); }
 }
 
-function showResult(r) {
-  const est = r.estimate||{};
-  const {label,color} = amxLabel(r.score);
-  $('opResultContent').innerHTML = `<div class="op-result"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--mt);margin-bottom:2px">Resumo da operação</div><div style="font-size:13px;color:var(--tx2);margin-bottom:10px">${r.config?.drone||''} · ${r.config?.avgHaPerH||'—'} ha/h estimado</div><div class="op-stat-row"><div class="op-stat"><div class="op-stat-v" style="color:${color}">${r.score}</div><div class="op-stat-l">AMX Score</div></div><div class="op-stat"><div class="op-stat-v">${r.durationMin} min</div><div class="op-stat-l">Duração</div></div><div class="op-stat"><div class="op-stat-v">~${est.estHa||'—'} ha</div><div class="op-stat-l">Estimativa</div></div><div class="op-stat"><div class="op-stat-v">${est.confiability||'—'}%</div><div class="op-stat-l">Confiab.</div></div></div><div style="margin-top:10px;font-size:10px;color:var(--mt);text-align:center;line-height:1.5">⚠️ Área estimada com base em tempo operacional e configuração.<br><strong style="color:var(--tx2)">Confiabilidade: ${est.label||'—'}</strong></div></div>`;
-  window.openSheet('shOpResult');
+function setBtn(active){
+  ['btnOp','btnOp2'].forEach(id=>{
+    const b=$(id); if(!b)return;
+    b.className='btn-op '+(active?'stop':'start');
+    b.innerHTML=active?'🛑 Finalizar Operação':'🚁 Iniciar Operação';
+  });
 }
 
-async function saveOp(r) {
-  if(!R.user) return;
-  const db = window._firebaseDB; if(!db) return;
-  const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  await addDoc(collection(db,'operations'), { uid:R.user.uid, pilotName:R.profile?.nickname||R.profile?.name, ...r, createdAt:window._fsTimestamp?.() });
-  const ns = Math.round(((R.profile?.amxScore||0)+r.score)/2);
-  await updateProfile(R.user.uid, { opsTotal:(R.profile?.opsTotal||0)+1, hoursTotal:+(((R.profile?.hoursTotal||0)+r.durationMin/60)).toFixed(1), amxScore:ns });
-  R.profile.amxScore = ns; R.profile.opsTotal = (R.profile.opsTotal||0)+1;
+function showResult(r){
+  const est=r.estimate||{};
+  const {label,color}=amxLabel(r.score);
+  $('opResultContent').innerHTML=`
+    <div class="op-result">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--mt);margin-bottom:2px">Resumo da operação</div>
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:10px">${r.config?.drone||''} · ${r.config?.avgHaPerH||'—'} ha/h estimado</div>
+      <div class="op-stat-row">
+        <div class="op-stat"><div class="op-stat-v" style="color:${color}">${r.score}</div><div class="op-stat-l">AMX Score</div></div>
+        <div class="op-stat"><div class="op-stat-v">${r.durationMin} min</div><div class="op-stat-l">Duração</div></div>
+        <div class="op-stat"><div class="op-stat-v">~${est.estHa||'—'} ha</div><div class="op-stat-l">Estimativa</div></div>
+        <div class="op-stat"><div class="op-stat-v">${est.confiability||'—'}%</div><div class="op-stat-l">Confiab.</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:10px;color:var(--mt);text-align:center;line-height:1.5">
+        ⚠️ Área estimada com base em tempo operacional e configuração.<br>
+        <strong style="color:var(--tx2)">Confiabilidade: ${est.label||'—'}</strong>
+      </div>
+    </div>`;
+  openSheet('shOpResult');
 }
 
-async function saveRequest(type, message) {
-  const db = window._firebaseDB; if(!db) return;
-  const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  await addDoc(collection(db,'requests'), { uid:R.user.uid, type, message, pilotName:R.profile?.nickname||R.profile?.name||'Piloto', lat:R.lat, lon:R.lon, status:'open', createdAt:window._fsTimestamp?.() });
+async function saveOp(r){
+  if(!R.user)return;
+  const db=window._firebaseDB; if(!db)return;
+  const{collection,addDoc}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  await addDoc(collection(db,'operations'),{
+    uid:R.user.uid, pilotName:R.profile?.nickname||R.profile?.name, ...r, createdAt:window._fsTimestamp?.()
+  });
+  const ns=Math.round(((R.profile?.amxScore||0)+r.score)/2);
+  await updateProfile(R.user.uid,{
+    opsTotal:(R.profile?.opsTotal||0)+1,
+    hoursTotal:+(((R.profile?.hoursTotal||0)+r.durationMin/60)).toFixed(1),
+    amxScore:ns,
+  });
+  R.profile.amxScore=ns; R.profile.opsTotal=(R.profile.opsTotal||0)+1;
 }
 
-async function loadRequests() {
-  const db = window._firebaseDB;
+// ── SOS e Pedidos ──────────────────────────────────────────────
+window.activateSOS = async ()=>{
+  if(R.sosActive){cancelSOS();return;}
+  R.sosActive=true;
+  $('sosBar').classList.add('on');
+  publishSelf(R.lat,R.lon,'sos');
+  await updateProfile(R.user.uid,{requestMsg:'🚨 SOS — Preciso de ajuda!',sosAt:new Date().toISOString()});
+  await saveRequest('sos','🚨 SOS — Preciso de ajuda urgente!');
+  showToast('🚨 SOS ativado!',5000);
+};
+
+window.cancelSOS = async ()=>{
+  R.sosActive=false; $('sosBar').classList.remove('on');
+  await updateProfile(R.user.uid,{status:isOperating()?'operating':'online',requestMsg:null,sosAt:null});
+  publishSelf(R.lat,R.lon,isOperating()?'operating':'online');
+  showToast('✅ SOS cancelado');
+};
+
+window.sendReq = async (type,msg)=>{
+  publishSelf(R.lat,R.lon,'request');
+  await updateProfile(R.user.uid,{status:'request',requestMsg:msg});
+  await saveRequest(type,msg);
+  showToast(`${msg} — Pilotos notificados! 🟢`,4000);
+  setTimeout(async()=>{
+    if(!R.sosActive){
+      publishSelf(R.lat,R.lon,isOperating()?'operating':'online');
+      await updateProfile(R.user.uid,{status:isOperating()?'operating':'online',requestMsg:null});
+    }
+  },300000);
+};
+
+async function saveRequest(type,message){
+  const db=window._firebaseDB; if(!db)return;
+  const{collection,addDoc}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  await addDoc(collection(db,'requests'),{
+    uid:R.user.uid, type, message,
+    pilotName:R.profile?.nickname||R.profile?.name||'Piloto',
+    lat:R.lat, lon:R.lon, status:'open', createdAt:window._fsTimestamp?.(),
+  });
+}
+
+async function loadRequests(){
+  const db=window._firebaseDB;
   if(!db){ $('reqList').innerHTML='<div style="padding:20px 20px;color:var(--mt);font-size:12px">Nenhum pedido ativo</div>'; return; }
-  const { collection, query, where, limit, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  const q = query(collection(db,'requests'), where('status','==','open'), limit(20));
-  const snap = await getDocs(q);
-  const reqs = snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>r.uid!==R.user?.uid);
-  if(!reqs.length){ $('reqList').innerHTML='<div style="padding:16px 20px;text-align:center;color:var(--mt);font-size:12px">Nenhum pedido ativo no momento 🟢</div>'; return; }
-  const icons = { sos:'🚨', helice:'🚁', battery:'🔋', fuel:'⛽', part:'🔧', support:'🛠️' };
-  $('reqList').innerHTML = reqs.map(r => `<div class="req-item ${r.type==='sos'?'sos-req':''}"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:20px">${icons[r.type]||'🔧'}</span><div><div style="font-size:13px;font-weight:700;color:var(--tx)">${r.pilotName||'Piloto'}</div><div style="font-size:11px;color:${r.type==='sos'?'#ff8080':'var(--mt)'}">${r.message}</div></div></div><button onclick="window.acceptReq('${r.uid}','${(r.pilotName||'').replace(/'/g,"\\'")}','${(r.message||'').replace(/'/g,"\\'")}')" style="width:100%;padding:8px;border-radius:10px;border:none;background:${r.type==='sos'?'var(--red)':'var(--g6)'};color:white;font-family:var(--fu);font-size:12px;font-weight:700;cursor:pointer">${r.type==='sos'?'🚨 Responder SOS':'✅ Aceitar chamado'}</button></div>`).join('');
-}
-
-async function listenRequests() {
-  const db = window._firebaseDB; if(!db) return;
-  const { collection, query, where, limit, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  const q = query(collection(db,'requests'), where('status','==','open'), limit(20));
-  onSnapshot(q, snap => {
-    const reqs = snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>r.uid!==R.user?.uid);
-    const dot = $('reqDot');
-    if(reqs.length>0) dot.classList.add('on'); else dot.classList.remove('on');
-    reqs.forEach(r => addToActiveRequests({ id: r.id, pilotId: r.uid, pilotName: r.pilotName, message: r.message, type: r.type }));
-  });
-}
-
-async function listenChat(uid) {
-  const db = window._firebaseDB; if(!db) return;
-  if(R.chatUnsub) R.chatUnsub();
-  const chatId = [R.user.uid, uid].sort().join('_');
-  const { collection, query, orderBy, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  const q = query(collection(db, `chats/${chatId}/messages`), orderBy('createdAt'));
-  R.chatUnsub = onSnapshot(q, snap => {
-    const msgs = $('chatMsgs');
-    msgs.innerHTML = snap.docs.map(d => { const m = d.data(); const isMe = m.uid === R.user.uid; return `<div class="chat-msg ${isMe?'me':'them'}">${!isMe?`<div class="chat-msg-name">${m.name||'Piloto'}</div>`:''}${m.text}</div>`; }).join('');
-    msgs.scrollTop = msgs.scrollHeight;
-  });
-}
-
-async function loadRanking() {
-  const db = window._firebaseDB;
-  let pilots = [];
-  if(db){
-    const { collection, query, orderBy, limit, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    const snap = await getDocs(query(collection(db,'pilots'), orderBy('amxScore','desc'), limit(20)));
-    pilots = snap.docs.map(d=>d.data());
+  const{collection,query,where,limit,getDocs}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  const q=query(collection(db,'requests'),where('status','==','open'),limit(20));
+  const snap=await getDocs(q);
+  const reqs=snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>r.uid!==R.user?.uid);
+  if(!reqs.length){
+    $('reqList').innerHTML='<div style="padding:16px 20px;text-align:center;color:var(--mt);font-size:12px">Nenhum pedido ativo no momento 🟢</div>';
+    return;
   }
-  const bots = [
+  const icons={sos:'🚨',helice:'🚁',battery:'🔋',fuel:'⛽',part:'🔧',support:'🛠️'};
+  $('reqList').innerHTML=reqs.map(r=>`
+    <div class="req-item ${r.type==='sos'?'sos-req':''}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:20px">${icons[r.type]||'🔧'}</span>
+        <div><div style="font-size:13px;font-weight:700;color:var(--tx)">${r.pilotName||'Piloto'}</div>
+        <div style="font-size:11px;color:${r.type==='sos'?'#ff8080':'var(--mt)'}">${r.message}</div></div>
+      </div>
+      <button onclick="acceptReq('${r.uid}','${(r.pilotName||'').replace(/'/g,"\\'")}','${(r.message||'').replace(/'/g,"\\'")}')"
+        style="width:100%;padding:8px;border-radius:10px;border:none;background:${r.type==='sos'?'var(--red)':'var(--g6)'};color:white;font-family:var(--fu);font-size:12px;font-weight:700;cursor:pointer">
+        ${r.type==='sos'?'🚨 Responder SOS':'✅ Aceitar chamado'}
+      </button>
+    </div>`).join('');
+}
+
+async function listenRequests(){
+  const db=window._firebaseDB; if(!db)return;
+  const{collection,query,where,limit,onSnapshot}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  const q=query(collection(db,'requests'),where('status','==','open'),limit(20));
+  onSnapshot(q,snap=>{
+    const reqs=snap.docs.map(d=>d.data()).filter(r=>r.uid!==R.user?.uid);
+    const dot=$('reqDot');
+    if(reqs.length>0)dot.classList.add('on'); else dot.classList.remove('on');
+  });
+}
+
+window.acceptReq = (uid,name,message)=>{
+  R.chatTarget={uid,name};
+  $('chatName').textContent=name;
+  $('chatSection').style.display='block';
+  listenChat(uid);
+  showToast(`✅ Aceitou ajudar ${name}!`);
+};
+
+async function listenChat(uid){
+  const db=window._firebaseDB; if(!db)return;
+  if(R.chatUnsub)R.chatUnsub();
+  const chatId=[R.user.uid,uid].sort().join('_');
+  const{collection,query,orderBy,onSnapshot}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  const q=query(collection(db,`chats/${chatId}/messages`),orderBy('createdAt'));
+  R.chatUnsub=onSnapshot(q,snap=>{
+    const msgs=$('chatMsgs');
+    msgs.innerHTML=snap.docs.map(d=>{
+      const m=d.data(), isMe=m.uid===R.user.uid;
+      return `<div class="chat-msg ${isMe?'me':'them'}">
+        ${!isMe?`<div class="chat-msg-name">${m.name||'Piloto'}</div>`:''}${m.text}
+      </div>`;
+    }).join('');
+    msgs.scrollTop=msgs.scrollHeight;
+  });
+}
+
+window.sendMsg = async()=>{
+  const inp=$('chatInp'), txt=inp.value.trim();
+  if(!txt||!R.chatTarget)return; inp.value='';
+  const db=window._firebaseDB; if(!db)return;
+  const chatId=[R.user.uid,R.chatTarget.uid].sort().join('_');
+  const{collection,addDoc}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  await addDoc(collection(db,`chats/${chatId}/messages`),{
+    uid:R.user.uid, name:R.profile?.nickname||R.profile?.name||'Piloto',
+    text:txt, createdAt:window._fsTimestamp?.(),
+  });
+};
+
+// ── Ranking ────────────────────────────────────────────────────
+async function loadRanking(){
+  const db=window._firebaseDB;
+  let pilots=[];
+  if(db){
+    const{collection,query,orderBy,limit,getDocs}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const snap=await getDocs(query(collection(db,'pilots'),orderBy('amxScore','desc'),limit(20)));
+    pilots=snap.docs.map(d=>d.data());
+  }
+  const bots=[
     {nickname:'Thiago Cavalcante',amxScore:95,city:'Primavera do Leste',drone:'XAG V40',opsTotal:487},
     {nickname:'Rafael Bueno',amxScore:92,city:'Rondonópolis, MT',drone:'XAG P100',opsTotal:198},
     {nickname:'Fabio Martins',amxScore:89,city:'Sapezal, MT',drone:'DJI T40',opsTotal:389},
@@ -832,57 +825,126 @@ async function loadRanking() {
     {nickname:'Marcos Figueiredo',amxScore:74,city:'Lucas do Rio Verde',drone:'DJI T30',opsTotal:143},
     {nickname:'Leandro Souza',amxScore:68,city:'Nova Mutum, MT',drone:'Pegasus',opsTotal:98},
   ];
-  const all = [...pilots, ...bots].sort((a,b)=>(b.amxScore||0)-(a.amxScore||0)).slice(0,20);
-  const medals = ['🥇','🥈','🥉']; const pCls = ['gold','silver','bronze'];
-  $('rankList').innerHTML = all.map((p,i) => `<div class="rank-item"><div class="rank-pos ${pCls[i]||''}">${medals[i]||'#'+(i+1)}</div><div style="flex:1"><div class="rank-name">${p.nickname||p.name||'Piloto'}</div><div class="rank-sub">${p.city||''} · ${p.drone||''} · ${p.opsTotal||0} ops</div></div><div class="rank-score">AMX ${p.amxScore||0}</div></div>`).join('');
+  const all=[...pilots,...bots].sort((a,b)=>(b.amxScore||0)-(a.amxScore||0)).slice(0,20);
+  const medals=['🥇','🥈','🥉'];
+  const pCls=['gold','silver','bronze'];
+  $('rankList').innerHTML=all.map((p,i)=>`
+    <div class="rank-item">
+      <div class="rank-pos ${pCls[i]||''}">${medals[i]||'#'+(i+1)}</div>
+      <div style="flex:1">
+        <div class="rank-name">${p.nickname||p.name||'Piloto'}</div>
+        <div class="rank-sub">${p.city||''} · ${p.drone||''} · ${p.opsTotal||0} ops</div>
+      </div>
+      <div class="rank-score">AMX ${p.amxScore||0}</div>
+    </div>`).join('');
 }
 
-function renderProfile() {
-  const p = R.profile, plan = R.plan;
-  if(!p) return;
-  const pCls = plan?.plan==='paid'?'paid':plan?.plan==='trial'?'trial':'exp';
-  const pIcon = plan?.plan==='paid'?'✅':plan?.plan==='trial'?'⏳':'🔒';
-  const pTitle = plan?.plan==='paid'?'Plano Ativo':plan?.plan==='trial'?`Trial — ${plan.daysLeft} dias restantes`:'Trial expirado';
-  $('profileContent').innerHTML = `<div class="pf-hero"><div class="pf-av">${p.photo?`<img src="${p.photo}" onerror="this.outerHTML='👨‍✈️'">`:'👨‍✈️'}</div><div><div class="pf-name">${p.nickname||p.name||'Piloto'}</div><div class="pf-city">📍 ${p.city||'Cidade não informada'}</div><div class="pf-drone">🚁 ${p.drone||'Drone não informado'}</div></div></div><div class="pf-stats"><div class="pstat"><div class="pstat-v">${p.amxScore||0}</div><div class="pstat-l">AMX Score</div></div><div class="pstat"><div class="pstat-v">${(p.hoursTotal||0).toFixed(0)}h</div><div class="pstat-l">Horas</div></div><div class="pstat"><div class="pstat-v">${p.opsTotal||0}</div><div class="pstat-l">Operações</div></div></div><div class="inp-g"><label class="inp-l">Nome / Apelido</label><input class="inp" id="pfNick" value="${p.nickname||p.name||''}" placeholder="Como quer ser chamado?"></div><div class="inp-g"><label class="inp-l">Cidade</label><input class="inp" id="pfCity" value="${p.city||''}" placeholder="Sua cidade"></div><div class="inp-g"><label class="inp-l">Drone principal</label><select class="inp" id="pfDrone"><option value="">Selecione…</option>${['DJI T25','DJI T40','DJI T50','XAG P100','XAG V40','EAVision','Pegasus Agri','Outro'].map(d=>`<option ${p.drone===d?'selected':''}>${d}</option>`).join('')}</select></div><div class="plan-b ${pCls}"><div class="plan-icon">${pIcon}</div><div><div class="plan-title">${pTitle}</div><div class="plan-sub">${plan?.plan==='trial'?'Aproveite o período gratuito':plan?.plan==='paid'?'Acesso completo ao radar':'Assine para continuar'}</div></div></div>${plan?.plan!=='paid'?`<button class="btn-prim" onclick="window.openSheet('shPaywall')" style="margin-bottom:10px">🚀 Assinar R$ 19,90/mês</button>`:''}<div class="vis-row"><label class="inp-l">Visibilidade no radar</label><div class="vis-opts"><div class="vis-opt ${p.visibility==='online'?'on':''}" onclick="window.setVis('online')">🟢 Online</div><div class="vis-opt ${p.visibility==='invisible'?'on':''}" onclick="window.setVis('invisible')">⚫ Invisível</div><div class="vis-opt ${p.visibility==='sos'?'on':''}" onclick="window.setVis('sos')">🚨 SOS</div></div></div><button class="btn-prim" onclick="window.saveProfile()" style="margin-top:12px">💾 Salvar perfil</button><button class="btn-sec" onclick="window.doLogout()" style="margin-top:8px">Sair da conta</button>`;
+// ── Perfil ─────────────────────────────────────────────────────
+function renderProfile(){
+  const p=R.profile, plan=R.plan;
+  if(!p)return;
+  const pCls=plan?.plan==='paid'?'paid':plan?.plan==='trial'?'trial':'exp';
+  const pIcon=plan?.plan==='paid'?'✅':plan?.plan==='trial'?'⏳':'🔒';
+  const pTitle=plan?.plan==='paid'?'Plano Ativo':plan?.plan==='trial'?`Trial — ${plan.daysLeft} dias restantes`:'Trial expirado';
+  $('profileContent').innerHTML=`
+    <div class="pf-hero">
+      <div class="pf-av">${p.photo?`<img src="${p.photo}" onerror="this.outerHTML='👨‍✈️'">`:'👨‍✈️'}</div>
+      <div>
+        <div class="pf-name">${p.nickname||p.name||'Piloto'}</div>
+        <div class="pf-city">📍 ${p.city||'Cidade não informada'}</div>
+        <div class="pf-drone">🚁 ${p.drone||'Drone não informado'}</div>
+      </div>
+    </div>
+    <div class="pf-stats">
+      <div class="pstat"><div class="pstat-v">${p.amxScore||0}</div><div class="pstat-l">AMX Score</div></div>
+      <div class="pstat"><div class="pstat-v">${(p.hoursTotal||0).toFixed(0)}h</div><div class="pstat-l">Horas</div></div>
+      <div class="pstat"><div class="pstat-v">${p.opsTotal||0}</div><div class="pstat-l">Operações</div></div>
+    </div>
+    <div class="inp-g">
+      <label class="inp-l">Nome / Apelido</label>
+      <input class="inp" id="pfNick" value="${p.nickname||p.name||''}" placeholder="Como quer ser chamado?">
+    </div>
+    <div class="inp-g">
+      <label class="inp-l">Cidade</label>
+      <input class="inp" id="pfCity" value="${p.city||''}" placeholder="Sua cidade">
+    </div>
+    <div class="inp-g">
+      <label class="inp-l">Drone principal</label>
+      <select class="inp" id="pfDrone">
+        <option value="">Selecione…</option>
+        ${['DJI T25','DJI T40','DJI T50','XAG P100','XAG V40','EAVision','Pegasus Agri','Outro']
+          .map(d=>`<option ${p.drone===d?'selected':''}>${d}</option>`).join('')}
+      </select>
+    </div>
+    <div class="plan-b ${pCls}">
+      <div class="plan-icon">${pIcon}</div>
+      <div><div class="plan-title">${pTitle}</div>
+      <div class="plan-sub">${plan?.plan==='trial'?'Aproveite o período gratuito':plan?.plan==='paid'?'Acesso completo ao radar':'Assine para continuar'}</div></div>
+    </div>
+    ${plan?.plan!=='paid'?`<button class="btn-prim" onclick="openSheet('shPaywall')" style="margin-bottom:10px">🚀 Assinar R$ 19,90/mês</button>`:''}
+    <div class="vis-row">
+      <label class="inp-l">Visibilidade no radar</label>
+      <div class="vis-opts">
+        <div class="vis-opt ${p.visibility==='online'?'on':''}" onclick="setVis('online')">🟢 Online</div>
+        <div class="vis-opt ${p.visibility==='invisible'?'on':''}" onclick="setVis('invisible')">⚫ Invisível</div>
+        <div class="vis-opt ${p.visibility==='sos'?'on':''}" onclick="setVis('sos')">🚨 SOS</div>
+      </div>
+    </div>
+    <button class="btn-prim" onclick="saveProfile()" style="margin-top:12px">💾 Salvar perfil</button>
+    <button class="btn-sec" onclick="doLogout()" style="margin-top:8px">Sair da conta</button>
+  `;
 }
 
-function startPilotCounter() { setInterval(() => { const n = document.querySelectorAll('.leaflet-marker-icon').length; $('pilotCount').textContent = `${Math.max(n,8)} pilotos`; }, 3000); }
+window.saveProfile = async()=>{
+  const uid=R.user?.uid; if(!uid)return;
+  const nickname=$('pfNick')?.value.trim();
+  const city=$('pfCity')?.value.trim();
+  const drone=$('pfDrone')?.value;
+  await updateProfile(uid,{nickname,city,drone});
+  Object.assign(R.profile,{nickname,city,drone});
+  publishSelf(R.lat,R.lon,isOperating()?'operating':'online');
+  showToast('✅ Perfil salvo!');
+  closeSheet('shProfile');
+};
 
-async function showRadar() {
-  $('sSplash').classList.add('off');
-  $('sRadar').classList.remove('off');
-  await new Promise(r => setTimeout(r,150));
-  navigator.geolocation?.getCurrentPosition(pos => { R.lat=pos.coords.latitude; R.lon=pos.coords.longitude; setupMap(R.lat,R.lon); }, () => setupMap(-15.78,-47.93), {timeout:8000,enableHighAccuracy:true});
-  setTimeout(() => { if(!R.map) setupMap(-15.78,-47.93); }, 5000);
-}
+window.setVis = async vis=>{
+  if(!R.user)return;
+  await updateProfile(R.user.uid,{visibility:vis});
+  R.profile.visibility=vis; renderProfile();
+};
 
-function setupMap(lat, lon) {
-  R.map = initMap('mapEl', lat, lon);
-  R.weather = getW();
-  setTimeout(() => R.map?.invalidateSize(), 300);
-  publishSelf(lat, lon, 'online');
-  spawnBots(lat, lon, R.weather);
-  startBotUpdates();
-  listenPilots(lat, lon, R.user.uid);
-  startLocationTracking(R.user.uid, (nlat,nlon) => { R.lat=nlat; R.lon=nlon; publishSelf(nlat,nlon, isOperating()?'operating':'online'); });
-  listenRequests();
-  updateAMX(R.weather);
-  updateClima(R.weather);
-  startPilotCounter();
-}
+window.doLogout = async()=>{
+  await logout(); closeSheet('shProfile');
+  $('sRadar').classList.add('off');
+  $('sSplash').classList.remove('off');
+};
 
-async function init() {
-  if (!isFirebaseConfigured()) { window.showToast('⚠️ Firebase não configurado'); return; }
-  await initFirebase();
-  onAuthChange(async (user, profile) => {
-    if (user && profile) {
-      R.user = user; R.profile = profile; R.plan = getPlanStatus(profile);
-      if (R.plan.active) showRadar(); else window.openSheet('shPaywall');
-    }
-  });
-}
+// ── Auth ───────────────────────────────────────────────────────
+window.enterRadar = async()=>{
+  if(!isFirebaseConfigured()){showToast('⚠️ Firebase não configurado');return;}
+  const btn=$('btnEntrar');
+  btn.textContent='🔄 Conectando…'; btn.disabled=true;
+  const user=await loginGoogle();
+  btn.textContent='🚁 Entrar no Radar'; btn.disabled=false;
+  if(!user)return;
+  const profile=await getProfile(user.uid);
+  R.user=user; R.profile=profile; R.plan=getPlanStatus(profile);
+  if(R.plan.active)showRadar(); else openSheet('shPaywall');
+};
 
-window.addEventListener('amx:check-operation', () => { if(confirm('Operação ainda em andamento?')) return; if(isOperating()) endOp(); });
+window.startTrial = async()=>{
+  if(!R.user)return;
+  const te=new Date(); te.setDate(te.getDate()+7);
+  await updateProfile(R.user.uid,{plan:'trial',trialEnd:te.toISOString()});
+  R.plan={active:true,plan:'trial',daysLeft:7};
+  closeSheet('shPaywall'); showRadar();
+};
+
+// ── Auto-check operação ────────────────────────────────────────
+window.addEventListener('amx:check-operation',()=>{
+  if(confirm('Operação ainda em andamento?'))return;
+  if(isOperating())endOp();
+});
 
 init();
 </script>
