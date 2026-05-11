@@ -25,9 +25,11 @@
 }
 html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg);color:var(--tx)}
 
+/* ── SCREENS ── */
 .screen{position:fixed;inset:0;transition:opacity .35s,transform .35s}
 .screen.off{opacity:0;pointer-events:none;transform:scale(.97)}
 
+/* ══ SPLASH ══ */
 #sSplash{background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .sp-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(31,85,52,.35),transparent 70%),radial-gradient(ellipse 50% 40% at 80% 80%,rgba(30,136,208,.1),transparent 60%)}
 .sp-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(61,168,102,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(61,168,102,.04) 1px,transparent 1px);background-size:40px 40px}
@@ -54,6 +56,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .btn-google:hover{background:var(--s3);border-color:var(--g4)}
 .btn-google svg{width:20px;height:20px;flex-shrink:0}
 
+/* ══ RADAR ══ */
 #sRadar{background:var(--bg)}
 #mapEl{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
 .leaflet-tile{filter:brightness(.42) saturate(.35) hue-rotate(88deg)}
@@ -63,6 +66,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .leaflet-control-zoom a{background:rgba(10,20,12,.9)!important;color:var(--tx)!important;border-color:var(--bdm)!important}
 .leaflet-container{background:var(--bg)!important}
 
+/* Header */
 .r-hdr{position:fixed;top:0;left:0;right:0;z-index:100;padding:10px 14px;background:linear-gradient(to bottom,rgba(6,14,8,.97),transparent);display:flex;align-items:center;gap:8px}
 .r-logo{font-size:15px;font-weight:800;flex:1;color:var(--tx)}.r-logo span{color:var(--g4)}
 .r-badge{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;background:rgba(6,14,8,.85);border:1px solid var(--bdm);font-size:11px;color:var(--tx2);backdrop-filter:blur(8px)}
@@ -73,19 +77,23 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .notif-dot{position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:var(--red);color:white;font-size:8px;font-weight:700;display:none;align-items:center;justify-content:center}
 .notif-dot.on{display:flex}
 
+/* SOS bar */
 .sos-bar{position:fixed;top:56px;left:0;right:0;z-index:200;padding:8px 14px;display:none;align-items:center;gap:10px;animation:sosBlink .9s ease-in-out infinite}
 .sos-bar.on{display:flex}
 @keyframes sosBlink{0%,100%{background:rgba(200,30,30,.95)}50%{background:rgba(150,15,15,.95)}}
 .sos-txt{flex:1;font-size:12px;font-weight:700;color:white}
 .sos-cancel{padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.4);background:transparent;color:white;font-size:11px;font-weight:600;cursor:pointer}
 
+/* Nav bottom */
 .r-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:linear-gradient(to top,rgba(6,14,8,.99) 0%,transparent 100%);padding:10px 12px 28px}
 .nav-tabs{display:flex;gap:5px;margin-bottom:10px}
 .nav-tab{flex:1;padding:8px 4px;border-radius:12px;border:1px solid var(--bdm);background:rgba(6,14,8,.85);color:var(--tx2);font-family:var(--fu);font-size:11px;font-weight:600;cursor:pointer;text-align:center;transition:all .2s;backdrop-filter:blur(8px)}
 .nav-tab.act{background:var(--g7);border-color:var(--g4);color:white}
 
+/* Painéis */
 .panel{display:none}.panel.act{display:block}
 
+/* AMX card */
 .amx-card{background:rgba(11,22,13,.92);border:1px solid var(--bdm);border-radius:16px;padding:11px 14px;backdrop-filter:blur(16px);margin-bottom:10px;display:flex;align-items:center;gap:12px}
 .amx-num{font-family:var(--fd);font-size:34px;line-height:1;letter-spacing:-1px}
 .amx-info{flex:1}
@@ -94,12 +102,14 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .amx-bar{height:3px;background:var(--bd);border-radius:2px;overflow:hidden;margin-top:5px}
 .amx-fill{height:100%;border-radius:2px;transition:width 1s}
 
+/* Clima chips */
 .clima-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
 .wchip{display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:20px;background:rgba(11,22,13,.9);border:1px solid var(--bd);font-size:10px;color:var(--tx2);backdrop-filter:blur(8px);white-space:nowrap}
 .wchip.g{border-color:rgba(61,168,102,.5);color:var(--g3)}
 .wchip.w{border-color:rgba(224,122,0,.4);color:#f5a623}
 .wchip.b{border-color:rgba(224,53,53,.4);color:#ff7070}
 
+/* Quick row */
 .quick-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px;padding-bottom:2px}
 .quick-row::-webkit-scrollbar{display:none}
 .qbtn{display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:20px;white-space:nowrap;background:rgba(11,22,13,.9);border:1px solid var(--bdm);font-size:11px;font-weight:600;color:var(--tx2);cursor:pointer;transition:all .2s;flex-shrink:0;backdrop-filter:blur(8px)}
@@ -107,12 +117,14 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .qbtn.red{border-color:rgba(224,53,53,.5);color:#ff8080}
 .qbtn.red:hover{background:rgba(224,53,53,.15)}
 
+/* Botão operação */
 .btn-op{width:100%;padding:15px;border-radius:18px;border:none;font-family:var(--fu);font-size:15px;font-weight:800;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:10px;letter-spacing:.02em}
 .btn-op.start{background:linear-gradient(135deg,var(--g7),var(--g5));color:white;box-shadow:0 4px 24px rgba(31,85,52,.5)}
 .btn-op.stop{background:linear-gradient(135deg,#7a1a1a,var(--red));color:white;animation:stopP 2s ease-in-out infinite}
 @keyframes stopP{0%,100%{box-shadow:0 4px 24px rgba(224,53,53,.4)}50%{box-shadow:0 4px 36px rgba(224,53,53,.7)}}
 .btn-op:hover{transform:translateY(-1px)}
 
+/* Ranking */
 .rank-list{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;scrollbar-width:none}
 .rank-list::-webkit-scrollbar{display:none}
 .rank-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(11,22,13,.9);border:1px solid var(--bd);border-radius:12px;backdrop-filter:blur(8px)}
@@ -122,6 +134,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .rank-sub{font-size:9px;color:var(--mt);margin-top:1px}
 .rank-score{font-family:var(--fm);font-size:12px;color:var(--g4);font-weight:700}
 
+/* ══ SHEETS ══ */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(4px)}
 .overlay.on{opacity:1;pointer-events:auto}
 .sheet{position:fixed;bottom:0;left:0;right:0;z-index:501;background:var(--s1);border-radius:24px 24px 0 0;border-top:1px solid var(--bdm);padding:0 0 36px;transform:translateY(100%);transition:transform .4s cubic-bezier(.34,1.2,.64,1);max-height:92vh;overflow-y:auto}
@@ -129,9 +142,10 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .sh-handle{width:36px;height:4px;border-radius:2px;background:var(--bdm);margin:12px auto 18px}
 .sh-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mt);padding:0 20px;margin-bottom:14px}
 
+/* Perfil */
 .pf-hero{display:flex;align-items:center;gap:14px;padding:0 20px 16px;border-bottom:1px solid var(--bd);margin-bottom:16px}
 .pf-av{width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--g7);display:flex;align-items:center;justify-content:center;font-size:26px}
-.pf-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.pf-av img{width:100%;height:100%;object-fit:cover}
 .pf-name{font-size:18px;font-weight:800;color:var(--tx)}
 .pf-city{font-size:11px;color:var(--mt);margin-top:2px}
 .pf-drone{font-size:11px;color:var(--tx2);margin-top:3px}
@@ -140,12 +154,14 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .pstat-v{font-family:var(--fm);font-size:19px;font-weight:500;color:var(--g4)}
 .pstat-l{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);margin-top:2px}
 
+/* Inputs */
 .inp-g{padding:0 20px;margin-bottom:12px}
 .inp-l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--mt);margin-bottom:5px;display:block}
 .inp{width:100%;padding:11px 14px;background:var(--s2);border:1.5px solid var(--bdm);border-radius:12px;font-family:var(--fu);font-size:14px;color:var(--tx);outline:none;transition:border .2s}
 .inp:focus{border-color:var(--g4)}
 select.inp{cursor:pointer}
 
+/* Plan badge */
 .plan-b{margin:0 20px 14px;padding:11px 14px;border-radius:12px;border:1px solid;display:flex;align-items:center;gap:10px}
 .plan-b.trial{background:rgba(224,122,0,.08);border-color:rgba(224,122,0,.3)}
 .plan-b.paid{background:rgba(61,168,102,.08);border-color:rgba(61,168,102,.3)}
@@ -154,31 +170,37 @@ select.inp{cursor:pointer}
 .plan-title{font-size:13px;font-weight:700}
 .plan-sub{font-size:10px;color:var(--mt);margin-top:1px}
 
+/* Vis */
 .vis-row{padding:0 20px;margin-bottom:14px}
 .vis-opts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .vis-opt{padding:6px 13px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--bdm);background:var(--s2);color:var(--tx2);cursor:pointer;transition:all .2s}
 .vis-opt.on{background:var(--g7);border-color:var(--g4);color:white}
 
+/* Buttons */
 .btn-prim{width:calc(100% - 40px);margin:0 20px 10px;padding:13px;border-radius:14px;background:linear-gradient(135deg,var(--g7),var(--g5));color:white;border:none;font-family:var(--fu);font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 4px 20px rgba(31,85,52,.4);transition:all .2s;display:block;text-align:center}
 .btn-prim:hover{transform:translateY(-1px)}
 .btn-sec{width:calc(100% - 40px);margin:0 20px;padding:11px;border-radius:14px;background:transparent;border:1px solid var(--bdm);color:var(--mt);font-family:var(--fu);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:block}
 .btn-sec:hover{border-color:var(--red);color:var(--red)}
 
+/* Op chips */
 .op-chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .op-chip{padding:7px 13px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--bdm);background:var(--s2);color:var(--tx2);cursor:pointer;transition:all .2s}
 .op-chip.on{background:var(--g7);border-color:var(--g4);color:white}
 .op-chip:hover{border-color:var(--g4)}
 
+/* Op result */
 .op-result{margin:0 20px 14px;padding:14px;border-radius:14px;background:var(--s2);border:1px solid var(--bdm)}
 .op-stat-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .op-stat{background:var(--s1);border-radius:10px;padding:10px;text-align:center}
 .op-stat-v{font-family:var(--fm);font-size:18px;color:var(--g4);font-weight:500}
 .op-stat-l{font-size:9px;color:var(--mt);text-transform:uppercase;letter-spacing:.07em;margin-top:2px}
 
+/* Pedidos */
 .req-item{background:var(--s2);border-radius:12px;padding:12px;margin:0 20px 8px;border:1px solid var(--bd)}
 .req-item.sos-req{border-color:rgba(224,53,53,.4);animation:reqPulse 1.5s ease-in-out infinite}
 @keyframes reqPulse{0%,100%{border-left-width:4px;border-left-color:transparent}50%{border-left-width:4px;border-left-color:var(--red)}}
 
+/* Chat */
 .chat-msgs{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:10px;max-height:160px;overflow-y:auto;margin:0 20px 8px;display:flex;flex-direction:column;gap:6px;scrollbar-width:none}
 .chat-msgs::-webkit-scrollbar{display:none}
 .chat-msg{font-size:12px;padding:7px 11px;border-radius:10px;max-width:82%}
@@ -190,6 +212,7 @@ select.inp{cursor:pointer}
 .chat-inp:focus{border-color:var(--g4)}
 .chat-send{width:40px;height:40px;border-radius:50%;background:var(--g6);border:none;color:white;font-size:16px;cursor:pointer;flex-shrink:0}
 
+/* Card de Pedidos Ativos (flutuante) */
 .active-reqs-card{position:fixed;bottom:80px;left:12px;right:12px;z-index:150;background:rgba(11,22,13,.98);border:1px solid var(--bdm);border-radius:16px;padding:10px;backdrop-filter:blur(12px);max-height:280px;overflow-y:auto;display:none;box-shadow:0 8px 32px rgba(0,0,0,.5)}
 .active-reqs-card.on{display:block}
 .active-reqs-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mt);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
@@ -204,6 +227,7 @@ select.inp{cursor:pointer}
 .req-btn.sos{background:var(--red);color:white}
 .req-btn.request{background:#f5a623;color:#0d1a0f}
 
+/* Paywall */
 .pw-wrap{padding:0 20px;text-align:center}
 .pw-icon{font-size:48px;margin-bottom:12px}
 .pw-title{font-family:var(--fd);font-size:24px;margin-bottom:6px}
@@ -215,12 +239,14 @@ select.inp{cursor:pointer}
 .pw-price-p{font-size:11px;color:var(--mt);margin-top:2px}
 .pw-price-n{font-size:11px;color:var(--mt);margin-top:6px}
 
+/* Toast */
 .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-10px);background:rgba(11,22,13,.97);border:1px solid var(--bdm);border-radius:14px;padding:10px 20px;font-size:12px;color:var(--tx);backdrop-filter:blur(12px);z-index:900;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.4)}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
 
+<!-- ══ SPLASH ══ -->
 <div class="screen" id="sSplash">
   <div class="sp-bg"></div><div class="sp-grid"></div>
   <div class="sp-wrap">
@@ -245,8 +271,11 @@ select.inp{cursor:pointer}
   </div>
 </div>
 
+<!-- ══ RADAR ══ -->
 <div class="screen off" id="sRadar">
   <div id="mapEl"></div>
+
+  <!-- Header -->
   <div class="r-hdr">
     <div class="r-logo">Agro<span>Metrix</span> <span style="font-size:10px;color:var(--mt);font-weight:400">RADAR</span></div>
     <div class="r-badge"><div class="ldot"></div><span id="pilotCount">—</span></div>
@@ -256,6 +285,8 @@ select.inp{cursor:pointer}
     </div>
     <button class="ico-btn" onclick="window.openSheet('shProfile')" title="Perfil">👤</button>
   </div>
+
+  <!-- Card de Pedidos Ativos (flutuante) -->
   <div class="active-reqs-card" id="activeReqsCard">
     <div class="active-reqs-title">
       <span>📢 PEDIDOS ATIVOS</span>
@@ -263,11 +294,15 @@ select.inp{cursor:pointer}
     </div>
     <div id="activeReqsList"></div>
   </div>
+
+  <!-- SOS Bar -->
   <div class="sos-bar" id="sosBar">
     <span style="font-size:18px">🚨</span>
     <div class="sos-txt">SOS ATIVO — Aguardando pilotos próximos…</div>
     <button class="sos-cancel" onclick="window.cancelSOS()">Cancelar</button>
   </div>
+
+  <!-- Nav bottom -->
   <div class="r-nav">
     <div class="nav-tabs">
       <button class="nav-tab act" id="tab-radar" onclick="window.switchTab('radar')">📡 Radar</button>
@@ -275,6 +310,8 @@ select.inp{cursor:pointer}
       <button class="nav-tab" id="tab-ops" onclick="window.switchTab('ops')">🚁 Ops</button>
       <button class="nav-tab" id="tab-rank" onclick="window.switchTab('rank')">🏆 Rank</button>
     </div>
+
+    <!-- Painel Radar -->
     <div class="panel act" id="pRadar">
       <div class="amx-card">
         <div>
@@ -289,6 +326,8 @@ select.inp{cursor:pointer}
       </div>
       <button class="btn-op start" id="btnOp" onclick="window.handleOp()">🚁 Iniciar Operação</button>
     </div>
+
+    <!-- Painel Clima -->
     <div class="panel" id="pClima">
       <div class="clima-row" id="climaChips">
         <div class="wchip">🌡️ —°C</div>
@@ -307,6 +346,8 @@ select.inp{cursor:pointer}
         </div>
       </div>
     </div>
+
+    <!-- Painel Ops -->
     <div class="panel" id="pOps">
       <div class="quick-row">
         <div class="qbtn red" onclick="window.activateSOS()">🚨 SOS</div>
@@ -318,62 +359,97 @@ select.inp{cursor:pointer}
       </div>
       <button class="btn-op start" id="btnOp2" onclick="window.handleOp()">🚁 Iniciar Operação</button>
     </div>
+
+    <!-- Painel Ranking -->
     <div class="panel" id="pRank">
-      <div class="rank-list" id="rankList"><div style="text-align:center;color:var(--mt);font-size:12px;padding:16px">Carregando ranking…</div></div>
+      <div class="rank-list" id="rankList">
+        <div style="text-align:center;color:var(--mt);font-size:12px;padding:16px">Carregando ranking…</div>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- ══ SHEET PERFIL ══ -->
 <div class="overlay" id="ovProfile" onclick="window.closeSheet('shProfile')"></div>
-<div class="sheet" id="shProfile"><div class="sh-handle"></div><div class="sh-title">Meu Perfil</div><div id="profileContent"></div></div>
+<div class="sheet" id="shProfile">
+  <div class="sh-handle"></div>
+  <div class="sh-title">Meu Perfil</div>
+  <div id="profileContent"></div>
+</div>
 
+<!-- ══ SHEET OP CONFIG ══ -->
 <div class="overlay" id="ovOpConfig" onclick="window.closeSheet('shOpConfig')"></div>
 <div class="sheet" id="shOpConfig">
-  <div class="sh-handle"></div><div class="sh-title">⚙️ Configurar Operação</div>
-  <div class="inp-g"><label class="inp-l">Drone utilizado</label><div class="op-chip-row" id="droneChips">
-    <div class="op-chip" onclick="window.selChip(this,'drone','DJI T25')">DJI T25</div>
-    <div class="op-chip" onclick="window.selChip(this,'drone','DJI T40')">DJI T40</div>
-    <div class="op-chip" onclick="window.selChip(this,'drone','DJI T50')">DJI T50</div>
-    <div class="op-chip" onclick="window.selChip(this,'drone','XAG P100')">XAG P100</div>
-    <div class="op-chip" onclick="window.selChip(this,'drone','XAG V40')">XAG V40</div>
-    <div class="op-chip" onclick="window.selChip(this,'drone','EAVision')">EAVision</div>
-    <div class="op-chip" onclick="window.selChip(this,'drone','Outro')">Outro</div>
-  </div></div>
-  <div class="inp-g"><label class="inp-l">Faixa média de aplicação</label><div class="op-chip-row" id="faixaChips">
-    <div class="op-chip" onclick="window.selChip(this,'faixa','7')">7 m</div>
-    <div class="op-chip" onclick="window.selChip(this,'faixa','9')">9 m</div>
-    <div class="op-chip" onclick="window.selChip(this,'faixa','11')">11 m</div>
-    <div class="op-chip" onclick="window.selChip(this,'faixa','13')">13 m</div>
-  </div></div>
-  <div class="inp-g"><label class="inp-l">Vazão média utilizada</label><div class="op-chip-row" id="vazaoChips">
-    <div class="op-chip" onclick="window.selChip(this,'vazao','5')">5 L/ha</div>
-    <div class="op-chip" onclick="window.selChip(this,'vazao','10')">10 L/ha</div>
-    <div class="op-chip" onclick="window.selChip(this,'vazao','15')">15 L/ha</div>
-    <div class="op-chip" onclick="window.selChip(this,'vazao','20')">20 L/ha</div>
-    <div class="op-chip" onclick="window.selChip(this,'vazao','30')">30 L/ha</div>
-  </div></div>
-  <div class="inp-g"><label class="inp-l">Média operacional estimada</label><div class="op-chip-row" id="haChips">
-    <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','15')">15 ha/h</div>
-    <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','20')">20 ha/h</div>
-    <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','25')">25 ha/h</div>
-    <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','30')">30 ha/h</div>
-    <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','40')">40 ha/h</div>
-  </div></div>
-  <div style="padding:0 20px 6px;font-size:10px;color:var(--mt);line-height:1.5">⚠️ Sistema gera <strong style="color:var(--tx2)">estimativa operacional coerente</strong>. Vazões extremas reduzem confiabilidade do AMX Score.</div>
+  <div class="sh-handle"></div>
+  <div class="sh-title">⚙️ Configurar Operação</div>
+
+  <div class="inp-g">
+    <label class="inp-l">Drone utilizado</label>
+    <div class="op-chip-row" id="droneChips">
+      <div class="op-chip" onclick="window.selChip(this,'drone','DJI T25')">DJI T25</div>
+      <div class="op-chip" onclick="window.selChip(this,'drone','DJI T40')">DJI T40</div>
+      <div class="op-chip" onclick="window.selChip(this,'drone','DJI T50')">DJI T50</div>
+      <div class="op-chip" onclick="window.selChip(this,'drone','XAG P100')">XAG P100</div>
+      <div class="op-chip" onclick="window.selChip(this,'drone','XAG V40')">XAG V40</div>
+      <div class="op-chip" onclick="window.selChip(this,'drone','EAVision')">EAVision</div>
+      <div class="op-chip" onclick="window.selChip(this,'drone','Outro')">Outro</div>
+    </div>
+  </div>
+
+  <div class="inp-g">
+    <label class="inp-l">Faixa média de aplicação</label>
+    <div class="op-chip-row" id="faixaChips">
+      <div class="op-chip" onclick="window.selChip(this,'faixa','7')">7 m</div>
+      <div class="op-chip" onclick="window.selChip(this,'faixa','9')">9 m</div>
+      <div class="op-chip" onclick="window.selChip(this,'faixa','11')">11 m</div>
+      <div class="op-chip" onclick="window.selChip(this,'faixa','13')">13 m</div>
+    </div>
+  </div>
+
+  <div class="inp-g">
+    <label class="inp-l">Vazão média utilizada</label>
+    <div class="op-chip-row" id="vazaoChips">
+      <div class="op-chip" onclick="window.selChip(this,'vazao','5')">5 L/ha</div>
+      <div class="op-chip" onclick="window.selChip(this,'vazao','10')">10 L/ha</div>
+      <div class="op-chip" onclick="window.selChip(this,'vazao','15')">15 L/ha</div>
+      <div class="op-chip" onclick="window.selChip(this,'vazao','20')">20 L/ha</div>
+      <div class="op-chip" onclick="window.selChip(this,'vazao','30')">30 L/ha</div>
+    </div>
+  </div>
+
+  <div class="inp-g">
+    <label class="inp-l">Média operacional estimada</label>
+    <div class="op-chip-row" id="haChips">
+      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','15')">15 ha/h</div>
+      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','20')">20 ha/h</div>
+      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','25')">25 ha/h</div>
+      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','30')">30 ha/h</div>
+      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','40')">40 ha/h</div>
+    </div>
+  </div>
+
+  <div style="padding:0 20px 6px;font-size:10px;color:var(--mt);line-height:1.5">
+    ⚠️ Sistema gera <strong style="color:var(--tx2)">estimativa operacional coerente</strong>. Vazões extremas reduzem confiabilidade do AMX Score.
+  </div>
+
   <button class="btn-prim" onclick="window.confirmOp()" style="margin-top:14px">🚁 Iniciar Operação</button>
   <button class="btn-sec" onclick="window.closeSheet('shOpConfig')" style="margin-top:8px">Cancelar</button>
 </div>
 
+<!-- ══ SHEET OP RESULTADO ══ -->
 <div class="overlay" id="ovOpResult" onclick="window.closeSheet('shOpResult')"></div>
 <div class="sheet" id="shOpResult">
-  <div class="sh-handle"></div><div class="sh-title">📊 Resultado da Operação</div>
+  <div class="sh-handle"></div>
+  <div class="sh-title">📊 Resultado da Operação</div>
   <div id="opResultContent"></div>
   <button class="btn-prim" onclick="window.closeSheet('shOpResult')" style="margin-top:10px">Fechar</button>
 </div>
 
+<!-- ══ SHEET PEDIDOS ══ -->
 <div class="overlay" id="ovReq" onclick="window.closeSheet('shReq')"></div>
 <div class="sheet" id="shReq">
-  <div class="sh-handle"></div><div class="sh-title">📢 Pedidos e SOS Ativos</div>
+  <div class="sh-handle"></div>
+  <div class="sh-title">📢 Pedidos e SOS Ativos</div>
   <div id="reqList"></div>
   <div id="chatSection" style="display:none">
     <div class="sh-title" style="margin-top:8px">💬 Chat com <span id="chatName">—</span></div>
@@ -385,6 +461,7 @@ select.inp{cursor:pointer}
   </div>
 </div>
 
+<!-- ══ SHEET PAYWALL ══ -->
 <div class="overlay" id="ovPaywall"></div>
 <div class="sheet" id="shPaywall">
   <div class="sh-handle"></div>
@@ -410,6 +487,7 @@ select.inp{cursor:pointer}
   </div>
 </div>
 
+<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -418,7 +496,9 @@ import { initFirebase, loginGoogle, logout, onAuthChange, getProfile, updateProf
 import { initMap, upsertPilot, spawnBots, startBotUpdates, startLocationTracking, listenPilots,
          startOperation, endOperation, isOperating, calcAMXScore, calcOperationEstimate, amxLabel, addNotificationBadge } from './radar.js';
 
-// ========== ÁUDIO ==========
+// ==============================================================
+// SISTEMA DE ÁUDIO
+// ==============================================================
 let audioCtx = null;
 let audioEnabled = false;
 
@@ -433,6 +513,7 @@ function initAudio() {
 function playSound(type) {
   if (!audioEnabled || !audioCtx) return;
   if (audioCtx.state === 'suspended') audioCtx.resume();
+  
   const now = audioCtx.currentTime;
   const freqs = { request: [523.25,659.25,783.99], sos: [880,880,880,440,440,440], accept: [523.25,659.25,783.99,1046.50], message: [440,440] };
   const durs = { request: [0.2,0.2,0.3], sos: [0.15,0.15,0.15,0.15,0.15,0.3], accept: [0.1,0.1,0.1,0.4], message: [0.05,0.05] };
@@ -452,7 +533,9 @@ function playSound(type) {
 
 document.body.addEventListener('click', function initFirst() { initAudio(); document.body.removeEventListener('click', initFirst); });
 
-// ========== PEDIDOS ATIVOS ==========
+// ==============================================================
+// SISTEMA DE PEDIDOS ATIVOS
+// ==============================================================
 let activeRequestsList = [];
 
 function addToActiveRequests(req) {
@@ -486,14 +569,9 @@ function renderActiveRequestsCard() {
   }
 }
 
-function fixGooglePhoto(url) {
-  if (!url) return null;
-  if (url.includes('googleusercontent.com')) {
-    return url.split('?')[0] + '?sz=150';
-  }
-  return url;
-}
-
+// ==============================================================
+// ESTADO PRINCIPAL
+// ==============================================================
 const R = window.AgroRadar = {
   user:null, profile:null, plan:null, lat:null, lon:null, map:null, weather:null,
   opCfg:{}, chatTarget:null, chatUnsub:null, sosActive:false,
@@ -502,7 +580,9 @@ const R = window.AgroRadar = {
 const $ = id => document.getElementById(id);
 const ov = id => id.replace('sh','ov');
 
-// ========== FUNÇÕES GLOBAIS ==========
+// ==============================================================
+// FUNÇÕES GLOBAIS (expostas no window)
+// ==============================================================
 window.openSheet = (id) => {
   $(ov(id)).classList.add('on');
   $(id).classList.add('on');
@@ -602,6 +682,17 @@ window.saveProfile = async () => {
 };
 window.setVis = async (vis) => { if(!R.user) return; await updateProfile(R.user.uid, {visibility: vis}); if(R.profile) R.profile.visibility = vis; renderProfile(); };
 window.doLogout = async () => { await logout(); window.closeSheet('shProfile'); $('sRadar').classList.add('off'); $('sSplash').classList.remove('off'); };
+window.enterRadar = async () => {
+  if(!isFirebaseConfigured()){ window.showToast('⚠️ Firebase não configurado'); return; }
+  const btn = $('btnEntrar');
+  if(btn) { btn.textContent='🔄 Conectando…'; btn.disabled=true; }
+  const user = await loginGoogle();
+  if(btn) { btn.textContent='🚁 Entrar no Radar'; btn.disabled=false; }
+  if(!user) return;
+  const profile = await getProfile(user.uid);
+  R.user = user; R.profile = profile; R.plan = getPlanStatus(profile);
+  if(R.plan.active) showRadar(); else window.openSheet('shPaywall');
+};
 window.startTrial = async () => { if(!R.user) return; const te=new Date(); te.setDate(te.getDate()+7); await updateProfile(R.user.uid,{plan:'trial',trialEnd:te.toISOString()}); R.plan={active:true,plan:'trial',daysLeft:7}; window.closeSheet('shPaywall'); showRadar(); };
 window.quickRespond = async (reqId, pilotId, pilotName, type) => {
   playSound('accept');
@@ -615,6 +706,9 @@ window.quickRespond = async (reqId, pilotId, pilotName, type) => {
   window.openSheet('shReq');
 };
 
+// ==============================================================
+// FUNÇÕES INTERNAS
+// ==============================================================
 function getW() {
   return window._weatherState || JSON.parse(localStorage.getItem('agrometrix_weather')||'null') ||
     {temp:24,humidity:65,wind:8,deltaT:5.2,rainProb:10,cloud:20,condition:'Parcialmente nublado'};
@@ -623,10 +717,8 @@ function getW() {
 function publishSelf(lat,lon,status) {
   if (!R.user||!R.profile) return;
   const p = R.profile;
-  let userPhoto = fixGooglePhoto(p.photo);
-  if (!userPhoto && R.user?.photoURL) userPhoto = fixGooglePhoto(R.user.photoURL);
   upsertPilot({
-    id: R.user.uid, name: p.nickname||p.name||'Piloto', photo: userPhoto || '👨‍✈️',
+    id: R.user.uid, name: p.nickname||p.name||'Piloto', photo: p.photo||'👨‍✈️',
     city: p.city||'', drone: p.drone||'', score: p.amxScore||0,
     hoursTotal: p.hoursTotal||0, opsTotal: p.opsTotal||0,
     lat, lon, status, isCurrentUser: true,
@@ -748,24 +840,10 @@ async function loadRanking() {
 function renderProfile() {
   const p = R.profile, plan = R.plan;
   if(!p) return;
-  let fotoUrl = fixGooglePhoto(p.photo);
-  if (!fotoUrl && R.user?.photoURL) fotoUrl = fixGooglePhoto(R.user.photoURL);
-  const fotoHtml = fotoUrl ? `<img src="${fotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.outerHTML='👨‍✈️'">` : '👨‍✈️';
   const pCls = plan?.plan==='paid'?'paid':plan?.plan==='trial'?'trial':'exp';
   const pIcon = plan?.plan==='paid'?'✅':plan?.plan==='trial'?'⏳':'🔒';
   const pTitle = plan?.plan==='paid'?'Plano Ativo':plan?.plan==='trial'?`Trial — ${plan.daysLeft} dias restantes`:'Trial expirado';
-  $('profileContent').innerHTML = `
-    <div class="pf-hero"><div class="pf-av">${fotoHtml}</div><div><div class="pf-name">${p.nickname||p.name||'Piloto'}</div><div class="pf-city">📍 ${p.city||'Cidade não informada'}</div><div class="pf-drone">🚁 ${p.drone||'Drone não informado'}</div></div></div>
-    <div class="pf-stats"><div class="pstat"><div class="pstat-v">${p.amxScore||0}</div><div class="pstat-l">AMX Score</div></div><div class="pstat"><div class="pstat-v">${(p.hoursTotal||0).toFixed(0)}h</div><div class="pstat-l">Horas</div></div><div class="pstat"><div class="pstat-v">${p.opsTotal||0}</div><div class="pstat-l">Operações</div></div></div>
-    <div class="inp-g"><label class="inp-l">Nome / Apelido</label><input class="inp" id="pfNick" value="${p.nickname||p.name||''}" placeholder="Como quer ser chamado?"></div>
-    <div class="inp-g"><label class="inp-l">Cidade</label><input class="inp" id="pfCity" value="${p.city||''}" placeholder="Sua cidade"></div>
-    <div class="inp-g"><label class="inp-l">Drone principal</label><select class="inp" id="pfDrone"><option value="">Selecione…</option>${['DJI T25','DJI T40','DJI T50','XAG P100','XAG V40','EAVision','Pegasus Agri','Outro'].map(d=>`<option ${p.drone===d?'selected':''}>${d}</option>`).join('')}</select></div>
-    <div class="plan-b ${pCls}"><div class="plan-icon">${pIcon}</div><div><div class="plan-title">${pTitle}</div><div class="plan-sub">${plan?.plan==='trial'?'Aproveite o período gratuito':plan?.plan==='paid'?'Acesso completo ao radar':'Assine para continuar'}</div></div></div>
-    ${plan?.plan!=='paid'?`<button class="btn-prim" onclick="window.openSheet('shPaywall')" style="margin-bottom:10px">🚀 Assinar R$ 19,90/mês</button>`:''}
-    <div class="vis-row"><label class="inp-l">Visibilidade no radar</label><div class="vis-opts"><div class="vis-opt ${p.visibility==='online'?'on':''}" onclick="window.setVis('online')">🟢 Online</div><div class="vis-opt ${p.visibility==='invisible'?'on':''}" onclick="window.setVis('invisible')">⚫ Invisível</div><div class="vis-opt ${p.visibility==='sos'?'on':''}" onclick="window.setVis('sos')">🚨 SOS</div></div></div>
-    <button class="btn-prim" onclick="window.saveProfile()" style="margin-top:12px">💾 Salvar perfil</button>
-    <button class="btn-sec" onclick="window.doLogout()" style="margin-top:8px">Sair da conta</button>
-  `;
+  $('profileContent').innerHTML = `<div class="pf-hero"><div class="pf-av">${p.photo?`<img src="${p.photo}" onerror="this.outerHTML='👨‍✈️'">`:'👨‍✈️'}</div><div><div class="pf-name">${p.nickname||p.name||'Piloto'}</div><div class="pf-city">📍 ${p.city||'Cidade não informada'}</div><div class="pf-drone">🚁 ${p.drone||'Drone não informado'}</div></div></div><div class="pf-stats"><div class="pstat"><div class="pstat-v">${p.amxScore||0}</div><div class="pstat-l">AMX Score</div></div><div class="pstat"><div class="pstat-v">${(p.hoursTotal||0).toFixed(0)}h</div><div class="pstat-l">Horas</div></div><div class="pstat"><div class="pstat-v">${p.opsTotal||0}</div><div class="pstat-l">Operações</div></div></div><div class="inp-g"><label class="inp-l">Nome / Apelido</label><input class="inp" id="pfNick" value="${p.nickname||p.name||''}" placeholder="Como quer ser chamado?"></div><div class="inp-g"><label class="inp-l">Cidade</label><input class="inp" id="pfCity" value="${p.city||''}" placeholder="Sua cidade"></div><div class="inp-g"><label class="inp-l">Drone principal</label><select class="inp" id="pfDrone"><option value="">Selecione…</option>${['DJI T25','DJI T40','DJI T50','XAG P100','XAG V40','EAVision','Pegasus Agri','Outro'].map(d=>`<option ${p.drone===d?'selected':''}>${d}</option>`).join('')}</select></div><div class="plan-b ${pCls}"><div class="plan-icon">${pIcon}</div><div><div class="plan-title">${pTitle}</div><div class="plan-sub">${plan?.plan==='trial'?'Aproveite o período gratuito':plan?.plan==='paid'?'Acesso completo ao radar':'Assine para continuar'}</div></div></div>${plan?.plan!=='paid'?`<button class="btn-prim" onclick="window.openSheet('shPaywall')" style="margin-bottom:10px">🚀 Assinar R$ 19,90/mês</button>`:''}<div class="vis-row"><label class="inp-l">Visibilidade no radar</label><div class="vis-opts"><div class="vis-opt ${p.visibility==='online'?'on':''}" onclick="window.setVis('online')">🟢 Online</div><div class="vis-opt ${p.visibility==='invisible'?'on':''}" onclick="window.setVis('invisible')">⚫ Invisível</div><div class="vis-opt ${p.visibility==='sos'?'on':''}" onclick="window.setVis('sos')">🚨 SOS</div></div></div><button class="btn-prim" onclick="window.saveProfile()" style="margin-top:12px">💾 Salvar perfil</button><button class="btn-sec" onclick="window.doLogout()" style="margin-top:8px">Sair da conta</button>`;
 }
 
 function startPilotCounter() { setInterval(() => { const n = document.querySelectorAll('.leaflet-marker-icon').length; $('pilotCount').textContent = `${Math.max(n,8)} pilotos`; }, 3000); }
@@ -793,28 +871,7 @@ function setupMap(lat, lon) {
   startPilotCounter();
 }
 
-window.enterRadar = async () => {
-  if(!isFirebaseConfigured()){ window.showToast('⚠️ Firebase não configurado'); return; }
-  const btn = $('btnEntrar');
-  if(btn) { btn.textContent='🔄 Conectando…'; btn.disabled=true; }
-  const user = await loginGoogle();
-  if(btn) { btn.textContent='🚁 Entrar no Radar'; btn.disabled=false; }
-  if(!user) return;
-  if (user.photoURL) user.photoURL = fixGooglePhoto(user.photoURL);
-  const profile = await getProfile(user.uid);
-  if (profile && profile.photo && profile.photo.includes('=s96-c')) {
-    const novaFoto = fixGooglePhoto(profile.photo);
-    await updateProfile(user.uid, { photo: novaFoto });
-    profile.photo = novaFoto;
-  }
-  R.user = user; R.profile = profile; R.plan = getPlanStatus(profile);
-  if(R.plan.active) showRadar(); else window.openSheet('shPaywall');
-};
-
-window.addEventListener('amx:check-operation', () => { if(confirm('Operação ainda em andamento?')) return; if(isOperating()) endOp(); });
-
-// INICIALIZAÇÃO - ÚLTIMA LINHA
-(async function init() {
+async function init() {
   if (!isFirebaseConfigured()) { window.showToast('⚠️ Firebase não configurado'); return; }
   await initFirebase();
   onAuthChange(async (user, profile) => {
@@ -823,7 +880,11 @@ window.addEventListener('amx:check-operation', () => { if(confirm('Operação ai
       if (R.plan.active) showRadar(); else window.openSheet('shPaywall');
     }
   });
-})();
+}
+
+window.addEventListener('amx:check-operation', () => { if(confirm('Operação ainda em andamento?')) return; if(isOperating()) endOp(); });
+
+init();
 </script>
 </body>
 </html>
