@@ -519,10 +519,12 @@ select.inp{cursor:pointer}
 </div>
 
 <!-- Modal de Chamado -->
+<div style="position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.5);display:none" id="modalChamadoOverlay" onclick="window.modalIgnore()"></div>
 <div class="modal-chamado" id="modalChamado">
   <div class="modal-chamado-icon" id="modalIcon">🔧</div>
   <div class="modal-chamado-title" id="modalTitle">Novo Chamado</div>
   <div class="modal-chamado-msg" id="modalMsg">Alguém precisa de ajuda!</div>
+  <div style="font-size:11px;color:var(--mt);margin-bottom:12px" id="modalTimer">Expires in 30s</div>
   <div class="modal-chamado-buttons">
     <button class="modal-chamado-btn accept" onclick="window.modalAccept()">✅ Aceitar</button>
     <button class="modal-chamado-btn ignore" onclick="window.modalIgnore()">❌ Ignorar</button>
@@ -569,6 +571,59 @@ function playSound(type) {
     osc.stop(now + (d[i] || 0.2) * (i + 1));
   }
 }
+
+let loopSoundId = null;
+
+function playLoopSound(type, duration = 30000) {
+  if (!audioEnabled || !audioCtx) {
+    initAudio();
+    if (!audioCtx) return;
+  }
+  
+  stopLoopSound();
+  
+  const interval = 600;
+  let elapsed = 0;
+  
+  const play = () => {
+    if (elapsed >= duration) {
+      stopLoopSound();
+      return;
+    }
+    playSound(type);
+    elapsed += interval;
+    loopSoundId = setTimeout(play, interval);
+  };
+  
+  playSound(type);
+  loopSoundId = setTimeout(play, interval);
+  console.log(`🔊 Loop sound "${type}" started for ${duration}ms`);
+}
+
+function stopLoopSound() {
+  if (loopSoundId) {
+    clearTimeout(loopSoundId);
+    loopSoundId = null;
+    console.log('🔇 Loop sound stopped');
+  }
+}
+
+// Volume control (0-100)
+let soundVolume = 50;
+function setVolume(v) {
+  soundVolume = Math.max(0, Math.min(100, v));
+  if (audioCtx && audioCtx.destination.maxChannelCount >= 1) {
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.value = soundVolume / 100 * 0.3;
+  }
+  localStorage.setItem('soundVolume', soundVolume);
+}
+
+window.playSound = playSound;
+window.playLoopSound = playLoopSound;
+window.stopLoopSound = stopLoopSound;
+window.setVolume = setVolume;
+
 
 document.body.addEventListener('click', function initFirst() { initAudio(); document.body.removeEventListener('click', initFirst); });
 
