@@ -1038,7 +1038,6 @@ async function init() {
     if (user && profile) {
       R.user=user; R.profile=profile; R.plan=getPlanStatus(profile);
       loadHiddenRequestsFromStorage();
-      listenNotifications();
       if (R.plan.active) showRadar(); else openSheet('shPaywall');
     }
   });
@@ -1595,15 +1594,13 @@ async function listenNotifications() {
   }
 
   try {
-    const { collection, query, where, orderBy, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-
-    const q = query(
-      collection(db, 'notifications'),
-      where('to', '==', R.user.uid),
-      orderBy('createdAt', 'desc')
+    const q = window._fsQuery(
+      window._fsCollection(db, 'notifications'),
+      window._fsWhere('to', '==', R.user.uid),
+      window._fsOrderBy('createdAt', 'desc')
     );
 
-    onSnapshot(q, (snapshot) => {
+    window._fsOnSnapshot(q, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === 'added') {
           const notif = change.doc.data();
@@ -1697,9 +1694,7 @@ window.sendMsg = async () => {
   if (!db) return;
 
   const chatId = [R.user.uid, R.chatTarget.uid].sort().join('_');
-  const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-
-  await addDoc(collection(db, `chats/${chatId}/messages`), {
+  await window._fsAddDoc(window._fsCollection(db, `chats/${chatId}/messages`), {
     uid: R.user.uid,
     name: R.profile?.nickname || R.profile?.name || 'Piloto',
     text: txt,
@@ -1708,7 +1703,7 @@ window.sendMsg = async () => {
 
   // Notificar o outro usuário
   try {
-    await addDoc(collection(db, 'notifications'), {
+    await window._fsAddDoc(window._fsCollection(db, 'notifications'), {
       to: R.chatTarget.uid,
       from: R.user.uid,
       type: 'new_message',
