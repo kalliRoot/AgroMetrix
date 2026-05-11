@@ -77,6 +77,13 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .notif-dot{position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:var(--red);color:white;font-size:8px;font-weight:700;display:none;align-items:center;justify-content:center}
 .notif-dot.on{display:flex}
 
+/* Animação de pulso para notificações */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
 /* SOS bar */
 .sos-bar{position:fixed;top:56px;left:0;right:0;z-index:200;padding:8px 14px;display:none;align-items:center;gap:10px;animation:sosBlink .9s ease-in-out infinite}
 .sos-bar.on{display:flex}
@@ -1449,6 +1456,306 @@ window.addEventListener('amx:check-operation',()=>{
 });
 
 init();
+
+// =========================================
+// PATCH_CHAT_FIX.js - Correções para Chat
+// =========================================
+// Problema: Chat só funciona para quem aceita chamado
+// Solução: Notificar solicitante e abrir chat para ambos
+
+// 1. MODIFICAR acceptReq() para notificar solicitante
+window.acceptReq_original = window.acceptReq;
+window.acceptReq = async (uid, name, message) => {
+  // Chamar função original
+  await window.acceptReq_original(uid, name, message);
+
+  // Notificar o solicitante que seu chamado foi aceito
+  const db = window._firebaseDB;
+  if (db) {
+    try {
+      const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+      // Criar notificação para o solicitante
+      await addDoc(collection(db, 'notifications'), {
+        to: uid, // UID do solicitante
+        from: R.user.uid,
+        type: 'request_accepted',
+        accepterName: R.profile?.nickname || R.profile?.name || 'Piloto',
+        message: `Seu chamado foi aceito por ${R.profile?.nickname || R.profile?.name || 'Piloto'}`,
+        createdAt: window._fsTimestamp?.(),
+        read: false
+      });
+
+      console.log('✅ Notificação enviada ao solicitante');
+    } catch (error) {
+      console.error('❌ Erro ao notificar solicitante:', error);
+    }
+  }
+};
+
+// 2. ADICIONAR função para ouvir notificações
+async function listenNotifications() {
+  const db = window._firebaseDB;
+  if (!db || !R.user) return;
+
+  try {
+    const { collection, query, where, orderBy, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+    const q = query(
+      collection(db, 'notifications'),
+      where('to', '==', R.user.uid),
+      orderBy('createdAt', 'desc')
+    );
+
+    onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'added') {
+          const notif = change.doc.data();
+
+          if (!notif.read) {
+            // Marcar como lida
+            change.doc.ref.update({ read: true });
+
+            // Processar notificação
+            if (notif.type === 'request_accepted') {
+              // Abrir chat automaticamente com quem aceitou
+              window.openChatWith(notif.from, notif.accepterName);
+              showToast(`🎉 ${notif.accepterName} aceitou seu chamado! Chat aberto.`);
+
+              // Tocar som de aceitação
+              playSound('accept');
+            }
+          }
+        }
+      });
+    });
+
+    console.log('👂 Ouvindo notificações...');
+  } catch (error) {
+    console.error('❌ Erro ao configurar notificações:', error);
+  }
+}
+
+// 3. MODIFICAR listenChat() para incluir notificações de mensagens
+async function listenChat_withNotifications(uid) {
+  // Chamar função original primeiro
+  const db = window._firebaseDB;
+  if (!db) return;
+
+  if (R.chatUnsub) R.chatUnsub();
+  const chatId = [R.user.uid, uid].sort().join('_');
+  const { collection, query, orderBy, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  const q = query(collection(db, `chats/${chatId}/messages`), orderBy('createdAt'));
+
+  R.chatUnsub = onSnapshot(q, snap => {
+    const msgs = $('chatMsgs');
+    msgs.innerHTML = snap.docs.map(d => {
+      const m = d.data(), isMe = m.uid === R.user.uid;
+      return `<div class="chat-msg ${isMe ? 'me' : 'them'}">
+        ${!isMe ? `<div class="chat-msg-name">${m.name || 'Piloto'}</div>` : ''}${m.text}
+      </div>`;
+    }).join('');
+    msgs.scrollTop = msgs.scrollHeight;
+  });
+
+  // Adicionar listener para novas mensagens de outros usuários
+  try {
+    const q2 = query(
+      collection(db, `chats/${chatId}/messages`),
+      where('uid', '!=', R.user.uid),
+      orderBy('createdAt', 'desc'),
+      limit(1)
+    );
+
+    onSnapshot(q2, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'added') {
+          const msg = change.doc.data();
+
+          // Só notificar se chat não estiver aberto ou não for o chat atual
+          if (!R.chatTarget || R.chatTarget.uid !== uid) {
+            notifyNewMessage(msg.name || 'Piloto', msg.text);
+          }
+        }
+      });
+    });
+  } catch (error) {
+    console.error('❌ Erro ao configurar notificações de chat:', error);
+  }
+}
+
+// 4. FUNÇÃO para notificar novas mensagens
+function notifyNewMessage(senderName, message) {
+  // Animação no ícone do chat
+  const chatIcon = document.querySelector('.chat-float .ico-btn');
+  if (chatIcon) {
+    chatIcon.style.animation = 'pulse 0.5s ease-in-out';
+    setTimeout(() => chatIcon.style.animation = '', 500);
+  }
+
+  // Adicionar badge de notificação
+  const notifDot = document.getElementById('reqDot');
+  if (notifDot) {
+    notifDot.classList.add('on');
+    notifDot.textContent = '!';
+  }
+
+  // Tocar som de mensagem
+  playSound('message');
+
+  // Toast de notificação
+  showToast(`💬 ${senderName}: ${message.substring(0, 30)}${message.length > 30 ? '...' : ''}`);
+}
+
+// 5. MODIFICAR sendMsg() para garantir que ambos recebem
+window.sendMsg_original = window.sendMsg;
+window.sendMsg = async () => {
+  const inp = $('chatInp'), txt = inp.value.trim();
+  if (!txt || !R.chatTarget) return;
+
+  inp.value = '';
+  playSound('message');
+
+  const db = window._firebaseDB;
+  if (!db) return;
+
+  const chatId = [R.user.uid, R.chatTarget.uid].sort().join('_');
+  const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+  await addDoc(collection(db, `chats/${chatId}/messages`), {
+    uid: R.user.uid,
+    name: R.profile?.nickname || R.profile?.name || 'Piloto',
+    text: txt,
+    createdAt: window._fsTimestamp?.(),
+  });
+
+  // Notificar o outro usuário
+  try {
+    await addDoc(collection(db, 'notifications'), {
+      to: R.chatTarget.uid,
+      from: R.user.uid,
+      type: 'new_message',
+      senderName: R.profile?.nickname || R.profile?.name || 'Piloto',
+      message: txt,
+      createdAt: window._fsTimestamp?.(),
+      read: false
+    });
+  } catch (error) {
+    console.error('❌ Erro ao notificar nova mensagem:', error);
+  }
+};
+
+// 6. INICIALIZAR ouvintes quando app carrega
+function initChatNotifications() {
+  // Modificar onAuthChange para iniciar notificações
+  const originalOnAuthChange = window.onAuthChange || (() => {});
+  window.onAuthChange = (callback) => {
+    originalOnAuthChange((user, profile) => {
+      callback(user, profile);
+      if (user && profile) {
+        // Iniciar ouvintes de notificação
+        listenNotifications();
+      }
+    });
+  };
+
+  // Substituir listenChat pela versão com notificações
+  window.listenChat = listenChat_withNotifications;
+}
+
+// Inicializar correções
+initChatNotifications();
+
+// =========================================
+// PATCH_FIX_PROFILE_NAME.js - Correção do nome no card
+// =========================================
+// Problema: Nome aparece como URL do Google Photos
+// Solução: Validar e corrigir campos do perfil
+
+// 1. FUNÇÃO para validar se string é URL
+function isValidUrl(string) {
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+// 2. FUNÇÃO para corrigir nome do perfil
+function fixProfileName(profile, user) {
+  if (!profile) return profile;
+
+  // Se o campo name/nickname for uma URL, usar displayName ou criar nome genérico
+  const currentName = profile.nickname || profile.name;
+
+  if (currentName && isValidUrl(currentName)) {
+    console.warn('🚨 Nome do perfil é uma URL, corrigindo...', currentName);
+
+    // Tentar usar displayName do usuário
+    if (user && user.displayName) {
+      profile.name = user.displayName;
+      profile.nickname = user.displayName;
+      console.log('✅ Nome corrigido para:', user.displayName);
+    } else {
+      // Criar nome genérico baseado no email
+      const email = user?.email || '';
+      const genericName = email.split('@')[0] || 'Piloto';
+      profile.name = genericName;
+      profile.nickname = genericName;
+      console.log('✅ Nome genérico criado:', genericName);
+    }
+
+    // Salvar correção no banco
+    if (user && user.uid) {
+      updateProfile(user.uid, {
+        name: profile.name,
+        nickname: profile.nickname
+      }).catch(err => console.error('❌ Erro ao salvar correção:', err));
+    }
+  }
+
+  return profile;
+}
+
+// 3. MODIFICAR publishSelf para usar nome corrigido
+const originalPublishSelf = window.publishSelf;
+window.publishSelf = function(lat, lon, status) {
+  if (!R.user || !R.profile) return;
+
+  // Corrigir perfil antes de publicar
+  R.profile = fixProfileName(R.profile, R.user);
+
+  // Chamar função original
+  return originalPublishSelf.call(this, lat, lon, status);
+};
+
+// 4. MODIFICAR onAuthChange para corrigir perfil no login
+const originalOnAuthChange2 = window.onAuthChange;
+window.onAuthChange = (callback) => {
+  originalOnAuthChange2((user, profile) => {
+    if (user && profile) {
+      // Corrigir perfil assim que carregar
+      const fixedProfile = fixProfileName(profile, user);
+
+      // Chamar callback com perfil corrigido
+      callback(user, fixedProfile);
+    } else {
+      callback(user, profile);
+    }
+  });
+};
+
+// 5. MODIFICAR renderProfile para mostrar nome correto
+const originalRenderProfile = window.renderProfile;
+window.renderProfile = function() {
+  if (R.profile) {
+    R.profile = fixProfileName(R.profile, R.user);
+  }
+  return originalRenderProfile.call(this);
+};
+
+console.log('🔧 PATCH_FIX_PROFILE_NAME.js aplicado - Nomes corrigidos!');
 </script>
 </body>
 </html>
