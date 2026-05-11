@@ -25,11 +25,9 @@
 }
 html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg);color:var(--tx)}
 
-/* ── SCREENS ── */
 .screen{position:fixed;inset:0;transition:opacity .35s,transform .35s}
 .screen.off{opacity:0;pointer-events:none;transform:scale(.97)}
 
-/* ══ SPLASH ══ */
 #sSplash{background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .sp-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(31,85,52,.35),transparent 70%),radial-gradient(ellipse 50% 40% at 80% 80%,rgba(30,136,208,.1),transparent 60%)}
 .sp-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(61,168,102,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(61,168,102,.04) 1px,transparent 1px);background-size:40px 40px}
@@ -56,7 +54,6 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .btn-google:hover{background:var(--s3);border-color:var(--g4)}
 .btn-google svg{width:20px;height:20px;flex-shrink:0}
 
-/* ══ RADAR ══ */
 #sRadar{background:var(--bg)}
 #mapEl{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
 .leaflet-tile{filter:brightness(.42) saturate(.35) hue-rotate(88deg)}
@@ -67,14 +64,16 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .leaflet-container{background:var(--bg)!important}
 
 /* Header */
-.r-hdr{position:fixed;top:0;left:0;right:0;z-index:100;padding:10px 14px;background:linear-gradient(to bottom,rgba(6,14,8,.97),transparent);display:flex;align-items:center;gap:8px}
+.r-hdr{position:fixed;top:0;left:0;right:0;z-index:100;padding:10px 14px;background:linear-gradient(to bottom,rgba(6,14,8,.97),transparent);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .r-logo{font-size:15px;font-weight:800;flex:1;color:var(--tx)}.r-logo span{color:var(--g4)}
 .r-badge{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;background:rgba(6,14,8,.85);border:1px solid var(--bdm);font-size:11px;color:var(--tx2);backdrop-filter:blur(8px)}
 .ldot{width:6px;height:6px;border-radius:50%;background:var(--g4);animation:ldotP 2s infinite}
 @keyframes ldotP{0%,100%{opacity:1}50%{opacity:.3}}
-.ico-btn{width:36px;height:36px;border-radius:50%;background:rgba(6,14,8,.85);border:1px solid var(--bdm);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:all .2s;flex-shrink:0;backdrop-filter:blur(8px)}
+.ico-btn{width:36px;height:36px;border-radius:50%;background:rgba(6,14,8,.85);border:1px solid var(--bdm);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:all .2s;flex-shrink:0;backdrop-filter:blur(8px);position:relative}
 .ico-btn:hover{border-color:var(--g4)}
-.chat-float{ margin-right: 8px; position: relative; }
+.chat-float{margin-right:8px;position:relative}
+.location-ico{background:rgba(6,14,8,.85);border:1px solid var(--bdm);color:var(--g4)}
+.location-ico:hover{border-color:var(--g4);background:rgba(61,168,102,.2)}
 .notif-dot{position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:var(--red);color:white;font-size:8px;font-weight:700;display:none;align-items:center;justify-content:center}
 .notif-dot.on{display:flex}
 
@@ -141,11 +140,14 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .sheet{position:fixed;bottom:0;left:0;right:0;z-index:501;background:var(--s1);border-radius:24px 24px 0 0;border-top:1px solid var(--bdm);padding:0 0 36px;transform:translateY(100%);transition:transform .4s cubic-bezier(.34,1.2,.64,1);max-height:92vh;overflow-y:auto}
 .sheet.on{transform:translateY(0)}
 .sh-handle{width:36px;height:4px;border-radius:2px;background:var(--bdm);margin:12px auto 18px}
-.sh-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mt);padding:0 20px;margin-bottom:14px}
+.sh-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mt);padding:0 20px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.sh-close-btn{background:none;border:none;color:var(--mt);font-size:20px;cursor:pointer;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.sh-close-btn:hover{background:rgba(255,255,255,.1);color:var(--red)}
 
 /* Perfil */
 .pf-hero{display:flex;align-items:center;gap:14px;padding:0 20px 16px;border-bottom:1px solid var(--bd);margin-bottom:16px}
-.pf-av{width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--g7);display:flex;align-items:center;justify-content:center;font-size:26px}
+.pf-av{width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--g7);display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;transition:all .2s}
+.pf-av:hover{opacity:.8;transform:scale(1.02)}
 .pf-av img{width:100%;height:100%;object-fit:cover}
 .pf-name{font-size:18px;font-weight:800;color:var(--tx)}
 .pf-city{font-size:11px;color:var(--mt);margin-top:2px}
@@ -198,7 +200,8 @@ select.inp{cursor:pointer}
 
 /* Pedidos */
 .req-item{background:var(--s2);border-radius:12px;padding:12px;margin:0 20px 8px;border:1px solid var(--bd)}
-.req-item.sos-req{border-color:rgba(224,53,53,.4)}
+.req-item.sos-req{border-color:rgba(224,53,53,.4);animation:reqPulse 1.5s ease-in-out infinite}
+@keyframes reqPulse{0%,100%{border-left-width:4px;border-left-color:transparent}50%{border-left-width:4px;border-left-color:var(--red)}}
 
 /* Chat */
 .chat-msgs{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:10px;max-height:160px;overflow-y:auto;margin:0 20px 8px;display:flex;flex-direction:column;gap:6px;scrollbar-width:none}
@@ -228,7 +231,19 @@ select.inp{cursor:pointer}
 .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-10px);background:rgba(11,22,13,.97);border:1px solid var(--bdm);border-radius:14px;padding:10px 20px;font-size:12px;color:var(--tx);backdrop-filter:blur(12px);z-index:900;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.4)}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* Botão Limpar Histórico */
+/* Modal de chamado */
+.modal-chamado{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;background:var(--s1);border:1px solid var(--bdm);border-radius:24px;padding:24px;width:calc(100% - 40px);max-width:320px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,.5);display:none}
+.modal-chamado.on{display:block}
+.modal-chamado-icon{font-size:48px;margin-bottom:12px}
+.modal-chamado-title{font-size:18px;font-weight:800;margin-bottom:8px}
+.modal-chamado-msg{font-size:13px;color:var(--tx2);margin-bottom:20px;line-height:1.5}
+.modal-chamado-buttons{display:flex;gap:12px}
+.modal-chamado-btn{flex:1;padding:12px;border-radius:16px;border:none;font-weight:700;cursor:pointer}
+.modal-chamado-btn.accept{background:var(--g6);color:white}
+.modal-chamado-btn.accept:hover{background:var(--g5)}
+.modal-chamado-btn.ignore{background:var(--s3);border:1px solid var(--bdm);color:var(--tx2)}
+.modal-chamado-btn.ignore:hover{background:var(--s2);color:var(--red)}
+
 .clear-history-btn{ background-color: rgba(224, 53, 53, 0.15); border: 1px solid var(--red); color: #ff8080; margin-top: -8px; margin-bottom: 16px; width: calc(100% - 40px); display: block; margin-left: auto; margin-right: auto; padding: 8px; border-radius: 20px; font-size: 11px; font-weight: 600; text-align: center; cursor: pointer; transition: all 0.2s; }
 .clear-history-btn:hover{ background-color: rgba(224, 53, 53, 0.3); transform: scale(0.98); }
 </style>
@@ -250,10 +265,10 @@ select.inp{cursor:pointer}
       <div class="sp-dot" style="top:44%;left:72%;opacity:.8"></div>
       <div class="sp-dot" style="top:72%;left:58%;opacity:.5"></div>
     </div>
-    <button class="btn-cta" id="btnEntrar" onclick="enterRadar()">🚁 Entrar no Radar</button>
+    <button class="btn-cta" id="btnEntrar" onclick="window.enterRadar()">🚁 Entrar no Radar</button>
     <div class="sp-sub">7 dias grátis · Depois R$ 19,90/mês</div>
     <div class="sp-divider"><span>já tenho conta</span></div>
-    <button class="btn-google" onclick="enterRadar()">
+    <button class="btn-google" onclick="window.enterRadar()">
       <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Entrar com Google
     </button>
@@ -268,30 +283,31 @@ select.inp{cursor:pointer}
   <div class="r-hdr">
     <div class="r-logo">Agro<span>Metrix</span> <span style="font-size:10px;color:var(--mt);font-weight:400">RADAR</span></div>
     <div class="r-badge"><div class="ldot"></div><span id="pilotCount">—</span></div>
+    <button class="ico-btn location-ico" onclick="window.centerOnUser()" title="Minha Localização">📍</button>
     <div class="chat-float">
-      <button class="ico-btn" onclick="toggleChatDrawer()" title="Chat">💬</button>
+      <button class="ico-btn" onclick="window.toggleChatDrawer()" title="Chat">💬</button>
     </div>
     <div style="position:relative">
-      <button class="ico-btn" onclick="openSheet('shReq')" title="Pedidos">🔧</button>
+      <button class="ico-btn" onclick="window.openSheet('shReq')" title="Pedidos">🔧</button>
       <div class="notif-dot" id="reqDot">!</div>
     </div>
-    <button class="ico-btn" onclick="openSheet('shProfile')" title="Perfil">👤</button>
+    <button class="ico-btn" onclick="window.openSheet('shProfile')" title="Perfil">👤</button>
   </div>
 
   <!-- SOS Bar -->
   <div class="sos-bar" id="sosBar">
     <span style="font-size:18px">🚨</span>
     <div class="sos-txt">SOS ATIVO — Aguardando pilotos próximos…</div>
-    <button class="sos-cancel" onclick="cancelSOS()">Cancelar</button>
+    <button class="sos-cancel" onclick="window.cancelSOS()">Cancelar</button>
   </div>
 
   <!-- Nav bottom -->
   <div class="r-nav">
     <div class="nav-tabs">
-      <button class="nav-tab act" id="tab-radar" onclick="switchTab('radar')">📡 Radar</button>
-      <button class="nav-tab" id="tab-clima" onclick="switchTab('clima')">🌡️ Clima</button>
-      <button class="nav-tab" id="tab-ops" onclick="switchTab('ops')">🚁 Ops</button>
-      <button class="nav-tab" id="tab-rank" onclick="switchTab('rank')">🏆 Rank</button>
+      <button class="nav-tab act" id="tab-radar" onclick="window.switchTab('radar')">📡 Radar</button>
+      <button class="nav-tab" id="tab-clima" onclick="window.switchTab('clima')">🌡️ Clima</button>
+      <button class="nav-tab" id="tab-ops" onclick="window.switchTab('ops')">🚁 Ops</button>
+      <button class="nav-tab" id="tab-rank" onclick="window.switchTab('rank')">🏆 Rank</button>
     </div>
 
     <!-- Painel Radar -->
@@ -307,7 +323,7 @@ select.inp{cursor:pointer}
           <div class="amx-bar"><div class="amx-fill" id="amxFill" style="width:0%;background:var(--g4)"></div></div>
         </div>
       </div>
-      <button class="btn-op start" id="btnOp" onclick="handleOp()">🚁 Iniciar Operação</button>
+      <button class="btn-op start" id="btnOp" onclick="window.handleOp()">🚁 Iniciar Operação</button>
     </div>
 
     <!-- Painel Clima -->
@@ -333,14 +349,15 @@ select.inp{cursor:pointer}
     <!-- Painel Ops -->
     <div class="panel" id="pOps">
       <div class="quick-row">
-        <div class="qbtn red" onclick="activateSOS()">🚨 SOS</div>
-        <div class="qbtn" onclick="sendReq('battery','🔋 Preciso de bateria')">🔋 Bateria</div>
-        <div class="qbtn" onclick="sendReq('helice','🚁 Preciso de hélice')">🚁 Hélice</div>
-        <div class="qbtn" onclick="sendReq('part','🔧 Preciso de peça')">🔧 Peça</div>
-        <div class="qbtn" onclick="sendReq('support','🛠️ Preciso de suporte')">🛠️ Suporte</div>
-        <div class="qbtn" onclick="sendReq('fuel','⛽ Abastecimento')">⛽ Combustível</div>
+        <div class="qbtn red" onclick="window.activateSOS()">🚨 SOS</div>
+        <div class="qbtn" onclick="window.sendReq('battery','🔋 Preciso de bateria')">🔋 Bateria</div>
+        <div class="qbtn" onclick="window.sendReq('helice','🚁 Preciso de hélice')">🚁 Hélice</div>
+        <div class="qbtn" onclick="window.sendReq('part','🔧 Preciso de peça')">🔧 Peça</div>
+        <div class="qbtn" onclick="window.sendReq('support','🛠️ Preciso de suporte')">🛠️ Suporte</div>
+        <div class="qbtn" onclick="window.sendReq('fuel','⛽ Abastecimento')">⛽ Combustível</div>
+        <div class="qbtn" onclick="window.sendReq('tow','🚜 Preciso de guincho/atolamento')">🚜 Atolamento/Gruincho</div>
       </div>
-      <button class="btn-op start" id="btnOp2" onclick="handleOp()">🚁 Iniciar Operação</button>
+      <button class="btn-op start" id="btnOp2" onclick="window.handleOp()">🚁 Iniciar Operação</button>
     </div>
 
     <!-- Painel Ranking -->
@@ -353,61 +370,68 @@ select.inp{cursor:pointer}
 </div>
 
 <!-- ══ SHEET PERFIL ══ -->
-<div class="overlay" id="ovProfile" onclick="closeSheet('shProfile')"></div>
+<div class="overlay" id="ovProfile" onclick="window.closeSheet('shProfile')"></div>
 <div class="sheet" id="shProfile">
   <div class="sh-handle"></div>
-  <div class="sh-title">Meu Perfil</div>
+  <div class="sh-title">
+    Meu Perfil
+    <button class="sh-close-btn" onclick="window.closeSheet('shProfile')">✕</button>
+  </div>
   <div id="profileContent"></div>
 </div>
 
 <!-- ══ SHEET OP CONFIG ══ -->
-<div class="overlay" id="ovOpConfig" onclick="closeSheet('shOpConfig')"></div>
+<div class="overlay" id="ovOpConfig" onclick="window.closeSheet('shOpConfig')"></div>
 <div class="sheet" id="shOpConfig">
   <div class="sh-handle"></div>
-  <div class="sh-title">⚙️ Configurar Operação</div>
+  <div class="sh-title">
+    ⚙️ Configurar Operação
+    <button class="sh-close-btn" onclick="window.closeSheet('shOpConfig')">✕</button>
+  </div>
 
   <div class="inp-g">
     <label class="inp-l">Drone utilizado</label>
     <div class="op-chip-row" id="droneChips">
-      <div class="op-chip" onclick="selChip(this,'drone','DJI T25')">DJI T25</div>
-      <div class="op-chip" onclick="selChip(this,'drone','DJI T40')">DJI T40</div>
-      <div class="op-chip" onclick="selChip(this,'drone','DJI T50')">DJI T50</div>
-      <div class="op-chip" onclick="selChip(this,'drone','XAG P100')">XAG P100</div>
-      <div class="op-chip" onclick="selChip(this,'drone','XAG V40')">XAG V40</div>
-      <div class="op-chip" onclick="selChip(this,'drone','EAVision')">EAVision</div>
-      <div class="op-chip" onclick="selChip(this,'drone','Outro')">Outro</div>
+      <div class="op-chip" onclick="window.selChip(this,'drone','DJI T25')">DJI T25</div>
+      <div class="op-chip" onclick="window.selChip(this,'drone','DJI T40')">DJI T40</div>
+      <div class="op-chip" onclick="window.selChip(this,'drone','DJI T50')">DJI T50</div>
+      <div class="op-chip" onclick="window.selChip(this,'drone','XAG P100')">XAG P100</div>
+      <div class="op-chip" onclick="window.selChip(this,'drone','XAG V40')">XAG V40</div>
+      <div class="op-chip" onclick="window.selChip(this,'drone','EAVision')">EAVision</div>
+      <div class="op-chip" onclick="window.showDroneCustomInput(this,'drone','Outro')">Outro</div>
     </div>
+    <input type="text" id="customDroneInput" class="inp" placeholder="Digite o modelo do drone" style="display:none; margin-top:8px">
   </div>
 
   <div class="inp-g">
     <label class="inp-l">Faixa média de aplicação</label>
     <div class="op-chip-row" id="faixaChips">
-      <div class="op-chip" onclick="selChip(this,'faixa','7')">7 m</div>
-      <div class="op-chip" onclick="selChip(this,'faixa','9')">9 m</div>
-      <div class="op-chip" onclick="selChip(this,'faixa','11')">11 m</div>
-      <div class="op-chip" onclick="selChip(this,'faixa','13')">13 m</div>
+      <div class="op-chip" onclick="window.selChip(this,'faixa','7')">7 m</div>
+      <div class="op-chip" onclick="window.selChip(this,'faixa','9')">9 m</div>
+      <div class="op-chip" onclick="window.selChip(this,'faixa','11')">11 m</div>
+      <div class="op-chip" onclick="window.selChip(this,'faixa','13')">13 m</div>
     </div>
   </div>
 
   <div class="inp-g">
     <label class="inp-l">Vazão média utilizada</label>
     <div class="op-chip-row" id="vazaoChips">
-      <div class="op-chip" onclick="selChip(this,'vazao','5')">5 L/ha</div>
-      <div class="op-chip" onclick="selChip(this,'vazao','10')">10 L/ha</div>
-      <div class="op-chip" onclick="selChip(this,'vazao','15')">15 L/ha</div>
-      <div class="op-chip" onclick="selChip(this,'vazao','20')">20 L/ha</div>
-      <div class="op-chip" onclick="selChip(this,'vazao','30')">30 L/ha</div>
+      <div class="op-chip" onclick="window.selChip(this,'vazao','5')">5 L/ha</div>
+      <div class="op-chip" onclick="window.selChip(this,'vazao','10')">10 L/ha</div>
+      <div class="op-chip" onclick="window.selChip(this,'vazao','15')">15 L/ha</div>
+      <div class="op-chip" onclick="window.selChip(this,'vazao','20')">20 L/ha</div>
+      <div class="op-chip" onclick="window.selChip(this,'vazao','30')">30 L/ha</div>
     </div>
   </div>
 
   <div class="inp-g">
     <label class="inp-l">Média operacional estimada</label>
     <div class="op-chip-row" id="haChips">
-      <div class="op-chip" onclick="selChip(this,'avgHaPerH','15')">15 ha/h</div>
-      <div class="op-chip" onclick="selChip(this,'avgHaPerH','20')">20 ha/h</div>
-      <div class="op-chip" onclick="selChip(this,'avgHaPerH','25')">25 ha/h</div>
-      <div class="op-chip" onclick="selChip(this,'avgHaPerH','30')">30 ha/h</div>
-      <div class="op-chip" onclick="selChip(this,'avgHaPerH','40')">40 ha/h</div>
+      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','15')">15 ha/h</div>
+      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','20')">20 ha/h</div>
+      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','25')">25 ha/h</div>
+      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','30')">30 ha/h</div>
+      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','40')">40 ha/h</div>
     </div>
   </div>
 
@@ -415,32 +439,38 @@ select.inp{cursor:pointer}
     ⚠️ Sistema gera <strong style="color:var(--tx2)">estimativa operacional coerente</strong>. Vazões extremas reduzem confiabilidade do AMX Score.
   </div>
 
-  <button class="btn-prim" onclick="confirmOp()" style="margin-top:14px">🚁 Iniciar Operação</button>
-  <button class="btn-sec" onclick="closeSheet('shOpConfig')" style="margin-top:8px">Cancelar</button>
+  <button class="btn-prim" onclick="window.confirmOp()" style="margin-top:14px">🚁 Iniciar Operação</button>
+  <button class="btn-sec" onclick="window.closeSheet('shOpConfig')" style="margin-top:8px">Cancelar</button>
 </div>
 
 <!-- ══ SHEET OP RESULTADO ══ -->
-<div class="overlay" id="ovOpResult" onclick="closeSheet('shOpResult')"></div>
+<div class="overlay" id="ovOpResult" onclick="window.closeSheet('shOpResult')"></div>
 <div class="sheet" id="shOpResult">
   <div class="sh-handle"></div>
-  <div class="sh-title">📊 Resultado da Operação</div>
+  <div class="sh-title">
+    📊 Resultado da Operação
+    <button class="sh-close-btn" onclick="window.closeSheet('shOpResult')">✕</button>
+  </div>
   <div id="opResultContent"></div>
-  <button class="btn-prim" onclick="closeSheet('shOpResult')" style="margin-top:10px">Fechar</button>
+  <button class="btn-prim" onclick="window.closeSheet('shOpResult')" style="margin-top:10px">Fechar</button>
 </div>
 
-<!-- ══ SHEET PEDIDOS (COM BOTÃO DE LIMPAR HISTÓRICO) ══ -->
-<div class="overlay" id="ovReq" onclick="closeSheet('shReq')"></div>
+<!-- ══ SHEET PEDIDOS ══ -->
+<div class="overlay" id="ovReq" onclick="window.closeSheet('shReq')"></div>
 <div class="sheet" id="shReq">
   <div class="sh-handle"></div>
-  <div class="sh-title">📢 Pedidos e SOS Ativos</div>
-  <button class="clear-history-btn" onclick="clearHistoryPermanent()">🗑️ Limpar Histórico de Chamados</button>
+  <div class="sh-title">
+    📢 Pedidos e SOS Ativos
+    <button class="sh-close-btn" onclick="window.closeSheet('shReq')">✕</button>
+  </div>
+  <button class="clear-history-btn" onclick="window.clearHistoryPermanent()">🗑️ Limpar Histórico de Chamados</button>
   <div id="reqList"></div>
   <div id="chatSection" style="display:none">
-    <div class="sh-title" style="margin-top:8px">💬 Chat com <span id="chatName">—</span></div>
+    <div class="sh-title" style="margin-top:8px;padding:0 20px">💬 Chat com <span id="chatName">—</span></div>
     <div class="chat-msgs" id="chatMsgs"></div>
     <div class="chat-input-row">
-      <input class="chat-inp" id="chatInp" placeholder="Mensagem…" onkeydown="if(event.key==='Enter')sendMsg()">
-      <button class="chat-send" onclick="sendMsg()">➤</button>
+      <input class="chat-inp" id="chatInp" placeholder="Mensagem…" onkeydown="if(event.key==='Enter')window.sendMsg()">
+      <button class="chat-send" onclick="window.sendMsg()">➤</button>
     </div>
   </div>
 </div>
@@ -466,8 +496,8 @@ select.inp{cursor:pointer}
       <div class="pw-price-p">por mês · cancele quando quiser</div>
       <div class="pw-price-n">🎁 7 dias grátis para testar</div>
     </div>
-    <button class="btn-prim" onclick="startTrial()" style="margin-bottom:8px">🚀 Começar 7 dias grátis</button>
-    <button onclick="closeSheet('shPaywall')" style="width:100%;padding:10px;background:none;border:none;color:var(--mt);font-family:var(--fu);font-size:13px;cursor:pointer">Agora não</button>
+    <button class="btn-prim" onclick="window.startTrial()" style="margin-bottom:8px">🚀 Começar 7 dias grátis</button>
+    <button onclick="window.closeSheet('shPaywall')" style="width:100%;padding:10px;background:none;border:none;color:var(--mt);font-family:var(--fu);font-size:13px;cursor:pointer">Agora não</button>
   </div>
 </div>
 
@@ -475,14 +505,28 @@ select.inp{cursor:pointer}
 <div class="toast" id="toast"></div>
 
 <!-- Chat Drawer Flutuante -->
-<div class="overlay" id="ovChatDrawer" onclick="closeChatDrawer()"></div>
-<div class="sheet" id="shChatDrawer" style="z-index: 502;">
+<div class="overlay" id="ovChatDrawer" onclick="window.closeChatDrawer()"></div>
+<div class="sheet" id="shChatDrawer" style="z-index:502">
   <div class="sh-handle"></div>
-  <div class="sh-title">📨 Conversas Ativas</div>
-  <div id="activeChatsList" style="max-height: 60vh; overflow-y: auto; padding: 0 20px;">
-    <div style="text-align:center;color:var(--mt);padding:20px;">Nenhuma conversa ativa no momento.</div>
+  <div class="sh-title">
+    📨 Conversas Ativas
+    <button class="sh-close-btn" onclick="window.closeChatDrawer()">✕</button>
   </div>
-  <button class="btn-sec" onclick="closeChatDrawer()" style="margin-top: 10px; width: calc(100% - 40px);">Fechar</button>
+  <div id="activeChatsList" style="max-height:60vh;overflow-y:auto;padding:0 20px">
+    <div style="text-align:center;color:var(--mt);padding:20px">Nenhuma conversa ativa no momento.</div>
+  </div>
+  <button class="btn-sec" onclick="window.closeChatDrawer()" style="margin-top:10px;width:calc(100% - 40px)">Fechar</button>
+</div>
+
+<!-- Modal de Chamado -->
+<div class="modal-chamado" id="modalChamado">
+  <div class="modal-chamado-icon" id="modalIcon">🔧</div>
+  <div class="modal-chamado-title" id="modalTitle">Novo Chamado</div>
+  <div class="modal-chamado-msg" id="modalMsg">Alguém precisa de ajuda!</div>
+  <div class="modal-chamado-buttons">
+    <button class="modal-chamado-btn accept" onclick="window.modalAccept()">✅ Aceitar</button>
+    <button class="modal-chamado-btn ignore" onclick="window.modalIgnore()">❌ Ignorar</button>
+  </div>
 </div>
 
 <script type="module">
@@ -491,126 +535,416 @@ import { initFirebase, loginGoogle, logout, onAuthChange, getProfile, updateProf
 import { initMap, upsertPilot, spawnBots, startBotUpdates, startLocationTracking, listenPilots,
          startOperation, endOperation, isOperating, calcAMXScore, calcOperationEstimate, amxLabel } from './radar.js';
 
-// ── Estado ─────────────────────────────────────────────────────
+// ==============================================================
+// SISTEMA DE ÁUDIO
+// ==============================================================
+let audioCtx = null;
+let audioEnabled = false;
+
+function initAudio() {
+  if (audioEnabled) return;
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) return;
+  audioCtx = new AudioContext();
+  audioEnabled = true;
+}
+
+function playSound(type) {
+  if (!audioEnabled || !audioCtx) return;
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  
+  const now = audioCtx.currentTime;
+  const freqs = { request: [523.25,659.25,783.99], sos: [880,880,880,440,440,440], accept: [523.25,659.25,783.99,1046.50], message: [440,440] };
+  const durs = { request: [0.2,0.2,0.3], sos: [0.15,0.15,0.15,0.15,0.15,0.3], accept: [0.1,0.1,0.1,0.4], message: [0.05,0.05] };
+  const f = freqs[type] || freqs.request;
+  const d = durs[type] || durs.request;
+  for (let i = 0; i < f.length; i++) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.frequency.value = f[i];
+    gain.gain.value = 0.25;
+    osc.start(now + (d[i] || 0.2) * i);
+    gain.gain.exponentialRampToValueAtTime(0.00001, now + (d[i] || 0.2) * (i + 1));
+    osc.stop(now + (d[i] || 0.2) * (i + 1));
+  }
+}
+
+document.body.addEventListener('click', function initFirst() { initAudio(); document.body.removeEventListener('click', initFirst); });
+
+// ==============================================================
+// FUNÇÃO PARA CORRIGIR FOTO DO GOOGLE
+// ==============================================================
+function fixGooglePhoto(url) {
+  if (!url) return null;
+  if (url.includes('googleusercontent.com')) {
+    return url.split('?')[0] + '?sz=150';
+  }
+  return url;
+}
+
+// ==============================================================
+// ESTADO PRINCIPAL
+// ==============================================================
 const R = window.AgroRadar = {
   user:null, profile:null, plan:null,
   lat:null, lon:null, map:null, weather:null,
   opCfg:{}, chatTarget:null, chatUnsub:null, sosActive:false,
-  hiddenRequests: new Set() // Armazena IDs de requests que o usuário já limpou
+  hiddenRequests: new Set(),
+  operationStartLat:null, operationStartLon:null, operationMonitorInterval:null
 };
 
-// ── UI Helpers ─────────────────────────────────────────────────
-const $  = id => document.getElementById(id);
+const $ = id => document.getElementById(id);
 const ov = id => id.replace('sh','ov');
 
-window.openSheet = id => {
+// ==============================================================
+// BOTS REALISTAS (30+ com movimento entre cidades)
+// ==============================================================
+const CIDADES_BRASIL = [
+  { name: 'São Paulo, SP', lat: -23.5505, lon: -46.6333, state: 'SP' },
+  { name: 'Rio de Janeiro, RJ', lat: -22.9068, lon: -43.1729, state: 'RJ' },
+  { name: 'Belo Horizonte, MG', lat: -19.9245, lon: -43.9352, state: 'MG' },
+  { name: 'Brasília, DF', lat: -15.8267, lon: -47.9218, state: 'DF' },
+  { name: 'Curitiba, PR', lat: -25.4296, lon: -49.2712, state: 'PR' },
+  { name: 'Porto Alegre, RS', lat: -30.0346, lon: -51.2177, state: 'RS' },
+  { name: 'Salvador, BA', lat: -12.9777, lon: -38.5016, state: 'BA' },
+  { name: 'Fortaleza, CE', lat: -3.7319, lon: -38.5267, state: 'CE' },
+  { name: 'Recife, PE', lat: -8.0476, lon: -34.8770, state: 'PE' },
+  { name: 'Manaus, AM', lat: -3.1190, lon: -60.0217, state: 'AM' },
+  { name: 'Belém, PA', lat: -1.4558, lon: -48.4902, state: 'PA' },
+  { name: 'Goiânia, GO', lat: -16.6869, lon: -49.2648, state: 'GO' },
+  { name: 'Campinas, SP', lat: -22.9099, lon: -47.0626, state: 'SP' },
+  { name: 'São José dos Campos, SP', lat: -23.1896, lon: -45.8840, state: 'SP' },
+  { name: 'Ribeirão Preto, SP', lat: -21.1787, lon: -47.8103, state: 'SP' },
+  { name: 'Uberlândia, MG', lat: -18.9186, lon: -48.2772, state: 'MG' },
+  { name: 'Sorocaba, SP', lat: -23.4969, lon: -47.4451, state: 'SP' },
+  { name: 'Londrina, PR', lat: -23.3107, lon: -51.1628, state: 'PR' },
+  { name: 'Joinville, SC', lat: -26.3045, lon: -48.8487, state: 'SC' },
+  { name: 'Cuiabá, MT', lat: -15.5989, lon: -56.0949, state: 'MT' },
+  { name: 'Campo Grande, MS', lat: -20.4697, lon: -54.6201, state: 'MS' },
+  { name: 'Teresina, PI', lat: -5.0896, lon: -42.8016, state: 'PI' },
+  { name: 'Natal, RN', lat: -5.7945, lon: -35.2110, state: 'RN' },
+  { name: 'João Pessoa, PB', lat: -7.1195, lon: -34.8450, state: 'PB' },
+  { name: 'Maceió, AL', lat: -9.6498, lon: -35.7089, state: 'AL' },
+  { name: 'Aracaju, SE', lat: -10.9472, lon: -37.0731, state: 'SE' },
+  { name: 'São Luís, MA', lat: -2.5387, lon: -44.2825, state: 'MA' },
+  { name: 'Palmas, TO', lat: -10.2491, lon: -48.3243, state: 'TO' },
+  { name: 'Rio Branco, AC', lat: -9.9754, lon: -67.8249, state: 'AC' },
+  { name: 'Porto Velho, RO', lat: -8.7619, lon: -63.9039, state: 'RO' },
+  { name: 'Boa Vista, RR', lat: 2.8235, lon: -60.6758, state: 'RR' },
+  { name: 'Macapá, AP', lat: 0.0357, lon: -51.0705, state: 'AP' }
+];
+
+const BOT_NAMES = [
+  'João Silva', 'Maria Santos', 'Pedro Oliveira', 'Ana Costa', 'Lucas Lima',
+  'Fernanda Souza', 'Rafael Alves', 'Patrícia Rocha', 'Gustavo Pereira', 'Carla Mendes',
+  'Bruno Ferreira', 'Juliana Cardoso', 'Rodrigo Gomes', 'Vanessa Ribeiro', 'Thiago Monteiro',
+  'Larissa Cunha', 'Felipe Nogueira', 'Camila Duarte', 'Marcelo Batista', 'Renata Viana',
+  'Daniel Martins', 'Amanda Correia', 'Leonardo Teixeira', 'Bianca Amaral', 'Ricardo Farias'
+];
+
+function generateRealisticBots(count) {
+  const bots = [];
+  const shuffled = [...CIDADES_BRASIL].sort(() => Math.random() - 0.5);
+  
+  for (let i = 0; i < Math.min(count, shuffled.length); i++) {
+    const cidade = shuffled[i];
+    const score = 50 + Math.floor(Math.random() * 45);
+    const hoursTotal = 100 + Math.floor(Math.random() * 2000);
+    const opsTotal = 20 + Math.floor(Math.random() * 500);
+    const drones = ['DJI Agras T40', 'DJI Agras T50', 'XAG P100 Pro', 'XAG V40', 'EAVision U10'];
+    
+    bots.push({
+      id: `bot_${Date.now()}_${i}`,
+      name: BOT_NAMES[i % BOT_NAMES.length],
+      city: cidade.name,
+      drone: drones[Math.floor(Math.random() * drones.length)],
+      score: score,
+      photo: ['👨‍✈️', '🧑‍✈️', '👩‍✈️', '👨‍🚀'][Math.floor(Math.random() * 4)],
+      hoursTotal: hoursTotal,
+      opsTotal: opsTotal,
+      lat: cidade.lat + (Math.random() - 0.5) * 0.5,
+      lon: cidade.lon + (Math.random() - 0.5) * 0.5,
+      status: Math.random() > 0.6 ? 'operating' : 'online'
+    });
+  }
+  return bots;
+}
+
+let activeBots = [];
+let botMovementInterval = null;
+
+function startBotMovement() {
+  if (botMovementInterval) clearInterval(botMovementInterval);
+  botMovementInterval = setInterval(() => {
+    activeBots.forEach(bot => {
+      if (Math.random() > 0.7) {
+        const novaCidade = CIDADES_BRASIL[Math.floor(Math.random() * CIDADES_BRASIL.length)];
+        bot.lat = novaCidade.lat + (Math.random() - 0.5) * 0.3;
+        bot.lon = novaCidade.lon + (Math.random() - 0.5) * 0.3;
+        bot.city = novaCidade.name;
+        upsertPilot(bot);
+      } else {
+        bot.lat += (Math.random() - 0.5) * 0.02;
+        bot.lon += (Math.random() - 0.5) * 0.02;
+        upsertPilot(bot);
+      }
+    });
+    updatePilotCount();
+  }, 60000);
+}
+
+function updateBotCount() {
+  const targetCount = Math.floor(Math.random() * 15) + 25;
+  if (activeBots.length < targetCount) {
+    const newBots = generateRealisticBots(targetCount - activeBots.length);
+    newBots.forEach(bot => {
+      activeBots.push(bot);
+      upsertPilot(bot);
+    });
+  } else if (activeBots.length > targetCount) {
+    const toRemove = activeBots.splice(targetCount);
+    toRemove.forEach(bot => removePilot(bot.id));
+  }
+  updatePilotCount();
+}
+
+// ==============================================================
+// MONITORAMENTO DE DISTÂNCIA PARA OPERAÇÃO
+// ==============================================================
+function startOperationDistanceMonitor() {
+  if (R.operationMonitorInterval) clearInterval(R.operationMonitorInterval);
+  R.operationMonitorInterval = setInterval(() => {
+    if (isOperating() && R.operationStartLat && R.operationStartLon && R.lat && R.lon) {
+      const distance = Math.sqrt(
+        Math.pow((R.lat - R.operationStartLat) * 111000, 2) +
+        Math.pow((R.lon - R.operationStartLon) * 111000, 2)
+      );
+      if (distance > 300) {
+        showToast(`⚠️ Operação finalizada: você se afastou ${Math.round(distance)}m do ponto de início (limite 300m)`);
+        endOp();
+      }
+    }
+  }, 10000);
+}
+
+// ==============================================================
+// UI Helpers
+// ==============================================================
+window.openSheet = (id) => {
   $(ov(id)).classList.add('on');
   $(id).classList.add('on');
   if (id === 'shProfile') renderProfile();
-  if (id === 'shReq')     loadRequests();
+  if (id === 'shReq') loadRequests();
 };
-window.closeSheet = id => {
+window.closeSheet = (id) => {
   $(ov(id)).classList.remove('on');
   $(id).classList.remove('on');
 };
-
 window.showToast = (msg, dur=3500) => {
   const t=$('toast'); t.textContent=msg; t.classList.add('on');
   setTimeout(()=>t.classList.remove('on'), dur);
 };
-
-window.switchTab = tab => {
+window.switchTab = (tab) => {
   ['radar','clima','ops','rank'].forEach(t => {
-    $('tab-'+t)?.classList.remove('act');
-    $('p'+t[0].toUpperCase()+t.slice(1)).classList.remove('act');
+    const tb = $('tab-'+t); if(tb) tb.classList.remove('act');
+    const pn = $('p'+t[0].toUpperCase()+t.slice(1)); if(pn) pn.classList.remove('act');
   });
-  $('tab-'+tab)?.classList.add('act');
-  $('p'+tab[0].toUpperCase()+tab.slice(1)).classList.add('act');
-  if (tab==='rank') loadRanking();
+  const at = $('tab-'+tab); if(at) at.classList.add('act');
+  const ap = $('p'+tab[0].toUpperCase()+tab.slice(1)); if(ap) ap.classList.add('act');
+  if(tab === 'rank') loadRanking();
 };
-
 window.selChip = (el, field, val) => {
   el.closest('.op-chip-row').querySelectorAll('.op-chip').forEach(c=>c.classList.remove('on'));
   el.classList.add('on');
   R.opCfg[field] = val;
 };
 
-// ── Init ───────────────────────────────────────────────────────
+// Drone custom
+window.showDroneCustomInput = (el, field, val) => {
+  window.selChip(el, field, val);
+  const customInput = $('#customDroneInput');
+  if (customInput) {
+    customInput.style.display = 'block';
+    customInput.focus();
+    customInput.onblur = () => {
+      if (customInput.value.trim()) {
+        R.opCfg.drone = customInput.value.trim();
+      }
+      customInput.style.display = 'none';
+    };
+    customInput.onkeypress = (e) => {
+      if (e.key === 'Enter') {
+        if (customInput.value.trim()) R.opCfg.drone = customInput.value.trim();
+        customInput.style.display = 'none';
+      }
+    };
+  }
+};
+
+window.centerOnUser = () => {
+  if (R.map && R.lat && R.lon) {
+    R.map.setView([R.lat, R.lon], 13);
+    showToast('📍 Centralizando na sua localização');
+  } else {
+    showToast('⚠️ Localização não disponível');
+  }
+};
+
+// ==============================================================
+// CHAT DRAWER
+// ==============================================================
+window.toggleChatDrawer = () => {
+  const drawer = $('shChatDrawer');
+  const overlay = $('ovChatDrawer');
+  if(drawer.classList.contains('on')) {
+    window.closeChatDrawer();
+  } else {
+    loadActiveChats();
+    overlay.classList.add('on');
+    drawer.classList.add('on');
+  }
+};
+window.closeChatDrawer = () => {
+  $('ovChatDrawer').classList.remove('on');
+  $('shChatDrawer').classList.remove('on');
+};
+
+async function loadActiveChats() {
+  const container = $('activeChatsList');
+  if(!container) return;
+  const db = window._firebaseDB;
+  if(!db) {
+    container.innerHTML = '<div style="text-align:center;color:var(--mt);padding:20px">Nenhuma conversa ativa.</div>';
+    return;
+  }
+  const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  const chatsQuery = query(collection(db, 'chats'));
+  const snap = await getDocs(chatsQuery);
+  const activeChats = [];
+  snap.forEach(doc => {
+    if(doc.id.includes(R.user?.uid)) {
+      const otherId = doc.id.replace(`${R.user.uid}_`, '').replace(`_${R.user.uid}`, '');
+      activeChats.push({ chatId: doc.id, otherId });
+    }
+  });
+  if(activeChats.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--mt);padding:20px">Nenhuma conversa ativa.</div>';
+    return;
+  }
+  container.innerHTML = activeChats.map(chat => `
+    <div style="padding:12px;border-bottom:1px solid var(--bd);cursor:pointer" onclick="window.openChatWith('${chat.otherId}')">
+      <div style="font-weight:bold">👨‍✈️ ${chat.otherId.substring(0, 15)}</div>
+      <div style="font-size:11px;color:var(--mt)">Clique para conversar</div>
+    </div>
+  `).join('');
+}
+
+window.openChatWith = async (uid) => {
+  window.closeChatDrawer();
+  const db = window._firebaseDB;
+  if(!db) return;
+  const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  const pilotRef = doc(db, 'pilots', uid);
+  const pilotSnap = await getDoc(pilotRef);
+  const pilotName = pilotSnap.exists() ? (pilotSnap.data().nickname || pilotSnap.data().name || 'Piloto') : 'Piloto';
+  R.chatTarget = { uid, name: pilotName };
+  const chatNameSpan = $('chatName');
+  const chatSection = $('chatSection');
+  if(chatNameSpan) chatNameSpan.textContent = pilotName;
+  if(chatSection) chatSection.style.display = 'block';
+  window.openSheet('shReq');
+  listenChat(uid);
+  showToast(`💬 Conversa com ${pilotName} aberta`);
+};
+
+// ==============================================================
+// MODAL DE CHAMADO
+// ==============================================================
+let pendingRequest = null;
+
+window.showRequestModal = (req) => {
+  pendingRequest = req;
+  const modal = $('modalChamado');
+  const icon = $('modalIcon');
+  const title = $('modalTitle');
+  const msg = $('modalMsg');
+  if(req.type === 'sos') {
+    icon.textContent = '🚨';
+    title.textContent = 'SOS URGENTE!';
+  } else {
+    icon.textContent = '🔧';
+    title.textContent = 'Novo Pedido de Ajuda';
+  }
+  msg.textContent = `${req.pilotName}: ${req.message}`;
+  modal.classList.add('on');
+  playSound('request');
+};
+
+window.modalAccept = async () => {
+  if(pendingRequest) {
+    await window.acceptReq(pendingRequest.uid, pendingRequest.pilotName, pendingRequest.message);
+    $('modalChamado').classList.remove('on');
+    pendingRequest = null;
+  }
+};
+
+window.modalIgnore = () => {
+  $('modalChamado').classList.remove('on');
+  pendingRequest = null;
+  showToast('❌ Você ignorou o chamado');
+};
+
+// ==============================================================
+// FUNÇÕES PRINCIPAIS
+// ==============================================================
 async function init() {
   if (!isFirebaseConfigured()) { showToast('⚠️ Firebase não configurado'); return; }
   await initFirebase();
   onAuthChange(async (user, profile) => {
     if (user && profile) {
       R.user=user; R.profile=profile; R.plan=getPlanStatus(profile);
-      // Carregar lista de chamados já limpos do localStorage
       loadHiddenRequestsFromStorage();
       if (R.plan.active) showRadar(); else openSheet('shPaywall');
     }
   });
 }
 
-// Carregar IDs dos chamados que já foram limpos
 function loadHiddenRequestsFromStorage() {
   if(!R.user) return;
   const key = `hidden_requests_${R.user.uid}`;
   const stored = localStorage.getItem(key);
   if(stored) {
-    try {
-      const arr = JSON.parse(stored);
-      R.hiddenRequests = new Set(arr);
-    } catch(e) { console.error(e); }
+    try { R.hiddenRequests = new Set(JSON.parse(stored)); } catch(e) {}
   }
 }
 
-// Salvar IDs dos chamados limpos
 function saveHiddenRequestsToStorage() {
   if(!R.user) return;
-  const key = `hidden_requests_${R.user.uid}`;
-  localStorage.setItem(key, JSON.stringify(Array.from(R.hiddenRequests)));
+  localStorage.setItem(`hidden_requests_${R.user.uid}`, JSON.stringify(Array.from(R.hiddenRequests)));
 }
 
-// Função de limpeza permanente
 window.clearHistoryPermanent = () => {
-  if(!R.user) {
-    showToast('⚠️ Usuário não identificado');
-    return;
-  }
-  
-  // Coleta todos os IDs visíveis atualmente no reqList
+  if(!R.user) { showToast('⚠️ Usuário não identificado'); return; }
   const currentItems = document.querySelectorAll('#reqList .req-item');
-  if(currentItems.length === 0) {
-    showToast('📭 Nenhum chamado para limpar');
-    return;
-  }
-  
-  // Adiciona cada ID à lista de ocultos
+  if(currentItems.length === 0) { showToast('📭 Nenhum chamado para limpar'); return; }
   currentItems.forEach(item => {
     const id = item.getAttribute('data-request-id');
-    if(id) {
-      R.hiddenRequests.add(id);
-    }
+    if(id) R.hiddenRequests.add(id);
   });
-  
-  // Salva no localStorage
   saveHiddenRequestsToStorage();
-  
-  // Recarrega a lista para aplicar o filtro
   loadRequests();
-  
-  showToast(`🗑️ ${currentItems.length} chamado(s) removido(s) permanentemente!`);
+  showToast(`🗑️ ${currentItems.length} chamado(s) removido(s)`);
 };
 
-// ── Radar ──────────────────────────────────────────────────────
 async function showRadar() {
   $('sSplash').classList.add('off');
   $('sRadar').classList.remove('off');
   await new Promise(r=>setTimeout(r,150));
-
   navigator.geolocation?.getCurrentPosition(pos=>{
     R.lat=pos.coords.latitude; R.lon=pos.coords.longitude;
     setupMap(R.lat,R.lon);
   }, ()=>setupMap(-15.78,-47.93), {timeout:8000,enableHighAccuracy:true});
-
   setTimeout(()=>{ if(!R.map) setupMap(-15.78,-47.93); },5000);
 }
 
@@ -624,31 +958,34 @@ function setupMap(lat,lon) {
   R.map = initMap('mapEl',lat,lon);
   R.weather = getW();
   setTimeout(()=>R.map?.invalidateSize(),300);
-
   publishSelf(lat,lon,'online');
-
-  spawnBots(lat,lon,R.weather);
-  startBotUpdates();
+  
+  activeBots = generateRealisticBots(30);
+  activeBots.forEach(bot => upsertPilot(bot));
+  startBotMovement();
+  setInterval(() => updateBotCount(), 3600000);
+  
   listenPilots(lat,lon,R.user.uid);
-
   startLocationTracking(R.user.uid,(nlat,nlon)=>{
     R.lat=nlat; R.lon=nlon;
     publishSelf(nlat,nlon, isOperating()?'operating':'online');
   });
-
   listenRequests();
   updateAMX(R.weather);
   updateClima(R.weather);
   startPilotCounter();
+  startOperationDistanceMonitor();
 }
 
 function publishSelf(lat,lon,status) {
   if (!R.user||!R.profile) return;
   const p = R.profile;
+  let userPhoto = fixGooglePhoto(p.photo);
+  if (!userPhoto && R.user?.photoURL) userPhoto = fixGooglePhoto(R.user.photoURL);
   upsertPilot({
     id: R.user.uid,
     name: p.nickname||p.name||'Piloto',
-    photo: p.photo||'👨‍✈️',
+    photo: userPhoto || '👨‍✈️',
     city: p.city||'',
     drone: p.drone||'',
     score: p.amxScore||0,
@@ -664,11 +1001,14 @@ function publishSelf(lat,lon,status) {
   });
 }
 
+function updatePilotCount() {
+  const n = document.querySelectorAll('.leaflet-marker-icon').length;
+  const countEl = $('pilotCount');
+  if(countEl) countEl.textContent = `${Math.max(n, 8)} pilotos`;
+}
+
 function startPilotCounter() {
-  setInterval(()=>{
-    const n = document.querySelectorAll('.leaflet-marker-icon').length;
-    $('pilotCount').textContent = `${Math.max(n,8)} pilotos`;
-  },3000);
+  setInterval(updatePilotCount, 5000);
 }
 
 function updateAMX(w) {
@@ -696,7 +1036,6 @@ function updateClima(w) {
   `;
 }
 
-// ── Operação ───────────────────────────────────────────────────
 window.handleOp = ()=> isOperating() ? endOp() : openSheet('shOpConfig');
 
 window.confirmOp = ()=>{
@@ -704,17 +1043,13 @@ window.confirmOp = ()=>{
   if(!c.drone||!c.faixa||!c.vazao||!c.avgHaPerH){showToast('⚠️ Preencha todos os campos');return;}
   closeSheet('shOpConfig');
   startOperation(c,getW(),R.lat,R.lon);
+  R.operationStartLat = R.lat;
+  R.operationStartLon = R.lon;
   setBtn(true);
+  playSound('accept');
   showToast('🚁 Operação iniciada!');
   publishSelf(R.lat,R.lon,'operating');
 };
-
-function endOp(){
-  const result = endOperation(getW());
-  setBtn(false);
-  publishSelf(R.lat,R.lon,'online');
-  if(result){ showResult(result); saveOp(result); updateAMX(getW()); }
-}
 
 function setBtn(active){
   ['btnOp','btnOp2'].forEach(id=>{
@@ -722,6 +1057,15 @@ function setBtn(active){
     b.className='btn-op '+(active?'stop':'start');
     b.innerHTML=active?'🛑 Finalizar Operação':'🚁 Iniciar Operação';
   });
+}
+
+function endOp(){
+  const result = endOperation(getW());
+  setBtn(false);
+  publishSelf(R.lat,R.lon,'online');
+  R.operationStartLat = null;
+  R.operationStartLon = null;
+  if(result){ showResult(result); saveOp(result); updateAMX(getW()); }
 }
 
 function showResult(r){
@@ -761,10 +1105,10 @@ async function saveOp(r){
   R.profile.amxScore=ns; R.profile.opsTotal=(R.profile.opsTotal||0)+1;
 }
 
-// ── SOS e Pedidos ──────────────────────────────────────────────
 window.activateSOS = async ()=>{
   if(R.sosActive){cancelSOS();return;}
   R.sosActive=true;
+  playSound('sos');
   $('sosBar').classList.add('on');
   publishSelf(R.lat,R.lon,'sos');
   await updateProfile(R.user.uid,{requestMsg:'🚨 SOS — Preciso de ajuda!',sosAt:new Date().toISOString()});
@@ -780,6 +1124,7 @@ window.cancelSOS = async ()=>{
 };
 
 window.sendReq = async (type,msg)=>{
+  playSound('request');
   publishSelf(R.lat,R.lon,'request');
   await updateProfile(R.user.uid,{status:'request',requestMsg:msg});
   await saveRequest(type,msg);
@@ -808,7 +1153,6 @@ async function loadRequests(){
   const{collection,query,where,limit,getDocs}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
   const q=query(collection(db,'requests'),where('status','==','open'),limit(50));
   const snap=await getDocs(q);
-  // Filtrar os chamados: não mostrar os que o usuário já limpou (hiddenRequests)
   const reqs=snap.docs
     .map(d=>({id:d.id,...d.data()}))
     .filter(r => r.uid !== R.user?.uid && !R.hiddenRequests.has(r.id));
@@ -817,7 +1161,7 @@ async function loadRequests(){
     $('reqList').innerHTML='<div style="padding:16px 20px;text-align:center;color:var(--mt);font-size:12px">Nenhum pedido ativo no momento 🟢</div>';
     return;
   }
-  const icons={sos:'🚨',helice:'🚁',battery:'🔋',fuel:'⛽',part:'🔧',support:'🛠️'};
+  const icons={sos:'🚨',helice:'🚁',battery:'🔋',fuel:'⛽',part:'🔧',support:'🛠️',tow:'🚜'};
   $('reqList').innerHTML=reqs.map(r => `
     <div class="req-item ${r.type==='sos'?'sos-req':''}" data-request-id="${r.id}">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
@@ -827,7 +1171,7 @@ async function loadRequests(){
           <div style="font-size:11px;color:${r.type==='sos'?'#ff8080':'var(--mt)'}">${r.message}</div>
         </div>
       </div>
-      <button onclick="acceptReq('${r.uid}','${(r.pilotName||'').replace(/'/g,"\\'")}','${(r.message||'').replace(/'/g,"\\'")}')"
+      <button onclick="window.acceptReq('${r.uid}','${(r.pilotName||'').replace(/'/g,"\\'")}','${(r.message||'').replace(/'/g,"\\'")}')"
         style="width:100%;padding:8px;border-radius:10px;border:none;background:${r.type==='sos'?'var(--red)':'var(--g6)'};color:white;font-family:var(--fu);font-size:12px;font-weight:700;cursor:pointer">
         ${r.type==='sos'?'🚨 Responder SOS':'✅ Aceitar chamado'}
       </button>
@@ -839,18 +1183,29 @@ async function listenRequests(){
   const{collection,query,where,limit,onSnapshot}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
   const q=query(collection(db,'requests'),where('status','==','open'),limit(50));
   onSnapshot(q,snap=>{
-    const reqs=snap.docs.map(d=>d.data()).filter(r=>r.uid!==R.user?.uid && !R.hiddenRequests.has(d.id));
+    const reqs = [];
+    snap.forEach(doc => {
+      const r = doc.data();
+      if(r.uid !== R.user?.uid && !R.hiddenRequests.has(doc.id)) {
+        reqs.push({id: doc.id, ...r});
+      }
+    });
     const dot=$('reqDot');
-    if(reqs.length>0)dot.classList.add('on'); else dot.classList.remove('on');
+    if(reqs.length>0) dot.classList.add('on'); else dot.classList.remove('on');
+    reqs.forEach(r => showRequestModal(r));
   });
 }
 
-window.acceptReq = (uid,name,message)=>{
+window.acceptReq = async (uid, name, message) => {
+  playSound('accept');
+  showToast(`✅ Você aceitou o chamado de ${name}!`);
   R.chatTarget={uid,name};
-  $('chatName').textContent=name;
-  $('chatSection').style.display='block';
+  const chatNameSpan = $('chatName');
+  const chatSection = $('chatSection');
+  if(chatNameSpan) chatNameSpan.textContent=name;
+  if(chatSection) chatSection.style.display='block';
   listenChat(uid);
-  showToast(`✅ Aceitou ajudar ${name}!`);
+  openSheet('shReq');
 };
 
 async function listenChat(uid){
@@ -874,6 +1229,7 @@ async function listenChat(uid){
 window.sendMsg = async()=>{
   const inp=$('chatInp'), txt=inp.value.trim();
   if(!txt||!R.chatTarget)return; inp.value='';
+  playSound('message');
   const db=window._firebaseDB; if(!db)return;
   const chatId=[R.user.uid,R.chatTarget.uid].sort().join('_');
   const{collection,addDoc}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
@@ -883,7 +1239,6 @@ window.sendMsg = async()=>{
   });
 };
 
-// ── Ranking ────────────────────────────────────────────────────
 async function loadRanking(){
   const db=window._firebaseDB;
   let pilots=[];
@@ -892,40 +1247,32 @@ async function loadRanking(){
     const snap=await getDocs(query(collection(db,'pilots'),orderBy('amxScore','desc'),limit(20)));
     pilots=snap.docs.map(d=>d.data());
   }
-  const bots=[
-    {nickname:'Thiago Cavalcante',amxScore:95,city:'Primavera do Leste',drone:'XAG V40',opsTotal:487},
-    {nickname:'Rafael Bueno',amxScore:92,city:'Rondonópolis, MT',drone:'XAG P100',opsTotal:198},
-    {nickname:'Fabio Martins',amxScore:89,city:'Sapezal, MT',drone:'DJI T40',opsTotal:389},
-    {nickname:'Carlos Mendonça',amxScore:87,city:'Sorriso, MT',drone:'DJI T40',opsTotal:312},
-    {nickname:'Diego Almeida',amxScore:81,city:'Campo Verde, MT',drone:'DJI T50',opsTotal:201},
-    {nickname:'Anderson Lima',amxScore:77,city:'Sinop, MT',drone:'XAG P100',opsTotal:167},
-    {nickname:'Marcos Figueiredo',amxScore:74,city:'Lucas do Rio Verde',drone:'DJI T30',opsTotal:143},
-    {nickname:'Leandro Souza',amxScore:68,city:'Nova Mutum, MT',drone:'Pegasus',opsTotal:98},
-  ];
-  const all=[...pilots,...bots].sort((a,b)=>(b.amxScore||0)-(a.amxScore||0)).slice(0,20);
-  const medals=['🥇','🥈','🥉'];
-  const pCls=['gold','silver','bronze'];
+  const all=[...pilots,...activeBots].sort((a,b)=>(b.amxScore||b.score||0)-(a.amxScore||a.score||0)).slice(0,20);
+  const medals=['🥇','🥈','🥉']; const pCls=['gold','silver','bronze'];
   $('rankList').innerHTML=all.map((p,i)=>`
     <div class="rank-item">
       <div class="rank-pos ${pCls[i]||''}">${medals[i]||'#'+(i+1)}</div>
       <div style="flex:1">
-        <div class="rank-name">${p.nickname||p.name||'Piloto'}</div>
+        <div class="rank-name">${p.nickname||p.name||p.pilotName||'Piloto'}</div>
         <div class="rank-sub">${p.city||''} · ${p.drone||''} · ${p.opsTotal||0} ops</div>
       </div>
-      <div class="rank-score">AMX ${p.amxScore||0}</div>
+      <div class="rank-score">AMX ${p.amxScore||p.score||0}</div>
     </div>`).join('');
 }
 
-// ── Perfil ─────────────────────────────────────────────────────
 function renderProfile(){
   const p=R.profile, plan=R.plan;
   if(!p)return;
+  let fotoUrl = fixGooglePhoto(p.photo);
+  if (!fotoUrl && R.user?.photoURL) fotoUrl = fixGooglePhoto(R.user.photoURL);
+  const fotoHtml = fotoUrl ? `<img src="${fotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onclick="window.changeProfilePhoto()" onerror="this.outerHTML='👨‍✈️'">` : '👨‍✈️';
   const pCls=plan?.plan==='paid'?'paid':plan?.plan==='trial'?'trial':'exp';
   const pIcon=plan?.plan==='paid'?'✅':plan?.plan==='trial'?'⏳':'🔒';
   const pTitle=plan?.plan==='paid'?'Plano Ativo':plan?.plan==='trial'?`Trial — ${plan.daysLeft} dias restantes`:'Trial expirado';
+  const isPro = plan?.plan === 'paid';
   $('profileContent').innerHTML=`
     <div class="pf-hero">
-      <div class="pf-av">${p.photo?`<img src="${p.photo}" onerror="this.outerHTML='👨‍✈️'">`:'👨‍✈️'}</div>
+      <div class="pf-av">${fotoHtml}</div>
       <div>
         <div class="pf-name">${p.nickname||p.name||'Piloto'}</div>
         <div class="pf-city">📍 ${p.city||'Cidade não informada'}</div>
@@ -953,6 +1300,7 @@ function renderProfile(){
           .map(d=>`<option ${p.drone===d?'selected':''}>${d}</option>`).join('')}
       </select>
     </div>
+    ${isPro ? `<div class="inp-g"><label class="inp-l">Foto de Perfil (URL)</label><input class="inp" id="pfPhoto" placeholder="URL da sua foto" value="${p.photo||''}"></div>` : ''}
     <div class="plan-b ${pCls}">
       <div class="plan-icon">${pIcon}</div>
       <div><div class="plan-title">${pTitle}</div>
@@ -972,13 +1320,31 @@ function renderProfile(){
   `;
 }
 
+window.changeProfilePhoto = () => {
+  if(R.plan?.plan !== 'paid') {
+    showToast('🔒 Usuários PRO podem mudar a foto. Assine o plano!');
+    return;
+  }
+  const url = prompt('📸 Cole a URL da sua nova foto de perfil:', R.profile?.photo || '');
+  if(url && url.trim()) {
+    updateProfile(R.user.uid, { photo: url.trim() });
+    R.profile.photo = url.trim();
+    renderProfile();
+    publishSelf(R.lat, R.lon, isOperating() ? 'operating' : 'online');
+    showToast('✅ Foto atualizada!');
+  }
+};
+
 window.saveProfile = async()=>{
   const uid=R.user?.uid; if(!uid)return;
   const nickname=$('pfNick')?.value.trim();
   const city=$('pfCity')?.value.trim();
   const drone=$('pfDrone')?.value;
-  await updateProfile(uid,{nickname,city,drone});
-  Object.assign(R.profile,{nickname,city,drone});
+  const photo = R.plan?.plan === 'paid' ? $('pfPhoto')?.value.trim() : null;
+  const updateData = {nickname,city,drone};
+  if(photo) updateData.photo = photo;
+  await updateProfile(uid, updateData);
+  Object.assign(R.profile, updateData);
   publishSelf(R.lat,R.lon,isOperating()?'operating':'online');
   showToast('✅ Perfil salvo!');
   closeSheet('shProfile');
@@ -996,7 +1362,6 @@ window.doLogout = async()=>{
   $('sSplash').classList.remove('off');
 };
 
-// ── Auth ───────────────────────────────────────────────────────
 window.enterRadar = async()=>{
   if(!isFirebaseConfigured()){showToast('⚠️ Firebase não configurado');return;}
   const btn=$('btnEntrar');
@@ -1004,7 +1369,13 @@ window.enterRadar = async()=>{
   const user=await loginGoogle();
   btn.textContent='🚁 Entrar no Radar'; btn.disabled=false;
   if(!user)return;
+  if(user.photoURL) user.photoURL = fixGooglePhoto(user.photoURL);
   const profile=await getProfile(user.uid);
+  if(profile && profile.photo && profile.photo.includes('=s96-c')) {
+    const novaFoto = fixGooglePhoto(profile.photo);
+    await updateProfile(user.uid, { photo: novaFoto });
+    profile.photo = novaFoto;
+  }
   R.user=user; R.profile=profile; R.plan=getPlanStatus(profile);
   if(R.plan.active)showRadar(); else openSheet('shPaywall');
 };
@@ -1017,54 +1388,6 @@ window.startTrial = async()=>{
   closeSheet('shPaywall'); showRadar();
 };
 
-// ── Chat Drawer ──
-window.toggleChatDrawer = () => {
-  const drawer = $('shChatDrawer');
-  const overlay = $('ovChatDrawer');
-  if(drawer.classList.contains('on')) {
-    closeChatDrawer();
-  } else {
-    loadActiveChats();
-    overlay.classList.add('on');
-    drawer.classList.add('on');
-  }
-};
-
-window.closeChatDrawer = () => {
-  $('ovChatDrawer').classList.remove('on');
-  $('shChatDrawer').classList.remove('on');
-};
-
-async function loadActiveChats() {
-  const container = $('activeChatsList');
-  if(!container) return;
-  container.innerHTML = `
-    <div style="padding: 12px; border-bottom: 1px solid var(--bd); cursor: pointer;" onclick="openChatWith('pilot1', 'João Silva')">
-      <div style="font-weight: bold;">👨‍✈️ João Silva</div>
-      <div style="font-size: 11px; color: var(--mt);">Última mensagem: Vamos nos encontrar?</div>
-    </div>
-    <div style="padding: 12px; border-bottom: 1px solid var(--bd); cursor: pointer;" onclick="openChatWith('pilot2', 'Maria Oliveira')">
-      <div style="font-weight: bold;">👩‍✈️ Maria Oliveira</div>
-      <div style="font-size: 11px; color: var(--mt);">Última mensagem: Preciso de ajuda com o drone</div>
-    </div>
-    <div style="padding: 12px; cursor: pointer;" onclick="openChatWith('pilot3', 'Carlos Eduardo')">
-      <div style="font-weight: bold;">👨‍🚀 Carlos Eduardo</div>
-      <div style="font-size: 11px; color: var(--mt);">Última mensagem: Obrigado pelo suporte!</div>
-    </div>
-  `;
-}
-
-window.openChatWith = (uid, name) => {
-  closeChatDrawer();
-  R.chatTarget = { uid, name };
-  $('chatName').textContent = name;
-  $('chatSection').style.display = 'block';
-  openSheet('shReq');
-  listenChat(uid);
-  showToast(`💬 Conversa com ${name} aberta`);
-};
-
-// ── Auto-check operação ────────────────────────────────────────
 window.addEventListener('amx:check-operation',()=>{
   if(confirm('Operação ainda em andamento?'))return;
   if(isOperating())endOp();
