@@ -76,12 +76,12 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .location-ico:hover{border-color:var(--g4);background:rgba(61,168,102,.2)}
 .notif-dot{position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:var(--red);color:white;font-size:8px;font-weight:700;display:none;align-items:center;justify-content:center}
 .notif-dot.on{display:flex}
+.chat-notif-dot.notif-dot{background:var(--g4);animation:pulse 0.5s ease-in-out}
 
-/* Animação de pulso para notificações */
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 /* SOS bar */
@@ -205,15 +205,15 @@ select.inp{cursor:pointer}
 .op-stat-v{font-family:var(--fm);font-size:18px;color:var(--g4);font-weight:500}
 .op-stat-l{font-size:9px;color:var(--mt);text-transform:uppercase;letter-spacing:.07em;margin-top:2px}
 
-/* Pedidos */
+/* Pedidos - somente na sheet de pedidos */
 .req-item{background:var(--s2);border-radius:12px;padding:12px;margin:0 20px 8px;border:1px solid var(--bd)}
 .req-item.sos-req{border-color:rgba(224,53,53,.4);animation:reqPulse 1.5s ease-in-out infinite}
 @keyframes reqPulse{0%,100%{border-left-width:4px;border-left-color:transparent}50%{border-left-width:4px;border-left-color:var(--red)}}
 
 /* Chat */
-.chat-msgs{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:10px;max-height:160px;overflow-y:auto;margin:0 20px 8px;display:flex;flex-direction:column;gap:6px;scrollbar-width:none}
-.chat-msgs::-webkit-scrollbar{display:none}
-.chat-msg{font-size:12px;padding:7px 11px;border-radius:10px;max-width:82%}
+.chat-msgs{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:10px;max-height:250px;overflow-y:auto;margin:0 20px 8px;display:flex;flex-direction:column;gap:6px}
+.chat-msgs::-webkit-scrollbar{width:3px}
+.chat-msg{font-size:12px;padding:7px 11px;border-radius:10px;max-width:82%;word-break:break-word}
 .chat-msg.me{background:var(--g7);color:white;align-self:flex-end}
 .chat-msg.them{background:var(--s3);color:var(--tx2);align-self:flex-start}
 .chat-msg-name{font-size:9px;color:var(--mt);margin-bottom:2px}
@@ -292,7 +292,8 @@ select.inp{cursor:pointer}
     <div class="r-badge"><div class="ldot"></div><span id="pilotCount">—</span></div>
     <button class="ico-btn location-ico" onclick="window.centerOnUser()" title="Minha Localização">📍</button>
     <div class="chat-float">
-      <button class="ico-btn" onclick="window.toggleChatDrawer()" title="Chat">💬</button>
+      <button class="ico-btn" id="chatDrawerBtn" onclick="window.toggleChatDrawer()" title="Conversas">💬</button>
+      <div class="notif-dot chat-notif-dot" id="chatNotifDot" style="display:none">!</div>
     </div>
     <div style="position:relative">
       <button class="ico-btn" onclick="window.openSheet('shReq')" title="Pedidos">🔧</button>
@@ -462,7 +463,7 @@ select.inp{cursor:pointer}
   <button class="btn-prim" onclick="window.closeSheet('shOpResult')" style="margin-top:10px">Fechar</button>
 </div>
 
-<!-- ══ SHEET PEDIDOS ══ -->
+<!-- ══ SHEET PEDIDOS (apenas pedidos ativos, sem chat) ══ -->
 <div class="overlay" id="ovReq" onclick="window.closeSheet('shReq')"></div>
 <div class="sheet" id="shReq">
   <div class="sh-handle"></div>
@@ -472,14 +473,35 @@ select.inp{cursor:pointer}
   </div>
   <button class="clear-history-btn" onclick="window.clearHistoryPermanent()">🗑️ Limpar Histórico de Chamados</button>
   <div id="reqList"></div>
-  <div id="chatSection" style="display:none">
-    <div class="sh-title" style="margin-top:8px;padding:0 20px">💬 Chat com <span id="chatName">—</span></div>
-    <div class="chat-msgs" id="chatMsgs"></div>
-    <div class="chat-input-row">
-      <input class="chat-inp" id="chatInp" placeholder="Mensagem…" onkeydown="if(event.key==='Enter')window.sendMsg()">
-      <button class="chat-send" onclick="window.sendMsg()">➤</button>
-    </div>
+</div>
+
+<!-- ══ SHEET CHAT (separado para conversas) ══ -->
+<div class="overlay" id="ovChat" onclick="window.closeSheet('shChat')"></div>
+<div class="sheet" id="shChat">
+  <div class="sh-handle"></div>
+  <div class="sh-title">
+    💬 Chat com <span id="chatName">—</span>
+    <button class="sh-close-btn" onclick="window.closeSheet('shChat')">✕</button>
   </div>
+  <div class="chat-msgs" id="chatMsgs"></div>
+  <div class="chat-input-row">
+    <input class="chat-inp" id="chatInp" placeholder="Mensagem…" onkeydown="if(event.key==='Enter')window.sendMsg()">
+    <button class="chat-send" onclick="window.sendMsg()">➤</button>
+  </div>
+</div>
+
+<!-- ══ SHEET LISTA DE CONVERSAS (drawer) ══ -->
+<div class="overlay" id="ovChatDrawer" onclick="window.closeChatDrawer()"></div>
+<div class="sheet" id="shChatDrawer" style="z-index:502">
+  <div class="sh-handle"></div>
+  <div class="sh-title">
+    📨 Conversas Ativas
+    <button class="sh-close-btn" onclick="window.closeChatDrawer()">✕</button>
+  </div>
+  <div id="activeChatsList" style="max-height:60vh;overflow-y:auto;padding:0 20px">
+    <div style="text-align:center;color:var(--mt);padding:20px">Nenhuma conversa ativa no momento.</div>
+  </div>
+  <button class="btn-sec" onclick="window.closeChatDrawer()" style="margin-top:10px;width:calc(100% - 40px)">Fechar</button>
 </div>
 
 <!-- ══ SHEET PAYWALL ══ -->
@@ -511,20 +533,6 @@ select.inp{cursor:pointer}
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- Chat Drawer Flutuante -->
-<div class="overlay" id="ovChatDrawer" onclick="window.closeChatDrawer()"></div>
-<div class="sheet" id="shChatDrawer" style="z-index:502">
-  <div class="sh-handle"></div>
-  <div class="sh-title">
-    📨 Conversas Ativas
-    <button class="sh-close-btn" onclick="window.closeChatDrawer()">✕</button>
-  </div>
-  <div id="activeChatsList" style="max-height:60vh;overflow-y:auto;padding:0 20px">
-    <div style="text-align:center;color:var(--mt);padding:20px">Nenhuma conversa ativa no momento.</div>
-  </div>
-  <button class="btn-sec" onclick="window.closeChatDrawer()" style="margin-top:10px;width:calc(100% - 40px)">Fechar</button>
-</div>
-
 <!-- Modal de Chamado -->
 <div style="position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.5);display:none" id="modalChamadoOverlay" onclick="window.modalIgnore()"></div>
 <div class="modal-chamado" id="modalChamado">
@@ -547,98 +555,32 @@ import { audio } from './audio.js';
 import { chat } from './chat.js';
 
 // ==============================================================
-// SISTEMA DE ÁUDIO
+// ESTADO PRINCIPAL
 // ==============================================================
-let audioCtx = null;
-let audioEnabled = false;
+const R = window.AgroRadar = {
+  user:null, profile:null, plan:null,
+  lat:null, lon:null, map:null, weather:null,
+  opCfg:{}, chatTarget:null, chatUnsub:null, sosActive:false,
+  hiddenRequests: new Set(),
+  operationStartLat:null, operationStartLon:null, operationMonitorInterval:null,
+  currentChatId: null,
+  alertLoopInterval: null
+};
 
-function initAudio() {
-  if (audioEnabled) return;
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContext) return;
-  audioCtx = new AudioContext();
-  audioEnabled = true;
-}
+const $ = id => document.getElementById(id);
+const ov = id => id.replace('sh','ov');
 
-function audio.play(type) {
-  if (!audioEnabled || !audioCtx) return;
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-  
-  const now = audioCtx.currentTime;
-  const freqs = { request: [523.25,659.25,783.99], sos: [880,880,880,440,440,440], accept: [523.25,659.25,783.99,1046.50], message: [440,440] };
-  const durs = { request: [0.2,0.2,0.3], sos: [0.15,0.15,0.15,0.15,0.15,0.3], accept: [0.1,0.1,0.1,0.4], message: [0.05,0.05] };
-  const f = freqs[type] || freqs.request;
-  const d = durs[type] || durs.request;
-  for (let i = 0; i < f.length; i++) {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.frequency.value = f[i];
-    gain.gain.value = 0.25;
-    osc.start(now + (d[i] || 0.2) * i);
-    gain.gain.exponentialRampToValueAtTime(0.00001, now + (d[i] || 0.2) * (i + 1));
-    osc.stop(now + (d[i] || 0.2) * (i + 1));
+// ==============================================================
+// FUNÇÃO PARA PARAR O LOOP DE ALERTA
+// ==============================================================
+function stopAlertLoop() {
+  if (R.alertLoopInterval) {
+    clearInterval(R.alertLoopInterval);
+    R.alertLoopInterval = null;
   }
+  audio.stopLoop();
+  console.log('🔇 Loop de alerta parado');
 }
-
-let loopSoundId = null;
-
-function playLoopSound(type, duration = 30000) {
-  if (!audioEnabled || !audioCtx) {
-    initAudio();
-    if (!audioCtx) return;
-  }
-  
-  stopLoopSound();
-  
-  const interval = 600;
-  let elapsed = 0;
-  
-  const play = () => {
-    if (elapsed >= duration) {
-      stopLoopSound();
-      return;
-    }
-    audio.play(type);
-    elapsed += interval;
-    loopSoundId = setTimeout(play, interval);
-  };
-  
-  audio.play(type);
-  loopSoundId = setTimeout(play, interval);
-  console.log(`🔊 Loop sound "${type}" started for ${duration}ms`);
-}
-
-function stopLoopSound() {
-  if (loopSoundId) {
-    clearTimeout(loopSoundId);
-    loopSoundId = null;
-    console.log('🔇 Loop sound stopped');
-  }
-}
-
-// Volume control (0-100)
-let soundVolume = 50;
-function setVolume(v) {
-  soundVolume = Math.max(0, Math.min(100, v));
-  if (audioCtx && audioCtx.destination.maxChannelCount >= 1) {
-    const gainNode = audioCtx.createGain();
-    gainNode.gain.value = soundVolume / 100 * 0.3;
-  }
-  localStorage.setItem('soundVolume', soundVolume);
-}
-
-window.playSound = playSound;
-window.playLoopSound = playLoopSound;
-window.stopLoopSound = stopLoopSound;
-window.setVolume = setVolume;
-
-
-// Inicializa audio na primeira interação
-document.body.addEventListener('click', async function initFirst() {
-  await audio.init();
-  document.body.removeEventListener('click', initFirst);
-}, { once: true });
 
 // ==============================================================
 // FUNÇÃO PARA CORRIGIR FOTO DO GOOGLE
@@ -646,7 +588,6 @@ document.body.addEventListener('click', async function initFirst() {
 function fixGooglePhoto(url) {
   if (!url) return null;
   if (typeof url !== 'string') return null;
-  // Se a URL é muito longa ou não parece foto, ignora
   if (url.length > 300 && !url.startsWith('http')) return null;
   if (url.includes('googleusercontent.com')) {
     return url.split('?')[0] + '?sz=150';
@@ -655,28 +596,13 @@ function fixGooglePhoto(url) {
 }
 
 function getNickname(profile, user) {
-  // Retorna apelido limpo, nunca URL
   const nick = profile?.nickname || profile?.name || user?.displayName || 'Piloto';
   if (nick && nick.startsWith('http')) return 'Piloto';
   return nick;
 }
 
 // ==============================================================
-// ESTADO PRINCIPAL
-// ==============================================================
-const R = window.AgroRadar = {
-  user:null, profile:null, plan:null,
-  lat:null, lon:null, map:null, weather:null,
-  opCfg:{}, chatTarget:null, chatUnsub:null, sosActive:false,
-  hiddenRequests: new Set(),
-  operationStartLat:null, operationStartLon:null, operationMonitorInterval:null
-};
-
-const $ = id => document.getElementById(id);
-const ov = id => id.replace('sh','ov');
-
-// ==============================================================
-// BOTS REALISTAS (30+ com movimento entre cidades)
+// BOTS REALISTAS
 // ==============================================================
 const CIDADES_BRASIL = [
   { name: 'São Paulo, SP', lat: -23.5505, lon: -46.6333, state: 'SP' },
@@ -782,28 +708,11 @@ function updateBotCount() {
     });
   } else if (activeBots.length > targetCount) {
     const toRemove = activeBots.splice(targetCount);
-    toRemove.forEach(bot => removePilot(bot.id));
+    toRemove.forEach(bot => {
+      if (window.removePilot) window.removePilot(bot.id);
+    });
   }
   updatePilotCount();
-}
-
-// ==============================================================
-// MONITORAMENTO DE DISTÂNCIA PARA OPERAÇÃO
-// ==============================================================
-function startOperationDistanceMonitor() {
-  if (R.operationMonitorInterval) clearInterval(R.operationMonitorInterval);
-  R.operationMonitorInterval = setInterval(() => {
-    if (isOperating() && R.operationStartLat && R.operationStartLon && R.lat && R.lon) {
-      const distance = Math.sqrt(
-        Math.pow((R.lat - R.operationStartLat) * 111000, 2) +
-        Math.pow((R.lon - R.operationStartLon) * 111000, 2)
-      );
-      if (distance > 300) {
-        showToast(`⚠️ Operação finalizada: você se afastou ${Math.round(distance)}m do ponto de início (limite 300m)`);
-        endOp();
-      }
-    }
-  }, 10000);
 }
 
 // ==============================================================
@@ -818,6 +727,9 @@ window.openSheet = (id) => {
 window.closeSheet = (id) => {
   $(ov(id)).classList.remove('on');
   $(id).classList.remove('on');
+  if (id === 'shChat') {
+    // Quando fechar o chat, não precisa fazer nada especial
+  }
 };
 window.showToast = (msg, dur=3500) => {
   const t=$('toast'); t.textContent=msg; t.classList.add('on');
@@ -838,7 +750,6 @@ window.selChip = (el, field, val) => {
   R.opCfg[field] = val;
 };
 
-// Drone custom
 window.showDroneCustomInput = (el, field, val) => {
   window.selChip(el, field, val);
   const customInput = $('#customDroneInput');
@@ -870,7 +781,7 @@ window.centerOnUser = () => {
 };
 
 // ==============================================================
-// CHAT DRAWER
+// CHAT DRAWER (lista de conversas)
 // ==============================================================
 window.toggleChatDrawer = () => {
   const drawer = $('shChatDrawer');
@@ -908,7 +819,7 @@ async function loadActiveChats() {
         if(snap.exists()){const d=snap.data();pilotName=d.nickname||d.name||pilotName;}
       }catch{}
     }
-    const safeName = pilotName.replace(/'/g,"\'");
+    const safeName = pilotName.replace(/'/g,"\\'");
     out += `<div style="padding:12px 0;border-bottom:1px solid var(--bd);cursor:pointer;display:flex;align-items:center;gap:10px"
       onclick="window.openChatWith('${c.otherId}','${safeName}')">
       <div style="width:36px;height:36px;border-radius:50%;background:var(--g7);display:flex;align-items:center;justify-content:center;font-size:18px">👨‍✈️</div>
@@ -922,12 +833,39 @@ async function loadActiveChats() {
   container.innerHTML = out;
 }
 
+// Abrir chat com um usuário
 window.openChatWith = async (uid, name) => {
   window.closeChatDrawer();
   R.chatTarget = { uid, name: name || 'Piloto' };
-  openSheet('shReq');
-  showToast(`💬 Abrindo conversa com ${name||'Piloto'}`);
+  
+  // Atualiza UI do chat
+  const nameEl = $('#chatName');
+  const chatSheet = $('#shChat');
+  if (nameEl) nameEl.textContent = name || 'Piloto';
+  
+  // Abre a sheet de chat
+  window.openSheet('shChat');
+  
+  // Mostra toast de confirmação
+  showToast(`💬 Conversando com ${name || 'Piloto'}`);
+  
+  // Inicializa o chat com o usuário
   await chat.openWith(uid, name || 'Piloto');
+  
+  // Esconde o badge de notificação do chat
+  const notifDot = $('#chatNotifDot');
+  if (notifDot) notifDot.style.display = 'none';
+};
+
+// Função para enviar mensagem
+window.sendMsg = async () => {
+  const inp = $('#chatInp');
+  const txt = inp?.value.trim();
+  if (!txt || !R.chatTarget) return;
+  
+  inp.value = '';
+  const ok = await chat.send(txt);
+  if (!ok) showToast('⚠️ Erro ao enviar. Verifique conexão.');
 };
 
 // ==============================================================
@@ -950,21 +888,43 @@ window.showRequestModal = (req) => {
   }
   msg.textContent = `${req.pilotName}: ${req.message}`;
   modal.classList.add('on');
-  audio.play('request');
+  
+  // Toca som e inicia loop
+  audio.play(req.type === 'sos' ? 'sos' : 'request');
+  startAlertLoop(req.type === 'sos' ? 'sos' : 'request');
 };
+
+function startAlertLoop(type, duration = 30000) {
+  stopAlertLoop();
+  audio.play(type);
+  R.alertLoopInterval = setInterval(() => {
+    audio.play(type);
+  }, 3000);
+  setTimeout(() => {
+    stopAlertLoop();
+  }, duration);
+}
 
 window.modalAccept = async () => {
   if(pendingRequest) {
+    // Para o loop de alerta imediatamente
+    stopAlertLoop();
+    
+    // Aceita o chamado
     await window.acceptReq(pendingRequest.uid, pendingRequest.pilotName, pendingRequest.message);
+    
+    // Fecha o modal
     $('modalChamado').classList.remove('on');
     pendingRequest = null;
   }
 };
 
 window.modalIgnore = () => {
+  // Para o loop de alerta
+  stopAlertLoop();
+  
   $('modalChamado').classList.remove('on');
   pendingRequest = null;
-  stopLoopAlert();
   showToast('❌ Você ignorou o chamado');
 };
 
@@ -1057,6 +1017,9 @@ function setupMap(lat,lon) {
   updateClima(R.weather);
   startPilotCounter();
   startOperationDistanceMonitor();
+  
+  // Inicia listener de mensagens do chat
+  listenForNewMessages();
 }
 
 function publishSelf(lat,lon,status) {
@@ -1261,34 +1224,32 @@ async function loadRequests(){
     </div>`).join('');
 }
 
-const _shownRequests = new Set(); // evita repetir modal
+const _shownRequests = new Set();
+
+function calcDistKm(lat1,lon1,lat2,lon2){
+  const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
 
 async function listenRequests(){
   const db=window._firebaseDB; if(!db)return;
   const{collection,query,where,limit,onSnapshot}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
   
-  // Filtra pedidos dentro de 100km
   const q=query(collection(db,'requests'),where('status','==','open'),limit(50));
   onSnapshot(q,snap=>{
-    const reqs = [];
     snap.docChanges().forEach(change => {
       const r = {id: change.doc.id, ...change.doc.data()};
       if(r.uid === R.user?.uid) return;
       if(R.hiddenRequests.has(r.id)) return;
       
-      // Filtra por raio 100km
       if(R.lat && R.lon && r.lat && r.lon){
         const dist = calcDistKm(R.lat, R.lon, r.lat, r.lon);
         if(dist > 100) return;
       }
       
-      reqs.push(r);
-      
-      // Mostra modal só para novos pedidos (change.type === 'added')
       if(change.type === 'added' && !_shownRequests.has(r.id)){
         _shownRequests.add(r.id);
-        audio.play(r.type === 'sos' ? 'sos' : 'request');
-        startLoopAlert(r.type === 'sos' ? 'sos' : 'request', 30000);
         showRequestModal(r);
       }
     });
@@ -1304,55 +1265,121 @@ async function listenRequests(){
   });
 }
 
-// Calcula distância em km
-function calcDistKm(lat1,lon1,lat2,lon2){
-  const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-
-// Loop de alerta sonoro
-let _alertInterval = null;
-function startLoopAlert(type, duration){
-  stopLoopAlert();
-  _alertInterval = setInterval(()=>{ audio.play(type); }, 3000);
-  setTimeout(stopLoopAlert, duration);
-}
-function stopLoopAlert(){
-  if(_alertInterval){ clearInterval(_alertInterval); _alertInterval=null; }
-}
-
+// Função para aceitar chamado e abrir chat automaticamente
 window.acceptReq = async (uid, name, message) => {
+  // Para o loop de alerta
+  stopAlertLoop();
+  
+  // Toca som de aceitação
   audio.play('accept');
-  audio.stopLoop();
-  stopLoopAlert();
+  
+  // Fecha o modal se estiver aberto
   $('modalChamado')?.classList.remove('on');
-  R.chatTarget = {uid, name};
-  showToast(`✅ Aceitou o chamado de ${name}!`);
-  openSheet('shReq');
-  await chat.acceptRequest(uid, name, message);
-};;
-
-// listenChat movido para chat.js
-    container.scrollTop=container.scrollHeight;
-  }, err=>{
-    console.error('Chat error:', err);
-    const c=$('chatMsgs');
-    if(c)c.innerHTML='<div style="color:var(--red);padding:16px;font-size:11px">Erro ao carregar mensagens. Verifique conexão.</div>';
-  });
-}
-
-function escHtml(str){
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-window.sendMsg = async()=>{
-  const inp=$('chatInp'), txt=inp.value.trim();
-  if(!txt||!R.chatTarget)return;
-  inp.value='';
-  const ok = await chat.send(txt);
-  if(!ok) showToast('⚠️ Erro ao enviar. Verifique conexão.');
+  
+  // Atualiza o pedido no banco para closed
+  const db = window._firebaseDB;
+  if (db) {
+    try {
+      const { collection, query, where, getDocs, updateDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const q = query(collection(db, 'requests'), where('uid', '==', uid), where('status', '==', 'open'));
+      const snap = await getDocs(q);
+      for (const reqDoc of snap.docs) {
+        await updateDoc(doc(db, 'requests', reqDoc.id), { status: 'closed' });
+      }
+    } catch(e) { console.error('Erro ao fechar pedido:', e); }
+  }
+  
+  // Abre o chat com o usuário
+  R.chatTarget = { uid, name: name || 'Piloto' };
+  
+  // Atualiza UI do chat
+  const nameEl = $('#chatName');
+  const chatSheet = $('#shChat');
+  if (nameEl) nameEl.textContent = name || 'Piloto';
+  
+  // Abre a sheet de chat
+  window.openSheet('shChat');
+  
+  showToast(`✅ Você aceitou o chamado de ${name}! Chat aberto.`);
+  
+  // Inicializa o chat
+  await chat.openWith(uid, name || 'Piloto');
+  
+  // Envia mensagem automática
+  setTimeout(async () => {
+    const autoMsg = `✅ Olá! Sou ${chat.getName()} e aceitei seu chamado: "${message}". Como posso ajudar?`;
+    await chat.send(autoMsg);
+  }, 500);
+  
+  // Esconde o badge de notificação
+  const notifDot = $('#chatNotifDot');
+  if (notifDot) notifDot.style.display = 'none';
 };
+
+// Listener para novas mensagens (para mostrar badge no ícone do chat)
+function listenForNewMessages() {
+  if (!R.user) return;
+  
+  // Verifica periodicamente se há mensagens não lidas nas conversas
+  // Isso é feito pelo próprio chat.js, mas adicionamos um badge visual
+  setInterval(async () => {
+    if (!R.user || !window._firebaseDB) return;
+    
+    try {
+      const { collection, query, where, getDocs, orderBy, limit } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const db = window._firebaseDB;
+      
+      // Busca conversas do usuário
+      const chatsSnap = await getDocs(collection(db, 'chats'));
+      let hasUnread = false;
+      
+      for (const chatDoc of chatsSnap.docs) {
+        if (chatDoc.id.includes(R.user.uid)) {
+          // Verifica última mensagem
+          const msgsQuery = query(
+            collection(db, `chats/${chatDoc.id}/messages`),
+            orderBy('createdAt', 'desc'),
+            limit(1)
+          );
+          const msgsSnap = await getDocs(msgsQuery);
+          if (!msgsSnap.empty) {
+            const lastMsg = msgsSnap.docs[0].data();
+            // Se a última mensagem não é minha e o chat não está aberto
+            if (lastMsg.uid !== R.user.uid && (!R.chatTarget || !chatDoc.id.includes(R.chatTarget.uid))) {
+              hasUnread = true;
+              break;
+            }
+          }
+        }
+      }
+      
+      const notifDot = $('#chatNotifDot');
+      if (notifDot) {
+        if (hasUnread && (!$('shChat').classList.contains('on'))) {
+          notifDot.style.display = 'flex';
+        } else {
+          notifDot.style.display = 'none';
+        }
+      }
+    } catch(e) { console.debug('Erro ao verificar mensagens:', e); }
+  }, 5000);
+}
+
+function startOperationDistanceMonitor() {
+  if (R.operationMonitorInterval) clearInterval(R.operationMonitorInterval);
+  R.operationMonitorInterval = setInterval(() => {
+    if (isOperating() && R.operationStartLat && R.operationStartLon && R.lat && R.lon) {
+      const distance = Math.sqrt(
+        Math.pow((R.lat - R.operationStartLat) * 111000, 2) +
+        Math.pow((R.lon - R.operationStartLon) * 111000, 2)
+      );
+      if (distance > 300) {
+        showToast(`⚠️ Operação finalizada: você se afastou ${Math.round(distance)}m do ponto de início (limite 300m)`);
+        endOp();
+      }
+    }
+  }, 10000);
+}
 
 async function loadRanking(){
   const db=window._firebaseDB;
@@ -1460,9 +1487,7 @@ window.saveProfile = async()=>{
   if(photo) updateData.photo = photo;
   await updateProfile(uid, updateData);
   Object.assign(R.profile, updateData);
-  // Atualiza nome no mapa imediatamente
   publishSelf(R.lat||(-15.78),R.lon||(-47.93),isOperating()?'operating':'online');
-  // Atualiza chat manager também
   chat.currentProfile = R.profile;
   showToast('✅ Perfil salvo! Nome atualizado no radar.');
   closeSheet('shProfile');
@@ -1508,364 +1533,8 @@ window.startTrial = async()=>{
   closeSheet('shPaywall'); showRadar();
 };
 
-window.addEventListener('amx:check-operation',()=>{
-  if(confirm('Operação ainda em andamento?'))return;
-  if(isOperating())endOp();
-});
-
-// Escuta notificações recebidas (mensagens e chamados)
-async function listenNotifications(){
-  const db=window._firebaseDB; if(!db||!R.user)return;
-  const{collection,query,where,onSnapshot,orderBy,limit,updateDoc,doc}=
-    await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  
-  const q=query(
-    collection(db,'notifications'),
-    where('to','==',R.user.uid),
-    where('read','==',false),
-    orderBy('createdAt','desc'),
-    limit(20)
-  );
-  
-  onSnapshot(q, snap=>{
-    snap.docChanges().forEach(async change=>{
-      if(change.type!=='added')return;
-      const n={id:change.doc.id,...change.doc.data()};
-      
-      if(n.type==='message'){
-        // Nova mensagem de chat
-        audio.play('message');
-        showToast(`💬 ${n.fromName}: ${n.preview}`, 5000);
-        // Badge no ícone de chat
-        const chatBtn=document.querySelector('.chat-float .ico-btn');
-        if(chatBtn && !chatBtn.querySelector('.notif-dot')?.classList.contains('on')){
-          const d=chatBtn.querySelector('.notif-dot')||document.createElement('div');
-          d.className='notif-dot on'; d.textContent='!';
-          chatBtn.style.position='relative';
-          chatBtn.appendChild(d);
-        }
-      } else if(n.type==='accept'){
-        // Alguém aceitou nosso chamado
-        audio.play('accept');
-        showToast(`✅ ${n.fromName} aceitou seu chamado! Chat disponível.`, 6000);
-        // Abre chat automaticamente
-        R.chatTarget={uid:n.from, name:n.fromName};
-        $('chatName').textContent=n.fromName;
-        $('chatSection').style.display='block';
-        openSheet('shReq');
-        await listenChat(n.from);
-      }
-      
-      // Marca como lida
-      await updateDoc(doc(db,'notifications',n.id),{read:true});
-    });
-  });
-}
-
-init().then(()=>{
-  // Inicia listener de notificações após auth
-  window.addEventListener('agrometrix:auth-ready', listenNotifications);
-});
-
-// =========================================
-// PATCH_CHAT_FIX.js - Correções para Chat
-// =========================================
-// Problema: Chat só funciona para quem aceita chamado
-// Solução: Notificar solicitante e abrir chat para ambos
-
-// 1. MODIFICAR acceptReq() para notificar solicitante
-window.acceptReq_original = window.acceptReq;
-window.acceptReq = async (uid, name, message) => {
-  // Chamar função original
-  await window.acceptReq_original(uid, name, message);
-
-  // Notificar o solicitante que seu chamado foi aceito
-  const db = window._firebaseDB;
-  if (db) {
-    try {
-      const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-
-      // Criar notificação para o solicitante
-      await addDoc(collection(db, 'notifications'), {
-        to: uid, // UID do solicitante
-        from: R.user.uid,
-        type: 'request_accepted',
-        accepterName: R.profile?.nickname || R.profile?.name || 'Piloto',
-        message: `Seu chamado foi aceito por ${R.profile?.nickname || R.profile?.name || 'Piloto'}`,
-        createdAt: window._fsTimestamp?.(),
-        read: false
-      });
-
-      console.log('✅ Notificação enviada ao solicitante');
-    } catch (error) {
-      console.error('❌ Erro ao notificar solicitante:', error);
-    }
-  }
-};
-
-// 2. ADICIONAR função para ouvir notificações
-async function listenNotifications() {
-  const db = window._firebaseDB;
-  if (!db || !R.user) return;
-
-  try {
-    const { collection, query, where, orderBy, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-
-    const q = query(
-      collection(db, 'notifications'),
-      where('to', '==', R.user.uid),
-      orderBy('createdAt', 'desc')
-    );
-
-    onSnapshot(q, (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === 'added') {
-          const notif = change.doc.data();
-
-          if (!notif.read) {
-            // Marcar como lida
-            change.doc.ref.update({ read: true });
-
-            // Processar notificação
-            if (notif.type === 'request_accepted') {
-              // Abrir chat automaticamente com quem aceitou
-              window.openChatWith(notif.from, notif.accepterName);
-              showToast(`🎉 ${notif.accepterName} aceitou seu chamado! Chat aberto.`);
-
-              // Tocar som de aceitação
-              audio.play('accept');
-            }
-          }
-        }
-      });
-    });
-
-    console.log('👂 Ouvindo notificações...');
-  } catch (error) {
-    console.error('❌ Erro ao configurar notificações:', error);
-  }
-}
-
-// 3. MODIFICAR listenChat() para incluir notificações de mensagens
-async function listenChat_withNotifications(uid) {
-  // Chamar função original primeiro
-  const db = window._firebaseDB;
-  if (!db) return;
-
-  if (R.chatUnsub) R.chatUnsub();
-  const chatId = [R.user.uid, uid].sort().join('_');
-  const { collection, query, orderBy, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  const q = query(collection(db, `chats/${chatId}/messages`), orderBy('createdAt'));
-
-  R.chatUnsub = onSnapshot(q, snap => {
-    const msgs = $('chatMsgs');
-    msgs.innerHTML = snap.docs.map(d => {
-      const m = d.data(), isMe = m.uid === R.user.uid;
-      return `<div class="chat-msg ${isMe ? 'me' : 'them'}">
-        ${!isMe ? `<div class="chat-msg-name">${m.name || 'Piloto'}</div>` : ''}${m.text}
-      </div>`;
-    }).join('');
-    msgs.scrollTop = msgs.scrollHeight;
-  });
-
-  // Adicionar listener para novas mensagens de outros usuários
-  try {
-    const q2 = query(
-      collection(db, `chats/${chatId}/messages`),
-      where('uid', '!=', R.user.uid),
-      orderBy('createdAt', 'desc'),
-      limit(1)
-    );
-
-    onSnapshot(q2, (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === 'added') {
-          const msg = change.doc.data();
-
-          // Só notificar se chat não estiver aberto ou não for o chat atual
-          if (!R.chatTarget || R.chatTarget.uid !== uid) {
-            notifyNewMessage(msg.name || 'Piloto', msg.text);
-          }
-        }
-      });
-    });
-  } catch (error) {
-    console.error('❌ Erro ao configurar notificações de chat:', error);
-  }
-}
-
-// 4. FUNÇÃO para notificar novas mensagens
-function notifyNewMessage(senderName, message) {
-  // Animação no ícone do chat
-  const chatIcon = document.querySelector('.chat-float .ico-btn');
-  if (chatIcon) {
-    chatIcon.style.animation = 'pulse 0.5s ease-in-out';
-    setTimeout(() => chatIcon.style.animation = '', 500);
-  }
-
-  // Adicionar badge de notificação
-  const notifDot = document.getElementById('reqDot');
-  if (notifDot) {
-    notifDot.classList.add('on');
-    notifDot.textContent = '!';
-  }
-
-  // Tocar som de mensagem
-  audio.play('message');
-
-  // Toast de notificação
-  showToast(`💬 ${senderName}: ${message.substring(0, 30)}${message.length > 30 ? '...' : ''}`);
-}
-
-// 5. MODIFICAR sendMsg() para garantir que ambos recebem
-window.sendMsg_original = window.sendMsg;
-window.sendMsg = async () => {
-  const inp = $('chatInp'), txt = inp.value.trim();
-  if (!txt || !R.chatTarget) return;
-
-  inp.value = '';
-  audio.play('message');
-
-  const db = window._firebaseDB;
-  if (!db) return;
-
-  const chatId = [R.user.uid, R.chatTarget.uid].sort().join('_');
-  const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-
-  await addDoc(collection(db, `chats/${chatId}/messages`), {
-    uid: R.user.uid,
-    name: R.profile?.nickname || R.profile?.name || 'Piloto',
-    text: txt,
-    createdAt: window._fsTimestamp?.(),
-  });
-
-  // Notificar o outro usuário
-  try {
-    await addDoc(collection(db, 'notifications'), {
-      to: R.chatTarget.uid,
-      from: R.user.uid,
-      type: 'new_message',
-      senderName: R.profile?.nickname || R.profile?.name || 'Piloto',
-      message: txt,
-      createdAt: window._fsTimestamp?.(),
-      read: false
-    });
-  } catch (error) {
-    console.error('❌ Erro ao notificar nova mensagem:', error);
-  }
-};
-
-// 6. INICIALIZAR ouvintes quando app carrega
-function initChatNotifications() {
-  // Modificar onAuthChange para iniciar notificações
-  const originalOnAuthChange = window.onAuthChange || (() => {});
-  window.onAuthChange = (callback) => {
-    originalOnAuthChange((user, profile) => {
-      callback(user, profile);
-      if (user && profile) {
-        // Iniciar ouvintes de notificação
-        listenNotifications();
-      }
-    });
-  };
-
-  // Substituir listenChat pela versão com notificações
-  window.listenChat = listenChat_withNotifications;
-}
-
-// Inicializar correções
-initChatNotifications();
-
-// =========================================
-// PATCH_FIX_PROFILE_NAME.js - Correção do nome no card
-// =========================================
-// Problema: Nome aparece como URL do Google Photos
-// Solução: Validar e corrigir campos do perfil
-
-// 1. FUNÇÃO para validar se string é URL
-function isValidUrl(string) {
-  try {
-    new URL(string);
-    return true;
-  } catch (_) {
-    return false;
-  }
-}
-
-// 2. FUNÇÃO para corrigir nome do perfil
-function fixProfileName(profile, user) {
-  if (!profile) return profile;
-
-  // Se o campo name/nickname for uma URL, usar displayName ou criar nome genérico
-  const currentName = profile.nickname || profile.name;
-
-  if (currentName && isValidUrl(currentName)) {
-    console.warn('🚨 Nome do perfil é uma URL, corrigindo...', currentName);
-
-    // Tentar usar displayName do usuário
-    if (user && user.displayName) {
-      profile.name = user.displayName;
-      profile.nickname = user.displayName;
-      console.log('✅ Nome corrigido para:', user.displayName);
-    } else {
-      // Criar nome genérico baseado no email
-      const email = user?.email || '';
-      const genericName = email.split('@')[0] || 'Piloto';
-      profile.name = genericName;
-      profile.nickname = genericName;
-      console.log('✅ Nome genérico criado:', genericName);
-    }
-
-    // Salvar correção no banco
-    if (user && user.uid) {
-      updateProfile(user.uid, {
-        name: profile.name,
-        nickname: profile.nickname
-      }).catch(err => console.error('❌ Erro ao salvar correção:', err));
-    }
-  }
-
-  return profile;
-}
-
-// 3. MODIFICAR publishSelf para usar nome corrigido
-const originalPublishSelf = window.publishSelf;
-window.publishSelf = function(lat, lon, status) {
-  if (!R.user || !R.profile) return;
-
-  // Corrigir perfil antes de publicar
-  R.profile = fixProfileName(R.profile, R.user);
-
-  // Chamar função original
-  return originalPublishSelf.call(this, lat, lon, status);
-};
-
-// 4. MODIFICAR onAuthChange para corrigir perfil no login
-const originalOnAuthChange2 = window.onAuthChange;
-window.onAuthChange = (callback) => {
-  originalOnAuthChange2((user, profile) => {
-    if (user && profile) {
-      // Corrigir perfil assim que carregar
-      const fixedProfile = fixProfileName(profile, user);
-
-      // Chamar callback com perfil corrigido
-      callback(user, fixedProfile);
-    } else {
-      callback(user, profile);
-    }
-  });
-};
-
-// 5. MODIFICAR renderProfile para mostrar nome correto
-const originalRenderProfile = window.renderProfile;
-window.renderProfile = function() {
-  if (R.profile) {
-    R.profile = fixProfileName(R.profile, R.user);
-  }
-  return originalRenderProfile.call(this);
-};
-
-console.log('🔧 PATCH_FIX_PROFILE_NAME.js aplicado - Nomes corrigidos!');
+// Inicialização
+init();
 </script>
 </body>
 </html>
