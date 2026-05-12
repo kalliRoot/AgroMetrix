@@ -22,6 +22,7 @@
   --fu:'Syne',system-ui,sans-serif;--fm:'JetBrains Mono',monospace;--fd:'DM Serif Display',Georgia,serif;
 }
 html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg);color:var(--tx)}
+
 .screen{position:fixed;inset:0;transition:opacity .35s,transform .35s}
 .screen.off{opacity:0;pointer-events:none;transform:scale(.97)}
 
@@ -52,18 +53,18 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .btn-google:hover{background:var(--s3);border-color:var(--g4)}
 .btn-google svg{width:20px;height:20px;flex-shrink:0}
 
-/* ── Mapa ── */
+/* ── Radar screen ── */
 #sRadar{background:var(--bg)}
 #mapEl{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
 .leaflet-tile{filter:brightness(.42) saturate(.35) hue-rotate(88deg)}
 .leaflet-popup-content-wrapper{background:rgba(10,20,12,.96)!important;border:1px solid var(--bdm)!important;border-radius:14px!important;color:var(--tx)!important;box-shadow:0 8px 32px rgba(0,0,0,.6)!important}
 .leaflet-popup-tip{background:rgba(10,20,12,.96)!important}
 .leaflet-popup-close-button{color:var(--mt)!important;font-size:16px!important;top:8px!important;right:8px!important}
-.leaflet-container{background:var(--bg)!important}
 .leaflet-control-zoom a{background:rgba(10,20,12,.9)!important;color:var(--tx)!important;border-color:var(--bdm)!important}
+.leaflet-container{background:var(--bg)!important}
 
 /* ── Header ── */
-.r-hdr{position:fixed;top:0;left:0;right:0;z-index:100;padding:10px 14px;background:linear-gradient(to bottom,rgba(6,14,8,.97),transparent);display:flex;align-items:center;gap:8px}
+.r-hdr{position:fixed;top:0;left:0;right:0;z-index:100;padding:10px 14px;background:linear-gradient(to bottom,rgba(6,14,8,.97),transparent);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .r-logo{font-size:15px;font-weight:800;flex:1;color:var(--tx)}.r-logo span{color:var(--g4)}
 .r-badge{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;background:rgba(6,14,8,.85);border:1px solid var(--bdm);font-size:11px;color:var(--tx2);backdrop-filter:blur(8px)}
 .ldot{width:6px;height:6px;border-radius:50%;background:var(--g4);animation:ldotP 2s infinite}
@@ -85,6 +86,8 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .nav-tabs{display:flex;gap:5px;margin-bottom:10px}
 .nav-tab{flex:1;padding:8px 4px;border-radius:12px;border:1px solid var(--bdm);background:rgba(6,14,8,.85);color:var(--tx2);font-family:var(--fu);font-size:11px;font-weight:600;cursor:pointer;text-align:center;transition:all .2s;backdrop-filter:blur(8px)}
 .nav-tab.act{background:var(--g7);border-color:var(--g4);color:white}
+
+/* ── Painéis ── */
 .panel{display:none}.panel.act{display:block}
 
 /* ── AMX card ── */
@@ -96,7 +99,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .amx-bar{height:3px;background:var(--bd);border-radius:2px;overflow:hidden;margin-top:5px}
 .amx-fill{height:100%;border-radius:2px;transition:width 1s}
 
-/* ── Clima ── */
+/* ── Clima chips ── */
 .clima-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
 .wchip{display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:20px;background:rgba(11,22,13,.9);border:1px solid var(--bd);font-size:10px;color:var(--tx2);backdrop-filter:blur(8px);white-space:nowrap}
 .wchip.g{border-color:rgba(61,168,102,.5);color:var(--g3)}
@@ -135,7 +138,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .sheet.on{transform:translateY(0)}
 .sh-handle{width:36px;height:4px;border-radius:2px;background:var(--bdm);margin:12px auto 18px}
 .sh-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mt);padding:0 20px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
-.sh-close-btn{background:none;border:none;color:var(--mt);font-size:20px;cursor:pointer;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all .2s}
+.sh-close-btn{background:none;border:none;color:var(--mt);font-size:20px;cursor:pointer;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:50%}
 .sh-close-btn:hover{background:rgba(255,255,255,.1);color:var(--red)}
 
 /* ── Perfil ── */
@@ -167,7 +170,7 @@ select.inp{cursor:pointer}
 .plan-title{font-size:13px;font-weight:700}
 .plan-sub{font-size:10px;color:var(--mt);margin-top:1px}
 
-/* ── Vis ── */
+/* ── Visibilidade ── */
 .vis-row{padding:0 20px;margin-bottom:14px}
 .vis-opts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .vis-opt{padding:6px 13px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--bdm);background:var(--s2);color:var(--tx2);cursor:pointer;transition:all .2s}
@@ -194,10 +197,11 @@ select.inp{cursor:pointer}
 
 /* ── Pedidos ── */
 .req-item{background:var(--s2);border-radius:12px;padding:12px;margin:0 20px 8px;border:1px solid var(--bd)}
-.req-item.sos-req{border-color:rgba(224,53,53,.4);border-left:4px solid var(--red)}
+.req-item.sos-req{border-color:rgba(224,53,53,.4);animation:reqPulse 1.5s ease-in-out infinite}
+@keyframes reqPulse{0%,100%{border-left-width:4px;border-left-color:transparent}50%{border-left-width:4px;border-left-color:var(--red)}}
 
 /* ── Chat ── */
-.chat-msgs{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:10px;max-height:200px;overflow-y:auto;margin:0 20px 8px;display:flex;flex-direction:column;gap:6px;scrollbar-width:none}
+.chat-msgs{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:10px;max-height:180px;overflow-y:auto;margin:0 20px 8px;display:flex;flex-direction:column;gap:6px;scrollbar-width:none}
 .chat-msgs::-webkit-scrollbar{display:none}
 .chat-msg{font-size:12px;padding:7px 11px;border-radius:10px;max-width:82%}
 .chat-msg.me{background:var(--g7);color:white;align-self:flex-end}
@@ -207,12 +211,6 @@ select.inp{cursor:pointer}
 .chat-inp{flex:1;padding:10px 13px;background:var(--s2);border:1.5px solid var(--bdm);border-radius:12px;font-family:var(--fu);font-size:13px;color:var(--tx);outline:none}
 .chat-inp:focus{border-color:var(--g4)}
 .chat-send{width:40px;height:40px;border-radius:50%;background:var(--g6);border:none;color:white;font-size:16px;cursor:pointer;flex-shrink:0}
-
-/* ── Conversas ativas ── */
-.conv-item{padding:12px 20px;border-bottom:1px solid var(--bd);cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .2s}
-.conv-item:hover{background:var(--s2)}
-.conv-item.unread{background:rgba(31,85,52,.15)}
-.conv-unread{min-width:18px;height:18px;border-radius:9px;background:var(--red);color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
 
 /* ── Paywall ── */
 .pw-wrap{padding:0 20px;text-align:center}
@@ -230,29 +228,35 @@ select.inp{cursor:pointer}
 .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-10px);background:rgba(11,22,13,.97);border:1px solid var(--bdm);border-radius:14px;padding:10px 20px;font-size:12px;color:var(--tx);backdrop-filter:blur(12px);z-index:900;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.4)}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ── Modal de chamado ── */
-.modal-overlay{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);display:none}
-.modal-overlay.on{display:block}
-.modal-chamado{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;background:var(--s1);border:1px solid var(--bdm);border-radius:24px;padding:24px;width:calc(100% - 40px);max-width:320px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,.6);display:none}
+/* ── Modal chamado (centro da tela) ── */
+.modal-chamado{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;background:var(--s1);border:1px solid var(--bdm);border-radius:24px;padding:24px;width:calc(100% - 40px);max-width:320px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.7);display:none}
 .modal-chamado.on{display:block}
+.modal-chamado-overlay{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.6);display:none}
+.modal-chamado-overlay.on{display:block}
 .modal-chamado-icon{font-size:48px;margin-bottom:12px}
 .modal-chamado-title{font-size:18px;font-weight:800;margin-bottom:8px}
-.modal-chamado-msg{font-size:13px;color:var(--tx2);margin-bottom:12px;line-height:1.5}
-.modal-timer{font-size:11px;color:var(--mt);margin-bottom:16px;font-family:var(--fm)}
+.modal-chamado-msg{font-size:13px;color:var(--tx2);margin-bottom:8px;line-height:1.5}
+.modal-chamado-timer{font-size:11px;color:var(--mt);margin-bottom:16px}
 .modal-chamado-buttons{display:flex;gap:12px}
-.modal-btn{flex:1;padding:12px;border-radius:16px;border:none;font-weight:700;cursor:pointer;font-family:var(--fu);font-size:13px}
-.modal-btn.accept{background:var(--g6);color:white}
-.modal-btn.accept:hover{background:var(--g5)}
-.modal-btn.ignore{background:var(--s3);border:1px solid var(--bdm);color:var(--tx2)}
-.modal-btn.ignore:hover{color:var(--red);border-color:var(--red)}
+.modal-chamado-btn{flex:1;padding:12px;border-radius:16px;border:none;font-weight:700;cursor:pointer;font-family:var(--fu);font-size:13px}
+.modal-chamado-btn.accept{background:var(--g6);color:white}
+.modal-chamado-btn.accept:hover{background:var(--g5)}
+.modal-chamado-btn.ignore{background:var(--s3);border:1px solid var(--bdm);color:var(--tx2)}
+.modal-chamado-btn.ignore:hover{color:var(--red);border-color:var(--red)}
 
-/* ── Animações ── */
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-
-/* ── Limpar histórico ── */
-.clear-history-btn{background:rgba(224,53,53,.12);border:1px solid var(--red);color:#ff8080;margin:0 20px 14px;width:calc(100% - 40px);display:block;padding:8px;border-radius:20px;font-size:11px;font-weight:600;text-align:center;cursor:pointer;transition:all .2s}
+/* ── Clear history btn ── */
+.clear-history-btn{background:rgba(224,53,53,.1);border:1px solid var(--red);color:#ff8080;margin:-4px 20px 14px;width:calc(100% - 40px);display:block;padding:8px;border-radius:20px;font-size:11px;font-weight:600;text-align:center;cursor:pointer;transition:all .2s;font-family:var(--fu)}
 .clear-history-btn:hover{background:rgba(224,53,53,.25)}
+
+/* ── Conversas ativas ── */
+.chat-list-item{padding:13px 20px;border-bottom:1px solid var(--bd);cursor:pointer;display:flex;align-items:center;gap:12px;transition:background .2s}
+.chat-list-item:hover{background:var(--s2)}
+.chat-list-avatar{font-size:22px}
+.chat-list-name{font-size:13px;font-weight:700;color:var(--tx)}
+.chat-list-sub{font-size:11px;color:var(--mt);margin-top:2px}
+
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
@@ -290,10 +294,10 @@ select.inp{cursor:pointer}
   <div class="r-hdr">
     <div class="r-logo">Agro<span>Metrix</span> <span style="font-size:10px;color:var(--mt);font-weight:400">RADAR</span></div>
     <div class="r-badge"><div class="ldot"></div><span id="pilotCount">—</span></div>
-    <button class="ico-btn" onclick="window.centerOnUser()" title="Minha Localização" style="color:var(--g4)">📍</button>
+    <button class="ico-btn" onclick="window.centerOnUser()" title="Minha Localização">📍</button>
     <div style="position:relative">
       <button class="ico-btn" onclick="window.toggleChatDrawer()" title="Conversas">💬</button>
-      <div class="notif-dot" id="chatDot">!</div>
+      <div class="notif-dot" id="chatDot"></div>
     </div>
     <div style="position:relative">
       <button class="ico-btn" onclick="window.openSheet('shReq')" title="Pedidos">🔧</button>
@@ -314,8 +318,8 @@ select.inp{cursor:pointer}
     <div class="nav-tabs">
       <button class="nav-tab act" id="tab-radar" onclick="window.switchTab('radar')">📡 Radar</button>
       <button class="nav-tab" id="tab-clima" onclick="window.switchTab('clima')">🌡️ Clima</button>
-      <button class="nav-tab" id="tab-ops"   onclick="window.switchTab('ops')">🚁 Ops</button>
-      <button class="nav-tab" id="tab-rank"  onclick="window.switchTab('rank')">🏆 Rank</button>
+      <button class="nav-tab" id="tab-ops" onclick="window.switchTab('ops')">🚁 Ops</button>
+      <button class="nav-tab" id="tab-rank" onclick="window.switchTab('rank')">🏆 Rank</button>
     </div>
 
     <!-- Painel Radar -->
@@ -327,7 +331,7 @@ select.inp{cursor:pointer}
         </div>
         <div class="amx-info">
           <div class="amx-desc" id="amxDesc">Carregando condições…</div>
-          <div class="amx-lbl"  id="amxLbl">—</div>
+          <div class="amx-lbl" id="amxLbl">—</div>
           <div class="amx-bar"><div class="amx-fill" id="amxFill" style="width:0%;background:var(--g4)"></div></div>
         </div>
       </div>
@@ -379,7 +383,7 @@ select.inp{cursor:pointer}
 <div class="overlay" id="ovProfile" onclick="window.closeSheet('shProfile')"></div>
 <div class="sheet" id="shProfile">
   <div class="sh-handle"></div>
-  <div class="sh-title">Meu Perfil <button class="sh-close-btn" onclick="window.closeSheet('shProfile')">✕</button></div>
+  <div class="sh-title">Meu Perfil<button class="sh-close-btn" onclick="window.closeSheet('shProfile')">✕</button></div>
   <div id="profileContent"></div>
 </div>
 
@@ -387,7 +391,7 @@ select.inp{cursor:pointer}
 <div class="overlay" id="ovOpConfig" onclick="window.closeSheet('shOpConfig')"></div>
 <div class="sheet" id="shOpConfig">
   <div class="sh-handle"></div>
-  <div class="sh-title">⚙️ Configurar Operação <button class="sh-close-btn" onclick="window.closeSheet('shOpConfig')">✕</button></div>
+  <div class="sh-title">⚙️ Configurar Operação<button class="sh-close-btn" onclick="window.closeSheet('shOpConfig')">✕</button></div>
   <div class="inp-g">
     <label class="inp-l">Drone utilizado</label>
     <div class="op-chip-row" id="droneChips">
@@ -397,13 +401,13 @@ select.inp{cursor:pointer}
       <div class="op-chip" onclick="window.selChip(this,'drone','XAG P100')">XAG P100</div>
       <div class="op-chip" onclick="window.selChip(this,'drone','XAG V40')">XAG V40</div>
       <div class="op-chip" onclick="window.selChip(this,'drone','EAVision')">EAVision</div>
-      <div class="op-chip" onclick="window.showDroneCustomInput(this)">Outro</div>
+      <div class="op-chip" onclick="window.showDroneCustomInput(this,'drone','Outro')">Outro</div>
     </div>
     <input type="text" id="customDroneInput" class="inp" placeholder="Digite o modelo do drone" style="display:none;margin-top:8px">
   </div>
   <div class="inp-g">
     <label class="inp-l">Faixa média de aplicação</label>
-    <div class="op-chip-row">
+    <div class="op-chip-row" id="faixaChips">
       <div class="op-chip" onclick="window.selChip(this,'faixa','7')">7 m</div>
       <div class="op-chip" onclick="window.selChip(this,'faixa','9')">9 m</div>
       <div class="op-chip" onclick="window.selChip(this,'faixa','11')">11 m</div>
@@ -412,7 +416,7 @@ select.inp{cursor:pointer}
   </div>
   <div class="inp-g">
     <label class="inp-l">Vazão média utilizada</label>
-    <div class="op-chip-row">
+    <div class="op-chip-row" id="vazaoChips">
       <div class="op-chip" onclick="window.selChip(this,'vazao','5')">5 L/ha</div>
       <div class="op-chip" onclick="window.selChip(this,'vazao','10')">10 L/ha</div>
       <div class="op-chip" onclick="window.selChip(this,'vazao','15')">15 L/ha</div>
@@ -422,7 +426,7 @@ select.inp{cursor:pointer}
   </div>
   <div class="inp-g">
     <label class="inp-l">Média operacional estimada</label>
-    <div class="op-chip-row">
+    <div class="op-chip-row" id="haChips">
       <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','15')">15 ha/h</div>
       <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','20')">20 ha/h</div>
       <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','25')">25 ha/h</div>
@@ -434,14 +438,14 @@ select.inp{cursor:pointer}
     ⚠️ Sistema gera <strong style="color:var(--tx2)">estimativa operacional coerente</strong>. Vazões extremas reduzem confiabilidade do AMX Score.
   </div>
   <button class="btn-prim" onclick="window.confirmOp()" style="margin-top:14px">🚁 Iniciar Operação</button>
-  <button class="btn-sec"  onclick="window.closeSheet('shOpConfig')" style="margin-top:8px">Cancelar</button>
+  <button class="btn-sec" onclick="window.closeSheet('shOpConfig')" style="margin-top:8px">Cancelar</button>
 </div>
 
 <!-- ══ SHEET OP RESULTADO ══ -->
 <div class="overlay" id="ovOpResult" onclick="window.closeSheet('shOpResult')"></div>
 <div class="sheet" id="shOpResult">
   <div class="sh-handle"></div>
-  <div class="sh-title">📊 Resultado da Operação <button class="sh-close-btn" onclick="window.closeSheet('shOpResult')">✕</button></div>
+  <div class="sh-title">📊 Resultado da Operação<button class="sh-close-btn" onclick="window.closeSheet('shOpResult')">✕</button></div>
   <div id="opResultContent"></div>
   <button class="btn-prim" onclick="window.closeSheet('shOpResult')" style="margin-top:10px">Fechar</button>
 </div>
@@ -450,15 +454,11 @@ select.inp{cursor:pointer}
 <div class="overlay" id="ovReq" onclick="window.closeSheet('shReq')"></div>
 <div class="sheet" id="shReq">
   <div class="sh-handle"></div>
-  <div class="sh-title">📢 Pedidos e SOS Ativos <button class="sh-close-btn" onclick="window.closeSheet('shReq')">✕</button></div>
-  <button class="clear-history-btn" onclick="window.clearHiddenRequests()">🗑️ Limpar Histórico de Chamados</button>
+  <div class="sh-title">📢 Pedidos e SOS Ativos<button class="sh-close-btn" onclick="window.closeSheet('shReq')">✕</button></div>
+  <button class="clear-history-btn" onclick="window.clearHistoryPermanent()">🗑️ Limpar Histórico de Chamados</button>
   <div id="reqList"></div>
-  <!-- Seção de chat (aparece ao aceitar chamado) -->
   <div id="chatSection" style="display:none">
-    <div class="sh-title" style="margin-top:8px;padding:0 20px">
-      💬 Chat com <span id="chatName">—</span>
-      <button class="sh-close-btn" onclick="window.closeCurrentChat()">✕</button>
-    </div>
+    <div class="sh-title" style="margin-top:8px;padding:0 20px">💬 Chat com <span id="chatName">—</span></div>
     <div class="chat-msgs" id="chatMsgs"></div>
     <div class="chat-input-row">
       <input class="chat-inp" id="chatInp" placeholder="Mensagem…" onkeydown="if(event.key==='Enter')window.sendMsg()">
@@ -493,608 +493,593 @@ select.inp{cursor:pointer}
   </div>
 </div>
 
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
 <!-- ══ SHEET CONVERSAS ATIVAS ══ -->
 <div class="overlay" id="ovChatDrawer" onclick="window.closeChatDrawer()"></div>
 <div class="sheet" id="shChatDrawer" style="z-index:502">
   <div class="sh-handle"></div>
-  <div class="sh-title">💬 Conversas Ativas <button class="sh-close-btn" onclick="window.closeChatDrawer()">✕</button></div>
+  <div class="sh-title">💬 Conversas Ativas<button class="sh-close-btn" onclick="window.closeChatDrawer()">✕</button></div>
   <div id="activeChatsList" style="max-height:60vh;overflow-y:auto">
-    <div style="text-align:center;color:var(--mt);padding:20px;font-size:12px">Nenhuma conversa ativa.</div>
+    <div style="text-align:center;color:var(--mt);padding:30px;font-size:13px">Nenhuma conversa ativa no momento.</div>
   </div>
+  <button class="btn-sec" onclick="window.closeChatDrawer()" style="margin-top:10px;width:calc(100% - 40px)">Fechar</button>
 </div>
 
-<!-- ══ MODAL DE CHAMADO ══ -->
-<div class="modal-overlay" id="modalOverlay" onclick="window.modalIgnore()"></div>
+<!-- ══ MODAL DE CHAMADO (centro da tela) ══ -->
+<div class="modal-chamado-overlay" id="modalChamadoOverlay" onclick="window.modalIgnore()"></div>
 <div class="modal-chamado" id="modalChamado">
   <div class="modal-chamado-icon" id="modalIcon">🔧</div>
   <div class="modal-chamado-title" id="modalTitle">Novo Chamado</div>
-  <div class="modal-chamado-msg"   id="modalMsg">Alguém precisa de ajuda!</div>
-  <div class="modal-timer"         id="modalTimer">Expira em 30s</div>
+  <div class="modal-chamado-msg" id="modalMsg">Alguém precisa de ajuda!</div>
+  <div class="modal-chamado-timer" id="modalTimer">Expira em 30s</div>
   <div class="modal-chamado-buttons">
-    <button class="modal-btn accept" onclick="window.modalAccept()">✅ Aceitar</button>
-    <button class="modal-btn ignore" onclick="window.modalIgnore()">❌ Ignorar</button>
+    <button class="modal-chamado-btn accept" onclick="window.modalAccept()">✅ Aceitar</button>
+    <button class="modal-chamado-btn ignore" onclick="window.modalIgnore()">❌ Ignorar</button>
   </div>
 </div>
 
-<!-- Toast -->
-<div class="toast" id="toast"></div>
-
-<!-- ══ SCRIPT PRINCIPAL ══ -->
 <script type="module">
 import { firebaseConfig, isFirebaseConfigured } from './firebase-config.js';
 import { initFirebase, loginGoogle, logout, onAuthChange, getProfile, updateProfile, getPlanStatus } from './auth.js';
-import {
-  initMap, upsertPilot, removePilot, spawnBots, startBotUpdates,
-  startLocationTracking, listenPilots,
-  startOperation, endOperation, isOperating,
-  calcAMXScore, calcOperationEstimate, amxLabel, calcDistance,
-} from './radar.js';
+import { initMap, upsertPilot, spawnBots, startBotUpdates, startLocationTracking, listenPilots,
+         startOperation, endOperation, isOperating, calcAMXScore, calcOperationEstimate, amxLabel,
+         calcDistance } from './radar.js';
 
-// ══════════════════════════════════════════════════════════════
-// ÁUDIO
-// ══════════════════════════════════════════════════════════════
-let _actx = null;
-let _loopTimer = null;
+// ══════════════════════════════════════════════════════
+// SISTEMA DE ÁUDIO
+// ══════════════════════════════════════════════════════
+let audioCtx = null;
+let audioReady = false;
+let loopSoundId = null;
 
 function initAudio() {
-  if (_actx) return;
+  if (audioReady) return;
   const AC = window.AudioContext || window.webkitAudioContext;
-  if (AC) _actx = new AC();
+  if (!AC) return;
+  audioCtx = new AC();
+  audioReady = true;
 }
 
 function playSound(type) {
-  if (!_actx) return;
-  if (_actx.state === 'suspended') _actx.resume();
-  const now = _actx.currentTime;
-  const map = {
-    request:  { f:[523.25,659.25,783.99],       d:[0.2,0.2,0.3] },
-    sos:      { f:[880,880,880,440,440,440],      d:[0.15,0.15,0.15,0.15,0.15,0.3] },
-    accept:   { f:[523.25,659.25,783.99,1046.50], d:[0.1,0.1,0.1,0.4] },
-    message:  { f:[440,550],                      d:[0.08,0.08] },
-    notif:    { f:[523.25,523.25],                d:[0.1,0.1] },
+  if (!audioReady || !audioCtx) return;
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  const sequences = {
+    request: { f: [523.25, 659.25, 783.99], d: [0.2, 0.2, 0.3] },
+    sos:     { f: [880, 880, 880, 440, 440, 440], d: [0.15, 0.15, 0.15, 0.15, 0.15, 0.3] },
+    accept:  { f: [523.25, 659.25, 783.99, 1046.50], d: [0.1, 0.1, 0.1, 0.4] },
+    message: { f: [440, 440], d: [0.08, 0.08] },
   };
-  const s = map[type] || map.request;
-  let t = now;
-  s.f.forEach((freq, i) => {
-    const osc  = _actx.createOscillator();
-    const gain = _actx.createGain();
-    osc.connect(gain); gain.connect(_actx.destination);
+  const seq = sequences[type] || sequences.request;
+  let t = audioCtx.currentTime;
+  seq.f.forEach((freq, i) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
     osc.frequency.value = freq;
     gain.gain.value = 0.25;
     osc.start(t);
-    gain.gain.exponentialRampToValueAtTime(0.00001, t + s.d[i]);
-    osc.stop(t + s.d[i]);
-    t += s.d[i];
+    gain.gain.exponentialRampToValueAtTime(0.00001, t + seq.d[i]);
+    osc.stop(t + seq.d[i]);
+    t += seq.d[i];
   });
 }
 
-function startLoopSound(type, durationMs = 30000) {
+function playLoopSound(type, durationMs = 30000) {
   stopLoopSound();
-  initAudio();
-  const interval = 700;
+  if (!audioReady) { initAudio(); }
   let elapsed = 0;
+  const interval = 700;
   const tick = () => {
     if (elapsed >= durationMs) { stopLoopSound(); return; }
     playSound(type);
     elapsed += interval;
-    _loopTimer = setTimeout(tick, interval);
+    loopSoundId = setTimeout(tick, interval);
   };
   playSound(type);
-  _loopTimer = setTimeout(tick, interval);
+  loopSoundId = setTimeout(tick, interval);
 }
 
 function stopLoopSound() {
-  if (_loopTimer) { clearTimeout(_loopTimer); _loopTimer = null; }
+  if (loopSoundId) { clearTimeout(loopSoundId); loopSoundId = null; }
 }
 
-document.body.addEventListener('click', function once() {
-  initAudio();
-  document.body.removeEventListener('click', once);
-}, { once: true });
-
-window.playSound     = playSound;
-window.startLoopSound = startLoopSound;
+window.playSound = playSound;
+window.playLoopSound = playLoopSound;
 window.stopLoopSound = stopLoopSound;
 
-// ══════════════════════════════════════════════════════════════
-// ESTADO GLOBAL
-// ══════════════════════════════════════════════════════════════
+document.body.addEventListener('click', function firstTouch() {
+  initAudio();
+  document.body.removeEventListener('click', firstTouch);
+}, { once: true });
+
+// ══════════════════════════════════════════════════════
+// FIX: Foto do Google (URL limpa sem parâmetros antigos)
+// ══════════════════════════════════════════════════════
+function fixGooglePhoto(url) {
+  if (!url) return null;
+  if (url.includes('googleusercontent.com')) return url.split('?')[0] + '?sz=150';
+  if (url.startsWith('https://') || url.startsWith('http://')) return url;
+  return null; // rejeita URLs inválidas ou nomes confundidos com foto
+}
+
+// FIX: Detecta se string é URL (para evitar nome=URL)
+function isURL(str) {
+  if (!str) return false;
+  try { new URL(str); return str.startsWith('http'); } catch { return false; }
+}
+
+// FIX: Garante que nome do perfil nunca seja uma URL
+function sanitizeProfile(profile, user) {
+  if (!profile) return profile;
+  const name = profile.nickname || profile.name;
+  if (name && isURL(name)) {
+    const corrected = user?.displayName || user?.email?.split('@')[0] || 'Piloto';
+    profile.name = corrected;
+    profile.nickname = corrected;
+    if (user?.uid) updateProfile(user.uid, { name: corrected, nickname: corrected }).catch(() => {});
+  }
+  return profile;
+}
+
+// ══════════════════════════════════════════════════════
+// ESTADO PRINCIPAL
+// ══════════════════════════════════════════════════════
 const R = window.AgroRadar = {
   user: null, profile: null, plan: null,
   lat: null, lon: null, map: null, weather: null,
-  opCfg: {},
-  chatTarget: null, chatUnsub: null,
-  sosActive: false,
+  opCfg: {}, chatTarget: null, chatUnsub: null, sosActive: false,
   hiddenRequests: new Set(),
-  opStartLat: null, opStartLon: null, opMonitor: null,
-  modalTimer: null, pendingReq: null,
-  notifUnsub: null,
+  opStartLat: null, opStartLon: null, opMonitorInterval: null,
+  activeRequests: new Set(), // FIX: rastreia chamados únicos já mostrados
 };
 
 const $ = id => document.getElementById(id);
 const ov = id => id.replace('sh', 'ov');
 
-// ══════════════════════════════════════════════════════════════
-// HELPERS DE UI
-// ══════════════════════════════════════════════════════════════
-window.openSheet  = id => { $(ov(id))?.classList.add('on'); $(id)?.classList.add('on'); if(id==='shProfile') renderProfile(); if(id==='shReq') loadRequests(); };
-window.closeSheet = id => { $(ov(id))?.classList.remove('on'); $(id)?.classList.remove('on'); };
-window.switchTab  = tab => {
-  ['radar','clima','ops','rank'].forEach(t => { $('tab-'+t)?.classList.remove('act'); $('p'+t[0].toUpperCase()+t.slice(1))?.classList.remove('act'); });
-  $('tab-'+tab)?.classList.add('act'); $('p'+tab[0].toUpperCase()+tab.slice(1))?.classList.add('act');
-  if(tab==='rank') loadRanking();
-};
+// ══════════════════════════════════════════════════════
+// BOTS: 30 espalhados no Brasil com horários realistas
+// ══════════════════════════════════════════════════════
+const CIDADES_BR = [
+  { name: 'São Paulo, SP',        lat: -23.5505, lon: -46.6333 },
+  { name: 'Rio de Janeiro, RJ',   lat: -22.9068, lon: -43.1729 },
+  { name: 'Belo Horizonte, MG',   lat: -19.9245, lon: -43.9352 },
+  { name: 'Brasília, DF',         lat: -15.8267, lon: -47.9218 },
+  { name: 'Curitiba, PR',         lat: -25.4296, lon: -49.2712 },
+  { name: 'Porto Alegre, RS',     lat: -30.0346, lon: -51.2177 },
+  { name: 'Salvador, BA',         lat: -12.9777, lon: -38.5016 },
+  { name: 'Fortaleza, CE',        lat: -3.7319,  lon: -38.5267 },
+  { name: 'Recife, PE',           lat: -8.0476,  lon: -34.8770 },
+  { name: 'Manaus, AM',           lat: -3.1190,  lon: -60.0217 },
+  { name: 'Belém, PA',            lat: -1.4558,  lon: -48.4902 },
+  { name: 'Goiânia, GO',          lat: -16.6869, lon: -49.2648 },
+  { name: 'Campinas, SP',         lat: -22.9099, lon: -47.0626 },
+  { name: 'Ribeirão Preto, SP',   lat: -21.1787, lon: -47.8103 },
+  { name: 'Uberlândia, MG',       lat: -18.9186, lon: -48.2772 },
+  { name: 'Londrina, PR',         lat: -23.3107, lon: -51.1628 },
+  { name: 'Cuiabá, MT',           lat: -15.5989, lon: -56.0949 },
+  { name: 'Campo Grande, MS',     lat: -20.4697, lon: -54.6201 },
+  { name: 'Sorriso, MT',          lat: -12.5492, lon: -55.7202 },
+  { name: 'Lucas do Rio Verde, MT',lat: -13.0559, lon: -55.9171 },
+  { name: 'Primavera do Leste, MT',lat: -15.5523, lon: -54.2896 },
+  { name: 'Rondonópolis, MT',     lat: -16.4737, lon: -54.6353 },
+  { name: 'Sinop, MT',            lat: -11.8644, lon: -55.5083 },
+  { name: 'Teresina, PI',         lat: -5.0896,  lon: -42.8016 },
+  { name: 'Natal, RN',            lat: -5.7945,  lon: -35.2110 },
+  { name: 'Maceió, AL',           lat: -9.6498,  lon: -35.7089 },
+  { name: 'São Luís, MA',         lat: -2.5387,  lon: -44.2825 },
+  { name: 'Palmas, TO',           lat: -10.2491, lon: -48.3243 },
+  { name: 'Porto Velho, RO',      lat: -8.7619,  lon: -63.9039 },
+  { name: 'Boa Vista, RR',        lat: 2.8235,   lon: -60.6758 },
+];
 
-window.showToast = (msg, dur=3500) => {
-  const t=$('toast'); t.textContent=msg; t.classList.add('on');
-  clearTimeout(t._timer); t._timer=setTimeout(()=>t.classList.remove('on'), dur);
-};
+const BOT_NOMES = [
+  'João Silva','Maria Santos','Pedro Oliveira','Ana Costa','Lucas Lima',
+  'Fernanda Souza','Rafael Alves','Patrícia Rocha','Gustavo Pereira','Carla Mendes',
+  'Bruno Ferreira','Juliana Cardoso','Rodrigo Gomes','Vanessa Ribeiro','Thiago Monteiro',
+  'Larissa Cunha','Felipe Nogueira','Camila Duarte','Marcelo Batista','Renata Viana',
+  'Daniel Martins','Amanda Correia','Leonardo Teixeira','Bianca Amaral','Ricardo Farias',
+  'Sabrina Castro','Henrique Lima','Tatiane Freitas','Alexandre Nunes','Priscila Moreira',
+];
 
-window.selChip = (el, field, val) => {
-  el.closest('.op-chip-row').querySelectorAll('.op-chip').forEach(c=>c.classList.remove('on'));
-  el.classList.add('on'); R.opCfg[field]=val;
-};
+const BOT_DRONES = ['DJI Agras T40','DJI Agras T50','XAG P100 Pro','XAG V40','EAVision U10','Pegasus Agri 10'];
 
-window.showDroneCustomInput = (el) => {
-  window.selChip(el, 'drone', '');
-  const inp = $('customDroneInput');
-  if (!inp) return;
-  inp.style.display = 'block'; inp.focus();
-  const apply = () => { if(inp.value.trim()) R.opCfg.drone = inp.value.trim(); };
-  inp.oninput = apply;
-  inp.onkeydown = e => { if(e.key==='Enter') { apply(); inp.blur(); } };
-};
-
-window.centerOnUser = () => {
-  if(R.map && R.lat && R.lon) { R.map.setView([R.lat, R.lon], 14); showToast('📍 Centralizado na sua localização'); }
-  else showToast('⚠️ Localização ainda não disponível');
-};
-
-// ══════════════════════════════════════════════════════════════
-// FOTO GOOGLE — corrige URLs quebradas
-// ══════════════════════════════════════════════════════════════
-function fixPhoto(url) {
-  if (!url) return null;
-  if (url.startsWith('http') && url.includes('googleusercontent.com')) {
-    return url.split('?')[0] + '?sz=150';
+function gerarBots(count) {
+  const hora = new Date().getHours();
+  const isDia = hora >= 5 && hora <= 18;
+  const bots = [];
+  const cidades = [...CIDADES_BR].sort(() => Math.random() - 0.5);
+  for (let i = 0; i < Math.min(count, cidades.length); i++) {
+    const c = cidades[i];
+    const score = 55 + Math.floor(Math.random() * 40);
+    const status = isDia && Math.random() > 0.45 ? 'operating' : 'online';
+    bots.push({
+      id: `bot_br_${i}`,
+      name: BOT_NOMES[i % BOT_NOMES.length],
+      city: c.name,
+      drone: BOT_DRONES[Math.floor(Math.random() * BOT_DRONES.length)],
+      score,
+      photo: ['👨‍✈️','🧑‍✈️','👩‍✈️','👨‍🚀'][Math.floor(Math.random() * 4)],
+      hoursTotal: 100 + Math.floor(Math.random() * 2000),
+      opsTotal: 20 + Math.floor(Math.random() * 500),
+      lat: c.lat + (Math.random() - 0.5) * 0.4,
+      lon: c.lon + (Math.random() - 0.5) * 0.4,
+      status,
+    });
   }
-  // Se não for URL válida, descartar
-  try { new URL(url); } catch { return null; }
-  return url;
+  return bots;
 }
 
-// ══════════════════════════════════════════════════════════════
-// NOME — nunca permitir URL como nome
-// ══════════════════════════════════════════════════════════════
-function safeName(profile, user) {
-  const raw = profile?.nickname || profile?.name || '';
-  try { new URL(raw); /* é URL — inválido como nome */ } catch { if(raw) return raw; }
-  if (user?.displayName) return user.displayName;
-  const email = user?.email || '';
-  return email.split('@')[0] || 'Piloto';
+let activeBots = [];
+let botMoveInterval = null;
+
+function iniciarBotsCidades() {
+  activeBots = gerarBots(30);
+  activeBots.forEach(b => upsertPilot(b));
+
+  // Movimento leve a cada 60s (não teleporta, só drift pequeno)
+  if (botMoveInterval) clearInterval(botMoveInterval);
+  botMoveInterval = setInterval(() => {
+    activeBots.forEach(bot => {
+      bot.lat += (Math.random() - 0.5) * 0.015;
+      bot.lon += (Math.random() - 0.5) * 0.015;
+      upsertPilot(bot);
+    });
+    atualizarContador();
+  }, 60000);
+
+  // Rotacionar bots a cada 1h para simular entrada/saída
+  setInterval(() => {
+    const novos = gerarBots(30 + Math.floor(Math.random() * 5));
+    novos.forEach(bot => {
+      const idx = activeBots.findIndex(b => b.id === bot.id);
+      if (idx >= 0) activeBots[idx] = bot; else activeBots.push(bot);
+      upsertPilot(bot);
+    });
+  }, 3600000);
 }
 
-// ══════════════════════════════════════════════════════════════
-// PUBLICAR POSIÇÃO (nome + foto seguros)
-// ══════════════════════════════════════════════════════════════
-function publishSelf(lat, lon, status) {
-  if (!R.user || !R.profile) return;
-  const p    = R.profile;
-  const name = safeName(p, R.user);
-  const photo= fixPhoto(p.photo) || fixPhoto(R.user?.photoURL) || null;
-
-  upsertPilot({ id:R.user.uid, name, photo: photo||'👨‍✈️', city:p.city||'', drone:p.drone||'',
-    score:p.amxScore||0, hoursTotal:p.hoursTotal||0, opsTotal:p.opsTotal||0,
-    lat, lon, status, isCurrentUser:true });
-
-  updateProfile(R.user.uid, {
-    lat, lon, status,
-    nickname: name,
-    visibility: p.visibility||'online',
-    lastSeen: window._fsTimestamp?.(),
-  });
-}
-window.publishSelf = publishSelf;
-
-// ══════════════════════════════════════════════════════════════
-// MONITORAMENTO DE DISTÂNCIA → auto-finaliza operação
-// ══════════════════════════════════════════════════════════════
-function startOpMonitor() {
-  if (R.opMonitor) clearInterval(R.opMonitor);
-  R.opMonitor = setInterval(() => {
+// ══════════════════════════════════════════════════════
+// MONITOR DE DISTÂNCIA (finaliza operação ao sair 300m)
+// ══════════════════════════════════════════════════════
+function iniciarMonitorDistancia() {
+  if (R.opMonitorInterval) clearInterval(R.opMonitorInterval);
+  R.opMonitorInterval = setInterval(() => {
     if (!isOperating() || !R.opStartLat || !R.lat) return;
-    const d = Math.sqrt(
-      Math.pow((R.lat  - R.opStartLat)*111000, 2) +
-      Math.pow((R.lon  - R.opStartLon)*111000 * Math.cos(R.lat*Math.PI/180), 2)
+    const dist = Math.sqrt(
+      Math.pow((R.lat - R.opStartLat) * 111000, 2) +
+      Math.pow((R.lon - R.opStartLon) * 111000, 2)
     );
-    if (d > 300) {
-      showToast(`⚠️ Operação finalizada: você saiu ${Math.round(d)}m do ponto de início`);
+    if (dist > 300) {
+      showToast(`⚠️ Operação encerrada: você saiu ${Math.round(dist)}m do ponto inicial (limite 300m)`);
       endOp();
     }
   }, 10000);
 }
 
-// ══════════════════════════════════════════════════════════════
-// MODAL DE CHAMADO (com timer e loop de som)
-// ══════════════════════════════════════════════════════════════
-// Deduplicação: IDs já mostrados nesta sessão
-const _shownModalIds = new Set();
+// ══════════════════════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════════════════════
+window.openSheet = id => {
+  $(ov(id)).classList.add('on');
+  $(id).classList.add('on');
+  if (id === 'shProfile') renderProfile();
+  if (id === 'shReq') carregarPedidos();
+  if (id === 'pRank' || id === 'shRank') loadRanking();
+};
+window.closeSheet = id => {
+  $(ov(id)).classList.remove('on');
+  $(id).classList.remove('on');
+};
+window.showToast = (msg, dur = 3500) => {
+  const t = $('toast'); t.textContent = msg; t.classList.add('on');
+  setTimeout(() => t.classList.remove('on'), dur);
+};
+window.switchTab = tab => {
+  ['radar','clima','ops','rank'].forEach(t => {
+    $('tab-' + t)?.classList.remove('act');
+    $('p' + t[0].toUpperCase() + t.slice(1))?.classList.remove('act');
+  });
+  $('tab-' + tab)?.classList.add('act');
+  $('p' + tab[0].toUpperCase() + tab.slice(1))?.classList.add('act');
+  if (tab === 'rank') loadRanking();
+};
 
-window.showRequestModal = (req) => {
-  if (_shownModalIds.has(req.id)) return;   // já exibido
-  _shownModalIds.add(req.id);
+window.selChip = (el, key, val) => {
+  el.closest('.op-chip-row').querySelectorAll('.op-chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  R.opCfg[key] = val;
+};
+window.showDroneCustomInput = (el, key, val) => {
+  window.selChip(el, key, val);
+  const ci = $('customDroneInput');
+  if (ci) {
+    ci.style.display = 'block'; ci.focus();
+    ci.onblur = () => { if (ci.value.trim()) R.opCfg.drone = ci.value.trim(); ci.style.display = 'none'; };
+    ci.onkeypress = e => { if (e.key === 'Enter' && ci.value.trim()) { R.opCfg.drone = ci.value.trim(); ci.style.display = 'none'; } };
+  }
+};
 
-  R.pendingReq = req;
+window.centerOnUser = () => {
+  if (R.map && R.lat && R.lon) { R.map.setView([R.lat, R.lon], 13); showToast('📍 Centralizado na sua localização'); }
+  else showToast('⚠️ Localização indisponível');
+};
+
+function atualizarContador() {
+  const n = document.querySelectorAll('.leaflet-marker-icon').length;
+  const el = $('pilotCount');
+  if (el) el.textContent = `${Math.max(n, activeBots.length)} pilotos`;
+}
+
+// ══════════════════════════════════════════════════════
+// MODAL DE CHAMADO (único por tipo, no centro da tela)
+// ══════════════════════════════════════════════════════
+let pendingRequest = null;
+let modalTimerInterval = null;
+const shownRequestIds = new Set(); // FIX: evita mostrar mesmo chamado várias vezes
+
+window.showRequestModal = req => {
+  if (shownRequestIds.has(req.id)) return; // já foi mostrado
+  shownRequestIds.add(req.id);
+  pendingRequest = req;
+
+  const modal   = $('modalChamado');
+  const overlay = $('modalChamadoOverlay');
   $('modalIcon').textContent  = req.type === 'sos' ? '🚨' : '🔧';
-  $('modalTitle').textContent = req.type === 'sos' ? 'SOS URGENTE!' : 'Novo Pedido de Ajuda';
-  $('modalMsg').textContent   = `${req.pilotName||'Piloto'}: ${req.message||''}`;
-  $('modalOverlay').classList.add('on');
-  $('modalChamado').classList.add('on');
+  $('modalTitle').textContent = req.type === 'sos' ? '⚠️ SOS URGENTE!' : 'Novo Pedido de Ajuda';
+  $('modalMsg').textContent   = `${req.pilotName || 'Piloto'}: ${req.message}`;
 
-  startLoopSound(req.type === 'sos' ? 'sos' : 'request', 30000);
+  modal.classList.add('on');
+  overlay.classList.add('on');
 
+  // Som contínuo de alerta durante o modal
+  playLoopSound(req.type === 'sos' ? 'sos' : 'request', 30000);
+
+  // Timer regressivo
   let secs = 30;
   $('modalTimer').textContent = `Expira em ${secs}s`;
-  if (R.modalTimer) clearInterval(R.modalTimer);
-  R.modalTimer = setInterval(() => {
+  if (modalTimerInterval) clearInterval(modalTimerInterval);
+  modalTimerInterval = setInterval(() => {
     secs--;
     $('modalTimer').textContent = `Expira em ${secs}s`;
-    if (secs <= 0) { clearInterval(R.modalTimer); window.modalIgnore(); }
+    if (secs <= 0) { clearInterval(modalTimerInterval); window.modalIgnore(); }
   }, 1000);
 };
 
 window.modalAccept = async () => {
-  if (!R.pendingReq) return;
-  clearInterval(R.modalTimer); stopLoopSound();
-  $('modalOverlay').classList.remove('on');
+  if (!pendingRequest) return;
+  stopLoopSound();
+  if (modalTimerInterval) clearInterval(modalTimerInterval);
+  await window.acceptReq(pendingRequest.uid, pendingRequest.pilotName, pendingRequest.message);
   $('modalChamado').classList.remove('on');
-  await window.acceptReq(R.pendingReq.uid, R.pendingReq.pilotName, R.pendingReq.message);
-  R.pendingReq = null;
+  $('modalChamadoOverlay').classList.remove('on');
+  pendingRequest = null;
 };
 
 window.modalIgnore = () => {
-  clearInterval(R.modalTimer); stopLoopSound();
-  $('modalOverlay').classList.remove('on');
+  stopLoopSound();
+  if (modalTimerInterval) clearInterval(modalTimerInterval);
   $('modalChamado').classList.remove('on');
-  R.pendingReq = null;
+  $('modalChamadoOverlay').classList.remove('on');
+  pendingRequest = null;
 };
 
-// ══════════════════════════════════════════════════════════════
-// CHAT
-// ══════════════════════════════════════════════════════════════
-async function listenChat(uid) {
-  if (!window._firebaseDB) return;
-  if (R.chatUnsub) R.chatUnsub();
-  const chatId = [R.user.uid, uid].sort().join('_');
-  const { collection, query, orderBy, onSnapshot } =
-    await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  const q = query(collection(window._firebaseDB, `chats/${chatId}/messages`), orderBy('createdAt'));
-  R.chatUnsub = onSnapshot(q, snap => {
-    const msgs = $('chatMsgs'); if (!msgs) return;
-    msgs.innerHTML = snap.docs.map(d => {
-      const m = d.data(), isMe = m.uid === R.user.uid;
-      return `<div class="chat-msg ${isMe?'me':'them'}">
-        ${!isMe ? `<div class="chat-msg-name">${m.name||'Piloto'}</div>` : ''}${escHtml(m.text||'')}
-      </div>`;
-    }).join('');
-    msgs.scrollTop = msgs.scrollHeight;
-  });
-}
-
-window.acceptReq = async (uid, name, message) => {
-  playSound('accept');
-  showToast(`✅ Você aceitou o chamado de ${name}!`);
-  R.chatTarget = { uid, name };
-  const nameEl = $('chatName'), section = $('chatSection');
-  if (nameEl) nameEl.textContent = name;
-  if (section) section.style.display = 'block';
-  listenChat(uid);
-  openSheet('shReq');
-
-  // Notificar o solicitante que seu chamado foi aceito
-  const db = window._firebaseDB;
-  if (db) {
-    try {
-      const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      await addDoc(collection(db, 'notifications'), {
-        to: uid,
-        from: R.user.uid,
-        type: 'request_accepted',
-        accepterName: safeName(R.profile, R.user),
-        createdAt: window._fsTimestamp?.(),
-        read: false,
-      });
-    } catch(e) { /* silencioso */ }
-  }
-};
-
-window.closeCurrentChat = () => {
-  if (R.chatUnsub) { R.chatUnsub(); R.chatUnsub = null; }
-  R.chatTarget = null;
-  const section = $('chatSection');
-  if (section) section.style.display = 'none';
-};
-
-window.sendMsg = async () => {
-  const inp=$('chatInp'), txt=inp.value.trim();
-  if(!txt || !R.chatTarget) return;
-  inp.value = '';
-  playSound('message');
-  const db = window._firebaseDB; if(!db) return;
-  const chatId = [R.user.uid, R.chatTarget.uid].sort().join('_');
-  const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  await addDoc(collection(db, `chats/${chatId}/messages`), {
-    uid: R.user.uid,
-    name: safeName(R.profile, R.user),
-    text: txt,
-    createdAt: window._fsTimestamp?.(),
-  });
-};
-
-// ── Conversas ativas (somente reais — sem bots) ───────────────
+// ══════════════════════════════════════════════════════
+// DRAWER DE CONVERSAS ATIVAS (só reais)
+// ══════════════════════════════════════════════════════
 window.toggleChatDrawer = () => {
-  const drawer=$('shChatDrawer'), overlay=$('ovChatDrawer');
-  if (drawer.classList.contains('on')) { window.closeChatDrawer(); }
-  else { loadActiveChats(); overlay.classList.add('on'); drawer.classList.add('on'); }
+  const dr = $('shChatDrawer'), ov_ = $('ovChatDrawer');
+  if (dr.classList.contains('on')) { dr.classList.remove('on'); ov_.classList.remove('on'); }
+  else { carregarConversasAtivas(); dr.classList.add('on'); ov_.classList.add('on'); }
 };
 window.closeChatDrawer = () => {
-  $('ovChatDrawer')?.classList.remove('on');
-  $('shChatDrawer')?.classList.remove('on');
+  $('shChatDrawer').classList.remove('on');
+  $('ovChatDrawer').classList.remove('on');
 };
 
-async function loadActiveChats() {
+async function carregarConversasAtivas() {
   const container = $('activeChatsList');
   if (!container) return;
   const db = window._firebaseDB;
   if (!db || !R.user) {
-    container.innerHTML = '<div style="text-align:center;color:var(--mt);padding:20px;font-size:12px">Nenhuma conversa ativa.</div>';
+    container.innerHTML = '<div style="text-align:center;color:var(--mt);padding:30px">Nenhuma conversa ativa.</div>';
     return;
   }
+  container.innerHTML = '<div style="text-align:center;color:var(--mt);padding:20px;font-size:12px">Carregando…</div>';
   try {
-    const { collection, query, getDocs, doc, getDoc } =
-      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    // Busca apenas chats que contém o UID do usuário
-    const snap = await getDocs(query(collection(db, 'chats')));
-    const myChats = [];
-    snap.forEach(d => {
-      if (d.id.includes(R.user.uid)) {
-        const otherId = d.id.replace(R.user.uid, '').replace(/^_|_$/g, '');
-        // Apenas IDs que parecem UIDs reais (Firebase UIDs têm ~28 chars)
-        if (otherId.length > 15 && !otherId.startsWith('bot_')) {
-          myChats.push({ chatId: d.id, otherId });
-        }
-      }
-    });
-
-    if (myChats.length === 0) {
-      container.innerHTML = '<div style="text-align:center;color:var(--mt);padding:20px;font-size:12px">Nenhuma conversa com pilotos reais.</div>';
+    const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const snap = await getDocs(collection(db, 'chats'));
+    const conversas = [];
+    for (const doc of snap.docs) {
+      if (!doc.id.includes(R.user.uid)) continue;
+      const otherId = doc.id.replace(R.user.uid + '_', '').replace('_' + R.user.uid, '');
+      if (!otherId || otherId === R.user.uid) continue;
+      // Buscar nome real do piloto
+      try {
+        const { getDoc, doc: docRef } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+        const pSnap = await getDoc(docRef(db, 'pilots', otherId));
+        const pData = pSnap.exists() ? pSnap.data() : {};
+        conversas.push({ chatId: doc.id, uid: otherId, name: pData.nickname || pData.name || 'Piloto', photo: pData.photo || '👨‍✈️' });
+      } catch { conversas.push({ chatId: doc.id, uid: otherId, name: 'Piloto', photo: '👨‍✈️' }); }
+    }
+    if (!conversas.length) {
+      container.innerHTML = '<div style="text-align:center;color:var(--mt);padding:30px;font-size:13px">Nenhuma conversa ativa no momento.</div>';
       return;
     }
-
-    // Buscar nomes reais dos outros pilotos
-    const items = await Promise.all(myChats.map(async c => {
-      try {
-        const pilotSnap = await getDoc(doc(db, 'pilots', c.otherId));
-        const pilotData = pilotSnap.exists() ? pilotSnap.data() : null;
-        const name = pilotData ? (pilotData.nickname || pilotData.name || 'Piloto') : 'Piloto';
-        return { ...c, name };
-      } catch { return { ...c, name: 'Piloto' }; }
-    }));
-
-    container.innerHTML = items.map(c => `
-      <div class="conv-item" onclick="window.openChatWith('${c.otherId}','${escAttr(c.name)}')">
-        <span style="font-size:20px">👨‍✈️</span>
-        <div style="flex:1">
-          <div style="font-weight:700;font-size:13px;color:var(--tx)">${c.name}</div>
-          <div style="font-size:11px;color:var(--mt)">Toque para conversar</div>
+    container.innerHTML = conversas.map(c => `
+      <div class="chat-list-item" onclick="window.abrirChatCom('${c.uid}','${(c.name).replace(/'/g,"\\'")}')">
+        <div class="chat-list-avatar">${c.photo}</div>
+        <div>
+          <div class="chat-list-name">${c.name}</div>
+          <div class="chat-list-sub">Clique para conversar</div>
         </div>
-        <span style="font-size:16px;color:var(--g4)">›</span>
       </div>`).join('');
-  } catch(e) {
-    container.innerHTML = '<div style="text-align:center;color:var(--mt);padding:20px;font-size:12px">Erro ao carregar conversas.</div>';
+  } catch (e) {
+    container.innerHTML = '<div style="text-align:center;color:var(--mt);padding:30px">Erro ao carregar conversas.</div>';
   }
 }
 
-window.openChatWith = async (uid, name) => {
+window.abrirChatCom = async (uid, nome) => {
   window.closeChatDrawer();
-  const db = window._firebaseDB; if(!db) return;
-  // Buscar nome atualizado se não fornecido
-  if (!name) {
-    try {
-      const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const snap = await getDoc(doc(db, 'pilots', uid));
-      name = snap.exists() ? (snap.data().nickname || snap.data().name || 'Piloto') : 'Piloto';
-    } catch { name = 'Piloto'; }
-  }
-  R.chatTarget = { uid, name };
-  const nameEl=$('chatName'), section=$('chatSection');
-  if (nameEl) nameEl.textContent = name;
-  if (section) section.style.display = 'block';
+  R.chatTarget = { uid, name: nome };
+  $('chatName').textContent = nome;
+  $('chatSection').style.display = 'block';
   window.openSheet('shReq');
   listenChat(uid);
-  showToast(`💬 Conversa com ${name} aberta`);
+  showToast(`💬 Conversa com ${nome} aberta`);
 };
 
-// ── Notificações em tempo real ────────────────────────────────
-async function listenNotifications() {
-  if (!window._firebaseDB || !R.user || R.notifUnsub) return;
+// Alias para compatibilidade com popup do mapa
+window.openChatWith = window.abrirChatCom;
+
+// ══════════════════════════════════════════════════════
+// INIT PRINCIPAL
+// ══════════════════════════════════════════════════════
+async function init() {
+  if (!isFirebaseConfigured()) { showToast('⚠️ Firebase não configurado'); return; }
+  await initFirebase();
+  onAuthChange(async (user, profile) => {
+    if (user && profile) {
+      profile = sanitizeProfile(profile, user);
+      R.user = user; R.profile = profile; R.plan = getPlanStatus(profile);
+      carregarHiddenRequests();
+      if (R.plan.active) showRadar(); else window.openSheet('shPaywall');
+    }
+  });
+}
+
+function carregarHiddenRequests() {
+  if (!R.user) return;
   try {
-    const { collection, query, where, orderBy, onSnapshot, updateDoc, doc } =
-      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    const q = query(
-      collection(window._firebaseDB, 'notifications'),
-      where('to', '==', R.user.uid),
-      where('read', '==', false),
-      orderBy('createdAt', 'desc')
-    );
-    R.notifUnsub = onSnapshot(q, snap => {
-      snap.docChanges().forEach(async change => {
-        if (change.type !== 'added') return;
-        const notif = change.doc.data();
-        // Marcar como lida imediatamente
-        try { await updateDoc(doc(window._firebaseDB, 'notifications', change.doc.id), { read: true }); } catch {}
-
-        if (notif.type === 'request_accepted') {
-          playSound('accept');
-          showToast(`🎉 ${notif.accepterName||'Um piloto'} aceitou seu chamado!`);
-          // Abrir chat automaticamente
-          window.openChatWith(notif.from, notif.accepterName);
-          $('chatDot')?.classList.add('on');
-        } else if (notif.type === 'new_message') {
-          playSound('message');
-          showToast(`💬 ${notif.senderName||'Piloto'}: ${(notif.message||'').substring(0,40)}`);
-          $('chatDot')?.classList.add('on');
-        }
-      });
-    });
-  } catch(e) { /* firestore não disponível */ }
+    const stored = localStorage.getItem(`hidden_req_${R.user.uid}`);
+    if (stored) R.hiddenRequests = new Set(JSON.parse(stored));
+  } catch {}
 }
-
-// ══════════════════════════════════════════════════════════════
-// PEDIDOS
-// ══════════════════════════════════════════════════════════════
-function loadHidden() {
+function salvarHiddenRequests() {
   if (!R.user) return;
-  try { R.hiddenRequests = new Set(JSON.parse(localStorage.getItem(`hr_${R.user.uid}`)||'[]')); } catch {}
-}
-function saveHidden() {
-  if (!R.user) return;
-  localStorage.setItem(`hr_${R.user.uid}`, JSON.stringify([...R.hiddenRequests]));
+  localStorage.setItem(`hidden_req_${R.user.uid}`, JSON.stringify([...R.hiddenRequests]));
 }
 
-window.clearHiddenRequests = () => {
+window.clearHistoryPermanent = () => {
   const items = document.querySelectorAll('#reqList .req-item');
   if (!items.length) { showToast('📭 Nenhum chamado para limpar'); return; }
-  items.forEach(el => { const id=el.dataset.rid; if(id) R.hiddenRequests.add(id); });
-  saveHidden(); loadRequests();
-  showToast(`🗑️ ${items.length} chamado(s) removido(s) da lista`);
+  items.forEach(el => { const id = el.dataset.requestId; if (id) R.hiddenRequests.add(id); });
+  salvarHiddenRequests();
+  carregarPedidos();
+  showToast(`🗑️ ${items.length} chamado(s) removido(s)`);
 };
 
-async function loadRequests() {
-  const db = window._firebaseDB;
-  if (!db) { $('reqList').innerHTML = '<div style="padding:20px;color:var(--mt);font-size:12px">Nenhum pedido ativo</div>'; return; }
-  const { collection, query, where, limit, getDocs, orderBy } =
-    await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  const snap = await getDocs(query(collection(db,'requests'), where('status','==','open'), orderBy('createdAt','desc'), limit(50)));
-  const reqs = snap.docs
-    .map(d => ({ id:d.id, ...d.data() }))
-    .filter(r => r.uid !== R.user?.uid && !R.hiddenRequests.has(r.id));
-
-  if (!reqs.length) {
-    $('reqList').innerHTML = '<div style="padding:16px 20px;text-align:center;color:var(--mt);font-size:12px">Nenhum pedido ativo no momento 🟢</div>';
-    return;
-  }
-  const icons = { sos:'🚨',helice:'🚁',battery:'🔋',fuel:'⛽',part:'🔧',support:'🛠️',tow:'🚜' };
-  $('reqList').innerHTML = reqs.map(r => `
-    <div class="req-item ${r.type==='sos'?'sos-req':''}" data-rid="${r.id}">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="font-size:20px">${icons[r.type]||'🔧'}</span>
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--tx)">${r.pilotName||'Piloto'}</div>
-          <div style="font-size:11px;color:${r.type==='sos'?'#ff8080':'var(--mt)'}">${r.message||''}</div>
-        </div>
-      </div>
-      <button onclick="window.acceptReq('${r.uid}','${escAttr(r.pilotName||'')}','${escAttr(r.message||'')}')"
-        style="width:100%;padding:8px;border-radius:10px;border:none;background:${r.type==='sos'?'var(--red)':'var(--g6)'};color:white;font-family:var(--fu);font-size:12px;font-weight:700;cursor:pointer">
-        ${r.type==='sos'?'🚨 Responder SOS':'✅ Aceitar chamado'}
-      </button>
-    </div>`).join('');
+async function showRadar() {
+  $('sSplash').classList.add('off');
+  $('sRadar').classList.remove('off');
+  await new Promise(r => setTimeout(r, 150));
+  navigator.geolocation?.getCurrentPosition(
+    pos => { R.lat = pos.coords.latitude; R.lon = pos.coords.longitude; setupMap(R.lat, R.lon); },
+    () => setupMap(-15.78, -47.93),
+    { timeout: 8000, enableHighAccuracy: true }
+  );
+  setTimeout(() => { if (!R.map) setupMap(-15.78, -47.93); }, 5000);
 }
 
-// Listener em tempo real — mostra modal só para pedidos novos, um de cada vez
-let _lastSeenReqTs = null;
-async function listenRequests() {
-  const db = window._firebaseDB; if (!db) return;
-  const { collection, query, where, limit, onSnapshot, orderBy } =
-    await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  const q = query(collection(db,'requests'), where('status','==','open'), orderBy('createdAt','desc'), limit(30));
-  onSnapshot(q, snap => {
-    const reqs = [];
-    snap.forEach(d => {
-      const r = d.data();
-      if (r.uid !== R.user?.uid && !R.hiddenRequests.has(d.id)) reqs.push({ id:d.id, ...r });
-    });
-    const dot = $('reqDot');
-    if (dot) { if(reqs.length>0) dot.classList.add('on'); else dot.classList.remove('on'); }
+function getW() {
+  return window._weatherState ||
+    JSON.parse(localStorage.getItem('agrometrix_weather') || 'null') ||
+    { temp: 24, humidity: 65, wind: 8, deltaT: 5.2, rainProb: 10, cloud: 20, condition: 'Parcialmente nublado' };
+}
 
-    // Mostrar modal apenas para o pedido mais recente e novo
-    snap.docChanges().forEach(change => {
-      if (change.type !== 'added') return;
-      const r = change.doc.data();
-      if (r.uid === R.user?.uid || R.hiddenRequests.has(change.doc.id)) return;
-      // Evitar modal duplicado se já existe um aberto
-      if ($('modalChamado').classList.contains('on')) return;
-      window.showRequestModal({ id:change.doc.id, ...r });
-    });
+function setupMap(lat, lon) {
+  R.map = initMap('mapEl', lat, lon);
+  R.weather = getW();
+  setTimeout(() => R.map?.invalidateSize(), 300);
+  publishSelf(lat, lon, 'online');
+
+  iniciarBotsCidades(); // FIX: 30 bots espalhados no Brasil
+  listenPilots(lat, lon, R.user.uid);
+  startLocationTracking(R.user.uid, (nlat, nlon) => {
+    R.lat = nlat; R.lon = nlon;
+    publishSelf(nlat, nlon, isOperating() ? 'operating' : 'online');
+  });
+  listenRequests();
+  updateAMX(R.weather);
+  updateClima(R.weather);
+  iniciarMonitorDistancia();
+  setInterval(atualizarContador, 5000);
+  // Escutar notificações de chamados aceitos
+  listenNotifications();
+}
+
+function publishSelf(lat, lon, status) {
+  if (!R.user || !R.profile) return;
+  const p = R.profile;
+
+  // FIX: foto Google corrigida
+  let foto = fixGooglePhoto(p.photo);
+  if (!foto && R.user.photoURL) foto = fixGooglePhoto(R.user.photoURL);
+
+  // FIX: nome nunca é uma URL
+  const nome = (p.nickname || p.name || '').trim();
+  const nomeSeguro = isURL(nome) ? (R.user.displayName || 'Piloto') : (nome || 'Piloto');
+
+  upsertPilot({
+    id: R.user.uid, name: nomeSeguro, photo: foto || '👨‍✈️',
+    city: p.city || '', drone: p.drone || '',
+    score: p.amxScore || 0, hoursTotal: p.hoursTotal || 0, opsTotal: p.opsTotal || 0,
+    lat, lon, status, isCurrentUser: true,
+  });
+
+  updateProfile(R.user.uid, {
+    lat, lon, status,
+    nickname: nomeSeguro,
+    visibility: p.visibility || 'online',
+    lastSeen: window._fsTimestamp?.(),
   });
 }
 
-async function saveRequest(type, message) {
-  const db = window._firebaseDB; if (!db) return;
-  const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  await addDoc(collection(db,'requests'), {
-    uid: R.user.uid, type, message,
-    pilotName: safeName(R.profile, R.user),
-    lat: R.lat, lon: R.lon,
-    status: 'open', createdAt: window._fsTimestamp?.(),
-  });
+function updateAMX(w) {
+  const score = calcAMXScore(99, w, {}, R.opCfg);
+  const { label, color } = amxLabel(score);
+  ['amxNum','amxNum2'].forEach(id => { const el = $(id); if (el) { el.textContent = score; el.style.color = color; } });
+  $('amxDesc').textContent  = `${label} · ${w.condition || 'Clima atual'}`;
+  $('amxDesc2').textContent = `${label} · ${w.condition || 'Clima atual'}`;
+  $('amxLbl').textContent   = `AMX ${score}/100`;
+  $('amxFill').style.width  = score + '%'; $('amxFill').style.background  = color;
+  $('amxFill2').style.width = score + '%'; $('amxFill2').style.background = color;
 }
 
-// ══════════════════════════════════════════════════════════════
-// SOS & PEDIDOS DE SUPORTE
-// ══════════════════════════════════════════════════════════════
-window.activateSOS = async () => {
-  if (R.sosActive) { window.cancelSOS(); return; }
-  R.sosActive = true;
-  playSound('sos');
-  $('sosBar').classList.add('on');
-  publishSelf(R.lat, R.lon, 'sos');
-  await updateProfile(R.user.uid, { requestMsg:'🚨 SOS — Preciso de ajuda!', sosAt:new Date().toISOString() });
-  await saveRequest('sos', '🚨 SOS — Preciso de ajuda urgente!');
-  showToast('🚨 SOS ativado! Pilotos próximos notificados.', 5000);
-};
+function updateClima(w) {
+  const dtC = w.deltaT >= 2 && w.deltaT <= 8 ? 'g' : w.deltaT > 10 ? 'b' : 'w';
+  const wdC = w.wind <= 10 ? 'g' : w.wind <= 20 ? 'w' : 'b';
+  $('climaChips').innerHTML = `
+    <div class="wchip g">🌡️ ${w.temp || '—'}°C</div>
+    <div class="wchip ${wdC}">💨 ${w.wind || '—'} km/h</div>
+    <div class="wchip">💧 ${w.humidity || '—'}%</div>
+    <div class="wchip ${dtC}">ΔT ${w.deltaT || '—'}°C</div>
+    ${w.rainProb > 30 ? `<div class="wchip w">🌧️ ${w.rainProb}%</div>` : ''}`;
+}
 
-window.cancelSOS = async () => {
-  R.sosActive = false;
-  $('sosBar').classList.remove('on');
-  await updateProfile(R.user.uid, { status:isOperating()?'operating':'online', requestMsg:null, sosAt:null });
-  publishSelf(R.lat, R.lon, isOperating()?'operating':'online');
-  showToast('✅ SOS cancelado');
-};
-
-window.sendReq = async (type, msg) => {
-  playSound('request');
-  publishSelf(R.lat, R.lon, 'request');
-  await updateProfile(R.user.uid, { status:'request', requestMsg:msg });
-  await saveRequest(type, msg);
-  showToast(`${msg} — Pilotos notificados! 🟢`, 4000);
-  setTimeout(async () => {
-    if (!R.sosActive) {
-      publishSelf(R.lat, R.lon, isOperating()?'operating':'online');
-      await updateProfile(R.user.uid, { status:isOperating()?'operating':'online', requestMsg:null });
-    }
-  }, 300000);
-};
-
-// ══════════════════════════════════════════════════════════════
-// OPERAÇÕES
-// ══════════════════════════════════════════════════════════════
-window.handleOp = () => isOperating() ? endOp() : openSheet('shOpConfig');
+// ══════════════════════════════════════════════════════
+// OPERAÇÃO
+// ══════════════════════════════════════════════════════
+window.handleOp = () => isOperating() ? endOp() : window.openSheet('shOpConfig');
 
 window.confirmOp = () => {
   const c = R.opCfg;
-  if (!c.drone||!c.faixa||!c.vazao||!c.avgHaPerH) { showToast('⚠️ Preencha todos os campos'); return; }
-  closeSheet('shOpConfig');
+  if (!c.drone || !c.faixa || !c.vazao || !c.avgHaPerH) { showToast('⚠️ Preencha todos os campos'); return; }
+  window.closeSheet('shOpConfig');
   startOperation(c, getW(), R.lat, R.lon);
   R.opStartLat = R.lat; R.opStartLon = R.lon;
-  setBtn(true); playSound('accept'); showToast('🚁 Operação iniciada!');
+  setBtn(true);
+  playSound('accept');
+  showToast('🚁 Operação iniciada!');
   publishSelf(R.lat, R.lon, 'operating');
 };
 
 function setBtn(active) {
   ['btnOp','btnOp2'].forEach(id => {
-    const b=$(id); if(!b) return;
-    b.className = 'btn-op '+(active?'stop':'start');
+    const b = $(id); if (!b) return;
+    b.className = 'btn-op ' + (active ? 'stop' : 'start');
     b.innerHTML = active ? '🛑 Finalizar Operação' : '🚁 Iniciar Operação';
   });
 }
@@ -1108,300 +1093,447 @@ function endOp() {
 }
 
 function showResult(r) {
-  const est = r.estimate||{};
-  const {label,color} = amxLabel(r.score);
+  const est = r.estimate || {};
+  const { label, color } = amxLabel(r.score);
   $('opResultContent').innerHTML = `
     <div class="op-result">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--mt);margin-bottom:2px">Resumo da operação</div>
-      <div style="font-size:13px;color:var(--tx2);margin-bottom:10px">${r.config?.drone||''} · ${r.config?.avgHaPerH||'—'} ha/h estimado</div>
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:10px">${r.config?.drone || ''} · ${r.config?.avgHaPerH || '—'} ha/h estimado</div>
       <div class="op-stat-row">
         <div class="op-stat"><div class="op-stat-v" style="color:${color}">${r.score}</div><div class="op-stat-l">AMX Score</div></div>
         <div class="op-stat"><div class="op-stat-v">${r.durationMin} min</div><div class="op-stat-l">Duração</div></div>
-        <div class="op-stat"><div class="op-stat-v">~${est.estHa||'—'} ha</div><div class="op-stat-l">Estimativa</div></div>
-        <div class="op-stat"><div class="op-stat-v">${est.confiability||'—'}%</div><div class="op-stat-l">Confiab.</div></div>
+        <div class="op-stat"><div class="op-stat-v">~${est.estHa || '—'} ha</div><div class="op-stat-l">Estimativa</div></div>
+        <div class="op-stat"><div class="op-stat-v">${est.confiability || '—'}%</div><div class="op-stat-l">Confiab.</div></div>
       </div>
       <div style="margin-top:10px;font-size:10px;color:var(--mt);text-align:center;line-height:1.5">
         ⚠️ Área estimada com base em tempo operacional e configuração.<br>
-        <strong style="color:var(--tx2)">Confiabilidade: ${est.label||'—'}</strong>
+        <strong style="color:var(--tx2)">Confiabilidade: ${est.label || '—'}</strong>
       </div>
     </div>`;
-  openSheet('shOpResult');
+  window.openSheet('shOpResult');
 }
 
 async function saveOp(r) {
   if (!R.user) return;
-  const db=window._firebaseDB; if(!db) return;
+  const db = window._firebaseDB; if (!db) return;
   const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  await addDoc(collection(db,'operations'), {
-    uid:R.user.uid, pilotName:safeName(R.profile,R.user), ...r, createdAt:window._fsTimestamp?.()
+  await addDoc(collection(db, 'operations'), {
+    uid: R.user.uid, pilotName: R.profile?.nickname || R.profile?.name, ...r, createdAt: window._fsTimestamp?.()
   });
-  const ns = Math.round(((R.profile?.amxScore||0)+r.score)/2);
+  const ns = Math.round(((R.profile?.amxScore || 0) + r.score) / 2);
   await updateProfile(R.user.uid, {
-    opsTotal:(R.profile?.opsTotal||0)+1,
-    hoursTotal:+(((R.profile?.hoursTotal||0)+r.durationMin/60)).toFixed(1),
-    amxScore:ns,
+    opsTotal: (R.profile?.opsTotal || 0) + 1,
+    hoursTotal: +((R.profile?.hoursTotal || 0) + r.durationMin / 60).toFixed(1),
+    amxScore: ns,
   });
-  R.profile.amxScore=ns; R.profile.opsTotal=(R.profile.opsTotal||0)+1;
+  R.profile.amxScore = ns;
+  R.profile.opsTotal = (R.profile.opsTotal || 0) + 1;
 }
 
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// SOS E PEDIDOS
+// ══════════════════════════════════════════════════════
+window.activateSOS = async () => {
+  if (R.sosActive) { cancelSOS(); return; }
+  R.sosActive = true;
+  playLoopSound('sos', 10000);
+  $('sosBar').classList.add('on');
+  publishSelf(R.lat, R.lon, 'sos');
+  await updateProfile(R.user.uid, { requestMsg: '🚨 SOS — Preciso de ajuda!', sosAt: new Date().toISOString() });
+  await salvarRequest('sos', '🚨 SOS — Preciso de ajuda urgente!');
+  showToast('🚨 SOS ativado!', 5000);
+};
+
+window.cancelSOS = async () => {
+  R.sosActive = false;
+  stopLoopSound();
+  $('sosBar').classList.remove('on');
+  await updateProfile(R.user.uid, { status: isOperating() ? 'operating' : 'online', requestMsg: null, sosAt: null });
+  publishSelf(R.lat, R.lon, isOperating() ? 'operating' : 'online');
+  showToast('✅ SOS cancelado');
+};
+
+// FIX: Chamado único por tipo (não manda duplicado)
+const requestsEnviados = new Set();
+window.sendReq = async (type, msg) => {
+  const key = `${type}_${R.user?.uid}`;
+  if (requestsEnviados.has(key)) { showToast('⚠️ Você já tem um pedido deste tipo ativo'); return; }
+  requestsEnviados.add(key);
+  playSound('request');
+  publishSelf(R.lat, R.lon, 'request');
+  await updateProfile(R.user.uid, { status: 'request', requestMsg: msg });
+  await salvarRequest(type, msg);
+  showToast(`${msg} — Pilotos notificados! 🟢`, 4000);
+  setTimeout(async () => {
+    requestsEnviados.delete(key);
+    if (!R.sosActive) {
+      publishSelf(R.lat, R.lon, isOperating() ? 'operating' : 'online');
+      await updateProfile(R.user.uid, { status: isOperating() ? 'operating' : 'online', requestMsg: null });
+    }
+  }, 300000);
+};
+
+async function salvarRequest(type, message) {
+  const db = window._firebaseDB; if (!db) return;
+  const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  await addDoc(collection(db, 'requests'), {
+    uid: R.user.uid, type, message,
+    pilotName: R.profile?.nickname || R.profile?.name || 'Piloto',
+    lat: R.lat, lon: R.lon, status: 'open', createdAt: window._fsTimestamp?.(),
+  });
+}
+
+// FIX: Pedidos filtrados por raio de 100km
+async function carregarPedidos() {
+  const db = window._firebaseDB;
+  if (!db) { $('reqList').innerHTML = '<div style="padding:20px;color:var(--mt);font-size:12px">Nenhum pedido ativo</div>'; return; }
+  const { collection, query, where, limit, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  const snap = await getDocs(query(collection(db, 'requests'), where('status', '==', 'open'), limit(50)));
+  const reqs = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(r => {
+    if (r.uid === R.user?.uid) return false;
+    if (R.hiddenRequests.has(r.id)) return false;
+    // FIX: raio 100km
+    if (R.lat && r.lat && r.lon) {
+      const dist = calcDistance(R.lat, R.lon, r.lat, r.lon);
+      if (dist > 100) return false;
+    }
+    return true;
+  });
+
+  if (!reqs.length) {
+    $('reqList').innerHTML = '<div style="padding:16px 20px;text-align:center;color:var(--mt);font-size:12px">Nenhum pedido ativo no momento 🟢</div>';
+    return;
+  }
+  const icons = { sos: '🚨', helice: '🚁', battery: '🔋', fuel: '⛽', part: '🔧', support: '🛠️', tow: '🚜' };
+  $('reqList').innerHTML = reqs.map(r => `
+    <div class="req-item ${r.type === 'sos' ? 'sos-req' : ''}" data-request-id="${r.id}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:20px">${icons[r.type] || '🔧'}</span>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--tx)">${r.pilotName || 'Piloto'}</div>
+          <div style="font-size:11px;color:${r.type === 'sos' ? '#ff8080' : 'var(--mt)'}">${r.message}</div>
+        </div>
+      </div>
+      <button onclick="window.acceptReq('${r.uid}','${(r.pilotName||'').replace(/'/g,"\\'")}','${(r.message||'').replace(/'/g,"\\'")}')"
+        style="width:100%;padding:8px;border-radius:10px;border:none;background:${r.type === 'sos' ? 'var(--red)' : 'var(--g6)'};color:white;font-family:var(--fu);font-size:12px;font-weight:700;cursor:pointer">
+        ${r.type === 'sos' ? '🚨 Responder SOS' : '✅ Aceitar chamado'}
+      </button>
+    </div>`).join('');
+}
+
+// FIX: listenRequests com raio 100km e chamado único por sessão
+async function listenRequests() {
+  const db = window._firebaseDB; if (!db) return;
+  const { collection, query, where, limit, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  const q = query(collection(db, 'requests'), where('status', '==', 'open'), limit(50));
+  onSnapshot(q, snap => {
+    const reqs = [];
+    snap.forEach(doc => {
+      const r = doc.data();
+      if (r.uid === R.user?.uid) return;
+      if (R.hiddenRequests.has(doc.id)) return;
+      if (shownRequestIds.has(doc.id)) return; // FIX: não reexibir
+      // FIX: raio 100km
+      if (R.lat && r.lat && r.lon) {
+        const dist = calcDistance(R.lat, R.lon, r.lat, r.lon);
+        if (dist > 100) return;
+      }
+      reqs.push({ id: doc.id, ...r });
+    });
+
+    const dot = $('reqDot');
+    if (reqs.length > 0) dot.classList.add('on'); else dot.classList.remove('on');
+
+    // FIX: mostrar apenas 1 modal por vez
+    if (reqs.length > 0 && !$('modalChamado').classList.contains('on')) {
+      window.showRequestModal(reqs[0]);
+    }
+  });
+}
+
+// FIX: Accept abre chat para AMBOS via notificação Firestore
+window.acceptReq = async (uid, name, message) => {
+  stopLoopSound();
+  playSound('accept');
+  showToast(`✅ Você aceitou o chamado de ${name}!`);
+  R.chatTarget = { uid, name };
+  $('chatName').textContent = name;
+  $('chatSection').style.display = 'block';
+  listenChat(uid);
+  window.openSheet('shReq');
+
+  // Notificar o solicitante via Firestore
+  const db = window._firebaseDB;
+  if (db) {
+    try {
+      const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await addDoc(collection(db, 'notifications'), {
+        to: uid, from: R.user.uid,
+        type: 'request_accepted',
+        accepterName: R.profile?.nickname || R.profile?.name || 'Piloto',
+        accepterUid: R.user.uid,
+        createdAt: window._fsTimestamp?.(),
+        read: false,
+      });
+    } catch (e) { console.warn('Notificação não enviada:', e); }
+  }
+};
+
+// FIX: Ouvir notificações — abre chat automaticamente no lado do solicitante
+async function listenNotifications() {
+  const db = window._firebaseDB; if (!db || !R.user) return;
+  try {
+    const { collection, query, where, orderBy, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const q = query(collection(db, 'notifications'), where('to', '==', R.user.uid), where('read', '==', false), orderBy('createdAt', 'desc'));
+    onSnapshot(q, snap => {
+      snap.docChanges().forEach(change => {
+        if (change.type !== 'added') return;
+        const notif = change.doc.data();
+        // Marcar como lida
+        change.doc.ref.update({ read: true }).catch(() => {});
+
+        if (notif.type === 'request_accepted') {
+          // FIX: Chat abre nos dois lados
+          playSound('accept');
+          showToast(`🎉 ${notif.accepterName} aceitou seu chamado! Chat aberto.`, 5000);
+          R.chatTarget = { uid: notif.accepterUid, name: notif.accepterName };
+          $('chatName').textContent = notif.accepterName;
+          $('chatSection').style.display = 'block';
+          listenChat(notif.accepterUid);
+          window.openSheet('shReq');
+        }
+
+        if (notif.type === 'new_message') {
+          if (!R.chatTarget || R.chatTarget.uid !== notif.from) {
+            playSound('message');
+            showToast(`💬 ${notif.senderName}: ${(notif.message || '').substring(0, 40)}`, 4000);
+            $('chatDot').classList.add('on');
+          }
+        }
+      });
+    });
+  } catch (e) { console.warn('listenNotifications:', e); }
+}
+
+// ══════════════════════════════════════════════════════
+// CHAT EM TEMPO REAL
+// ══════════════════════════════════════════════════════
+async function listenChat(uid) {
+  const db = window._firebaseDB; if (!db) return;
+  if (R.chatUnsub) R.chatUnsub();
+  const chatId = [R.user.uid, uid].sort().join('_');
+  const { collection, query, orderBy, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  const q = query(collection(db, `chats/${chatId}/messages`), orderBy('createdAt'));
+  R.chatUnsub = onSnapshot(q, snap => {
+    const msgs = $('chatMsgs');
+    msgs.innerHTML = snap.docs.map(d => {
+      const m = d.data(), isMe = m.uid === R.user.uid;
+      return `<div class="chat-msg ${isMe ? 'me' : 'them'}">
+        ${!isMe ? `<div class="chat-msg-name">${m.name || 'Piloto'}</div>` : ''}${m.text}
+      </div>`;
+    }).join('');
+    msgs.scrollTop = msgs.scrollHeight;
+  });
+}
+
+window.sendMsg = async () => {
+  const inp = $('chatInp'), txt = inp.value.trim();
+  if (!txt || !R.chatTarget) return;
+  inp.value = '';
+  playSound('message');
+  const db = window._firebaseDB; if (!db) return;
+  const chatId = [R.user.uid, R.chatTarget.uid].sort().join('_');
+  const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  await addDoc(collection(db, `chats/${chatId}/messages`), {
+    uid: R.user.uid,
+    name: R.profile?.nickname || R.profile?.name || 'Piloto',
+    text: txt,
+    createdAt: window._fsTimestamp?.(),
+  });
+  // FIX: Notificar o outro usuário da mensagem
+  try {
+    await addDoc(collection(db, 'notifications'), {
+      to: R.chatTarget.uid, from: R.user.uid,
+      type: 'new_message',
+      senderName: R.profile?.nickname || R.profile?.name || 'Piloto',
+      message: txt,
+      createdAt: window._fsTimestamp?.(),
+      read: false,
+    });
+  } catch {}
+};
+
+// ══════════════════════════════════════════════════════
+// RANKING
+// ══════════════════════════════════════════════════════
+async function loadRanking() {
+  const db = window._firebaseDB;
+  let pilots = [];
+  if (db) {
+    try {
+      const { collection, query, orderBy, limit, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDocs(query(collection(db, 'pilots'), orderBy('amxScore', 'desc'), limit(20)));
+      pilots = snap.docs.map(d => d.data());
+    } catch {}
+  }
+  const all = [...pilots, ...activeBots].sort((a, b) => (b.amxScore || b.score || 0) - (a.amxScore || a.score || 0)).slice(0, 20);
+  const medals = ['🥇','🥈','🥉'], pCls = ['gold','silver','bronze'];
+  $('rankList').innerHTML = all.map((p, i) => `
+    <div class="rank-item">
+      <div class="rank-pos ${pCls[i] || ''}">${medals[i] || '#' + (i + 1)}</div>
+      <div style="flex:1">
+        <div class="rank-name">${p.nickname || p.name || p.pilotName || 'Piloto'}</div>
+        <div class="rank-sub">${p.city || ''} · ${p.drone || ''} · ${p.opsTotal || 0} ops</div>
+      </div>
+      <div class="rank-score">AMX ${p.amxScore || p.score || 0}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════
 // PERFIL
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 function renderProfile() {
-  const p=R.profile, plan=R.plan; if(!p) return;
-  const photo = fixPhoto(p.photo) || fixPhoto(R.user?.photoURL);
-  const fotoHtml = photo
-    ? `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.outerHTML='👨‍✈️'">`
-    : '👨‍✈️';
-  const name = safeName(p, R.user);
-  const pCls  = plan?.plan==='paid'?'paid':plan?.plan==='trial'?'trial':'exp';
-  const pIcon = plan?.plan==='paid'?'✅':plan?.plan==='trial'?'⏳':'🔒';
-  const pTitle= plan?.plan==='paid'?'Plano Ativo':plan?.plan==='trial'?`Trial — ${plan.daysLeft} dias restantes`:'Trial expirado';
+  const p = R.profile, plan = R.plan;
+  if (!p) return;
+
+  // FIX: foto corrigida
+  let fotoUrl = fixGooglePhoto(p.photo);
+  if (!fotoUrl && R.user?.photoURL) fotoUrl = fixGooglePhoto(R.user.photoURL);
+  const fotoHtml = fotoUrl
+    ? `<img src="${fotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onclick="window.changeProfilePhoto()" onerror="this.outerHTML='👨‍✈️'">`
+    : `<span onclick="window.changeProfilePhoto()">👨‍✈️</span>`;
+
+  const pCls   = plan?.plan === 'paid' ? 'paid' : plan?.plan === 'trial' ? 'trial' : 'exp';
+  const pIcon  = plan?.plan === 'paid' ? '✅' : plan?.plan === 'trial' ? '⏳' : '🔒';
+  const pTitle = plan?.plan === 'paid' ? 'Plano Ativo' : plan?.plan === 'trial' ? `Trial — ${plan.daysLeft} dias restantes` : 'Trial expirado';
+  const isPro  = plan?.plan === 'paid';
+
+  // FIX: nome do perfil nunca será uma URL
+  const nomeExibido = (() => {
+    const n = p.nickname || p.name || '';
+    return isURL(n) ? (R.user?.displayName || 'Piloto') : (n || 'Piloto');
+  })();
 
   $('profileContent').innerHTML = `
     <div class="pf-hero">
       <div class="pf-av">${fotoHtml}</div>
       <div>
-        <div class="pf-name">${name}</div>
-        <div class="pf-city">📍 ${p.city||'Cidade não informada'}</div>
-        <div class="pf-drone">🚁 ${p.drone||'Drone não informado'}</div>
+        <div class="pf-name">${nomeExibido}</div>
+        <div class="pf-city">📍 ${p.city || 'Cidade não informada'}</div>
+        <div class="pf-drone">🚁 ${p.drone || 'Drone não informado'}</div>
       </div>
     </div>
     <div class="pf-stats">
-      <div class="pstat"><div class="pstat-v">${p.amxScore||0}</div><div class="pstat-l">AMX Score</div></div>
-      <div class="pstat"><div class="pstat-v">${(p.hoursTotal||0).toFixed(0)}h</div><div class="pstat-l">Horas</div></div>
-      <div class="pstat"><div class="pstat-v">${p.opsTotal||0}</div><div class="pstat-l">Operações</div></div>
+      <div class="pstat"><div class="pstat-v">${p.amxScore || 0}</div><div class="pstat-l">AMX Score</div></div>
+      <div class="pstat"><div class="pstat-v">${(p.hoursTotal || 0).toFixed(0)}h</div><div class="pstat-l">Horas</div></div>
+      <div class="pstat"><div class="pstat-v">${p.opsTotal || 0}</div><div class="pstat-l">Operações</div></div>
     </div>
     <div class="inp-g">
       <label class="inp-l">Nome / Apelido</label>
-      <input class="inp" id="pfNick" value="${escAttr(name)}" placeholder="Como quer ser chamado?">
+      <input class="inp" id="pfNick" value="${nomeExibido}" placeholder="Como quer ser chamado?">
     </div>
     <div class="inp-g">
       <label class="inp-l">Cidade</label>
-      <input class="inp" id="pfCity" value="${escAttr(p.city||'')}" placeholder="Sua cidade">
+      <input class="inp" id="pfCity" value="${p.city || ''}" placeholder="Sua cidade">
     </div>
     <div class="inp-g">
       <label class="inp-l">Drone principal</label>
       <select class="inp" id="pfDrone">
         <option value="">Selecione…</option>
-        ${['DJI T25','DJI T40','DJI T50','XAG P100','XAG V40','EAVision','Pegasus Agri','Outro']
-          .map(d=>`<option ${p.drone===d?'selected':''}>${d}</option>`).join('')}
+        ${['DJI T25','DJI T40','DJI T50','XAG P100','XAG V40','EAVision','Pegasus Agri','Outro'].map(d => `<option ${p.drone === d ? 'selected' : ''}>${d}</option>`).join('')}
       </select>
     </div>
-    ${plan?.plan==='paid'?`<div class="inp-g"><label class="inp-l">Foto de Perfil (URL)</label><input class="inp" id="pfPhoto" placeholder="URL da sua foto" value="${escAttr(p.photo||'')}"></div>`:''}
+    ${isPro ? `<div class="inp-g"><label class="inp-l">Foto de Perfil (URL)</label><input class="inp" id="pfPhoto" placeholder="URL da sua foto" value="${p.photo || ''}"></div>` : ''}
     <div class="plan-b ${pCls}">
       <div class="plan-icon">${pIcon}</div>
       <div><div class="plan-title">${pTitle}</div>
-      <div class="plan-sub">${plan?.plan==='trial'?'Aproveite o período gratuito':plan?.plan==='paid'?'Acesso completo ao radar':'Assine para continuar'}</div></div>
+      <div class="plan-sub">${plan?.plan === 'trial' ? 'Aproveite o período gratuito' : plan?.plan === 'paid' ? 'Acesso completo ao radar' : 'Assine para continuar'}</div></div>
     </div>
-    ${plan?.plan!=='paid'?`<button class="btn-prim" onclick="window.openSheet('shPaywall')" style="margin-bottom:10px">🚀 Assinar R$ 19,90/mês</button>`:''}
+    ${plan?.plan !== 'paid' ? `<button class="btn-prim" onclick="window.openSheet('shPaywall')" style="margin-bottom:10px">🚀 Assinar R$ 19,90/mês</button>` : ''}
     <div class="vis-row">
       <label class="inp-l">Visibilidade no radar</label>
       <div class="vis-opts">
-        <div class="vis-opt ${p.visibility==='online'?'on':''}"    onclick="window.setVis('online')">🟢 Online</div>
-        <div class="vis-opt ${p.visibility==='invisible'?'on':''}" onclick="window.setVis('invisible')">⚫ Invisível</div>
-        <div class="vis-opt ${p.visibility==='sos'?'on':''}"       onclick="window.setVis('sos')">🚨 SOS</div>
+        <div class="vis-opt ${p.visibility === 'online' ? 'on' : ''}" onclick="setVis('online')">🟢 Online</div>
+        <div class="vis-opt ${p.visibility === 'invisible' ? 'on' : ''}" onclick="setVis('invisible')">⚫ Invisível</div>
+        <div class="vis-opt ${p.visibility === 'sos' ? 'on' : ''}" onclick="setVis('sos')">🚨 SOS</div>
       </div>
     </div>
     <button class="btn-prim" onclick="window.saveProfile()" style="margin-top:12px">💾 Salvar perfil</button>
-    <button class="btn-sec"  onclick="window.doLogout()"    style="margin-top:8px">Sair da conta</button>
-  `;
+    <button class="btn-sec" onclick="window.doLogout()" style="margin-top:8px">Sair da conta</button>`;
 }
 
+window.changeProfilePhoto = () => {
+  if (R.plan?.plan !== 'paid') { showToast('🔒 Usuários PRO podem mudar a foto'); return; }
+  const url = prompt('📸 Cole a URL da sua nova foto:', R.profile?.photo || '');
+  if (url?.trim()) {
+    updateProfile(R.user.uid, { photo: url.trim() });
+    R.profile.photo = url.trim();
+    renderProfile();
+    publishSelf(R.lat, R.lon, isOperating() ? 'operating' : 'online');
+    showToast('✅ Foto atualizada!');
+  }
+};
+
+// FIX: Salvar perfil atualiza nome no mapa em tempo real
 window.saveProfile = async () => {
-  const uid = R.user?.uid; if(!uid) return;
+  const uid = R.user?.uid; if (!uid) return;
   const nickname = $('pfNick')?.value.trim();
   const city     = $('pfCity')?.value.trim();
   const drone    = $('pfDrone')?.value;
-  const photo    = R.plan?.plan==='paid' ? $('pfPhoto')?.value.trim() : null;
+  const photo    = R.plan?.plan === 'paid' ? $('pfPhoto')?.value.trim() : null;
   const upd = { nickname, city, drone };
   if (photo) upd.photo = photo;
   await updateProfile(uid, upd);
   Object.assign(R.profile, upd);
-  // Atualiza nome no mapa imediatamente
-  publishSelf(R.lat, R.lon, isOperating()?'operating':'online');
-  showToast('✅ Perfil salvo! Nome e foto atualizados no mapa.');
-  closeSheet('shProfile');
+  // FIX: atualiza marcador no mapa imediatamente
+  publishSelf(R.lat, R.lon, isOperating() ? 'operating' : 'online');
+  showToast('✅ Perfil salvo e atualizado no mapa!');
+  window.closeSheet('shProfile');
 };
 
 window.setVis = async vis => {
   if (!R.user) return;
-  await updateProfile(R.user.uid, { visibility:vis });
+  await updateProfile(R.user.uid, { visibility: vis });
   R.profile.visibility = vis; renderProfile();
 };
 
 window.doLogout = async () => {
-  await logout(); closeSheet('shProfile');
-  $('sRadar').classList.add('off'); $('sSplash').classList.remove('off');
+  await logout(); window.closeSheet('shProfile');
+  $('sRadar').classList.add('off');
+  $('sSplash').classList.remove('off');
 };
-
-// ══════════════════════════════════════════════════════════════
-// RANKING
-// ══════════════════════════════════════════════════════════════
-async function loadRanking() {
-  let pilots = [];
-  const db = window._firebaseDB;
-  if (db) {
-    try {
-      const { collection, query, orderBy, limit, getDocs } =
-        await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const snap = await getDocs(query(collection(db,'pilots'), orderBy('amxScore','desc'), limit(20)));
-      pilots = snap.docs.map(d => d.data());
-    } catch {}
-  }
-  // Complementar com bots se poucos pilotos reais
-  const botFill = (window._activeBots || [])
-    .filter(b => !pilots.find(p => p.uid === b.id))
-    .map(b => ({ name:b.name, city:b.city, drone:b.drone, amxScore:b.score, opsTotal:b.opsTotal }));
-  const all = [...pilots, ...botFill].sort((a,b)=>(b.amxScore||0)-(a.amxScore||0)).slice(0,20);
-  const medals=['🥇','🥈','🥉'], pCls=['gold','silver','bronze'];
-  $('rankList').innerHTML = all.map((p,i) => `
-    <div class="rank-item">
-      <div class="rank-pos ${pCls[i]||''}">${medals[i]||'#'+(i+1)}</div>
-      <div style="flex:1">
-        <div class="rank-name">${p.nickname||p.name||'Piloto'}</div>
-        <div class="rank-sub">${p.city||''} · ${p.drone||''} · ${p.opsTotal||0} ops</div>
-      </div>
-      <div class="rank-score">AMX ${p.amxScore||p.score||0}</div>
-    </div>`).join('');
-}
-
-// ══════════════════════════════════════════════════════════════
-// CLIMA / AMX
-// ══════════════════════════════════════════════════════════════
-function getW() {
-  return window._weatherState ||
-    JSON.parse(localStorage.getItem('agrometrix_weather')||'null') ||
-    { temp:24, humidity:65, wind:8, deltaT:5.2, rainProb:10, cloud:20, condition:'Parcialmente nublado' };
-}
-
-function updateAMX(w) {
-  const score = calcAMXScore(99, w, {}, R.opCfg);
-  const {label,color} = amxLabel(score);
-  ['amxNum','amxNum2'].forEach(id => { const el=$(id); if(el){el.textContent=score;el.style.color=color;} });
-  $('amxDesc').textContent  = `${label} · ${w.condition||'Clima atual'}`;
-  $('amxDesc2').textContent = `${label} · ${w.condition||'Clima atual'}`;
-  $('amxLbl').textContent   = `AMX ${score}/100`;
-  $('amxFill').style.width  = score+'%'; $('amxFill').style.background=color;
-  $('amxFill2').style.width = score+'%'; $('amxFill2').style.background=color;
-}
-
-function updateClima(w) {
-  const dtC  = w.deltaT>=2&&w.deltaT<=8?'g':w.deltaT>10?'b':'w';
-  const wdC  = w.wind<=10?'g':w.wind<=20?'w':'b';
-  $('climaChips').innerHTML = `
-    <div class="wchip g">🌡️ ${w.temp||'—'}°C</div>
-    <div class="wchip ${wdC}">💨 ${w.wind||'—'} km/h</div>
-    <div class="wchip">💧 ${w.humidity||'—'}%</div>
-    <div class="wchip ${dtC}">ΔT ${w.deltaT||'—'}°C</div>
-    ${w.rainProb>30?`<div class="wchip w">🌧️ ${w.rainProb}%</div>`:''}
-  `;
-}
-
-function updatePilotCount() {
-  const n = document.querySelectorAll('.leaflet-marker-icon').length;
-  const el=$('pilotCount'); if(el) el.textContent=`${Math.max(n,8)} pilotos`;
-}
-
-// ══════════════════════════════════════════════════════════════
-// INICIALIZAÇÃO
-// ══════════════════════════════════════════════════════════════
-async function init() {
-  if (!isFirebaseConfigured()) { showToast('⚠️ Firebase não configurado'); return; }
-  await initFirebase();
-  onAuthChange(async (user, profile) => {
-    if (user && profile) {
-      R.user = user; R.profile = profile; R.plan = getPlanStatus(profile);
-      loadHidden();
-      if (R.plan.active) showRadar(); else openSheet('shPaywall');
-    }
-  });
-}
-
-async function showRadar() {
-  $('sSplash').classList.add('off'); $('sRadar').classList.remove('off');
-  await new Promise(r=>setTimeout(r,150));
-  navigator.geolocation?.getCurrentPosition(
-    pos => { R.lat=pos.coords.latitude; R.lon=pos.coords.longitude; setupMap(R.lat,R.lon); },
-    ()   => setupMap(-15.78,-47.93),
-    { timeout:8000, enableHighAccuracy:true }
-  );
-  setTimeout(() => { if(!R.map) setupMap(-15.78,-47.93); }, 5000);
-}
-
-function setupMap(lat, lon) {
-  R.map = initMap('mapEl', lat, lon);
-  R.weather = getW();
-  setTimeout(() => R.map?.invalidateSize(), 300);
-  publishSelf(lat, lon, 'online');
-
-  // Bots — armazenar globalmente para o ranking
-  const bots = [];
-  import('./radar.js').then(mod => {
-    mod.spawnBots(lat, lon, R.weather);
-    mod.startBotUpdates();
-    // Guardar referência para ranking
-    window._activeBots = mod.getMarkers ? Object.values(mod.getMarkers()).map(m=>m._pilotData).filter(Boolean) : [];
-  });
-
-  listenPilots(lat, lon, R.user.uid);
-  startLocationTracking(R.user.uid, (nlat, nlon) => {
-    R.lat=nlat; R.lon=nlon;
-    publishSelf(nlat, nlon, isOperating()?'operating':'online');
-  });
-
-  listenRequests();
-  listenNotifications();
-  updateAMX(R.weather);
-  updateClima(R.weather);
-  startOpMonitor();
-  setInterval(updatePilotCount, 5000);
-}
 
 window.enterRadar = async () => {
   if (!isFirebaseConfigured()) { showToast('⚠️ Firebase não configurado'); return; }
-  const btn=$('btnEntrar');
-  btn.textContent='🔄 Conectando…'; btn.disabled=true;
+  const btn = $('btnEntrar');
+  btn.textContent = '🔄 Conectando…'; btn.disabled = true;
   const user = await loginGoogle();
-  btn.textContent='🚁 Entrar no Radar'; btn.disabled=false;
+  btn.textContent = '🚁 Entrar no Radar'; btn.disabled = false;
   if (!user) return;
-  // Corrigir foto no login
-  if (user.photoURL) {
-    const fp = fixPhoto(user.photoURL);
-    user.photoURL = fp;
+  if (user.photoURL) user.photoURL = fixGooglePhoto(user.photoURL);
+  let profile = await getProfile(user.uid);
+  if (profile?.photo?.includes('=s96-c')) {
+    const novaFoto = fixGooglePhoto(profile.photo);
+    await updateProfile(user.uid, { photo: novaFoto });
+    profile.photo = novaFoto;
   }
-  const profile = await getProfile(user.uid);
-  // Corrigir foto no perfil se necessário
-  if (profile?.photo) {
-    const fp = fixPhoto(profile.photo);
-    if (fp !== profile.photo) { await updateProfile(user.uid, { photo:fp }); profile.photo=fp; }
-  }
-  R.user=user; R.profile=profile; R.plan=getPlanStatus(profile);
-  if (R.plan.active) showRadar(); else openSheet('shPaywall');
+  profile = sanitizeProfile(profile, user);
+  R.user = user; R.profile = profile; R.plan = getPlanStatus(profile);
+  if (R.plan.active) showRadar(); else window.openSheet('shPaywall');
 };
 
 window.startTrial = async () => {
   if (!R.user) return;
-  const te=new Date(); te.setDate(te.getDate()+7);
-  await updateProfile(R.user.uid, { plan:'trial', trialEnd:te.toISOString() });
-  R.plan={active:true,plan:'trial',daysLeft:7};
-  closeSheet('shPaywall'); showRadar();
+  const te = new Date(); te.setDate(te.getDate() + 7);
+  await updateProfile(R.user.uid, { plan: 'trial', trialEnd: te.toISOString() });
+  R.plan = { active: true, plan: 'trial', daysLeft: 7 };
+  window.closeSheet('shPaywall'); showRadar();
 };
 
 window.addEventListener('amx:check-operation', () => {
   if (confirm('Operação ainda em andamento?')) return;
   if (isOperating()) endOp();
 });
-
-// ══════════════════════════════════════════════════════════════
-// UTILITÁRIOS
-// ══════════════════════════════════════════════════════════════
-function escHtml(s) {
-  const d=document.createElement('div'); d.textContent=s; return d.innerHTML;
-}
-function escAttr(s) {
-  return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;');
-}
 
 init();
 </script>
