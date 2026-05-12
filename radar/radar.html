@@ -484,6 +484,7 @@ select.inp{cursor:pointer}
     <button class="sh-close-btn" onclick="window.closeSheet('shChat')">✕</button>
   </div>
   <div class="chat-msgs" id="chatMsgs"></div>
+  <button class="btn-sec" id="clearChatBtn" style="margin:10px 20px;width:calc(100% - 40px)" onclick="window.clearChatHistory()">🗑️ Limpar histórico da conversa</button>
   <div class="chat-input-row">
     <input class="chat-inp" id="chatInp" placeholder="Mensagem…" onkeydown="if(event.key==='Enter')window.sendMsg()">
     <button class="chat-send" onclick="window.sendMsg()">➤</button>
@@ -723,13 +724,13 @@ window.openSheet = (id) => {
   $(id).classList.add('on');
   if (id === 'shProfile') renderProfile();
   if (id === 'shReq') loadRequests();
+  if (id === 'shChat') {
+    setTimeout(addClearChatButton, 100);
+  }
 };
 window.closeSheet = (id) => {
   $(ov(id)).classList.remove('on');
   $(id).classList.remove('on');
-  if (id === 'shChat') {
-    // Quando fechar o chat, não precisa fazer nada especial
-  }
 };
 window.showToast = (msg, dur=3500) => {
   const t=$('toast'); t.textContent=msg; t.classList.add('on');
@@ -857,16 +858,124 @@ window.openChatWith = async (uid, name) => {
   if (notifDot) notifDot.style.display = 'none';
 };
 
-// Função para enviar mensagem
+// ==============================================================
+// FUNÇÃO PARA ACEITAR CHAMADO (CORRIGIDA)
+// ==============================================================
+window.acceptReq = async (uid, name, message) => {
+  stopAlertLoop();
+  audio.play('accept');
+  $('modalChamado')?.classList.remove('on');
+  
+  // Fecha o pedido no banco
+  const db = window._firebaseDB;
+  if (db) {
+    try {
+      const { collection, query, where, getDocs, updateDoc, doc, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const q = query(collection(db, 'requests'), where('uid', '==', uid), where('status', '==', 'open'));
+      const snap = await getDocs(q);
+      for (const reqDoc of snap.docs) {
+        await updateDoc(doc(db, 'requests', reqDoc.id), { status: 'closed' });
+      }
+      
+      // NOTIFICA O SOLICITANTE que o chamado foi aceito
+      await addDoc(collection(db, 'notifications'), {
+        to: uid,
+        from: R.user.uid,
+        fromName: chat.getName(),
+        type: 'request_accepted',
+        message: `Seu chamado foi aceito por ${chat.getName()}`,
+        chatId: [R.user.uid, uid].sort().join('_'),
+        createdAt: serverTimestamp(),
+        read: false
+      });
+    } catch(e) { console.error('Erro:', e); }
+  }
+  
+  // Abre chat para quem ACEITOU
+  R.chatTarget = { uid, name: name || 'Piloto' };
+  $('#chatName').textContent = name || 'Piloto';
+  openSheet('shChat');
+  showToast(`✅ Você aceitou o chamado de ${name}! Chat aberto.`);
+  await chat.openWith(uid, name || 'Piloto');
+  setTimeout(async () => {
+    await chat.send(`✅ Olá! Sou ${chat.getName()} e aceitei seu chamado: "${message}". Como posso ajudar?`);
+  }, 500);
+  $('#chatNotifDot').style.display = 'none';
+};
+
+// ==============================================================
+// FUNÇÃO PARA ENVIAR MENSAGEM (CORRIGIDA)
+// ==============================================================
 window.sendMsg = async () => {
   const inp = $('#chatInp');
   const txt = inp?.value.trim();
-  if (!txt || !R.chatTarget) return;
+  if (!txt) return;
+  if (!R.chatTarget) {
+    showToast('⚠️ Nenhum chat aberto');
+    return;
+  }
   
   inp.value = '';
   const ok = await chat.send(txt);
-  if (!ok) showToast('⚠️ Erro ao enviar. Verifique conexão.');
+  if (!ok) {
+    showToast('⚠️ Erro ao enviar. Verifique conexão.');
+    inp.value = txt;
+  }
 };
+
+// ==============================================================
+// FUNÇÃO PARA LIMPAR HISTÓRICO DA CONVERSA
+// ==============================================================
+window.clearChatHistory = async () => {
+  if (!R.chatTarget || !R.user) {
+    showToast('⚠️ Nenhuma conversa aberta');
+    return;
+  }
+  
+  const chatId = [R.user.uid, R.chatTarget.uid].sort().join('_');
+  const db = window._firebaseDB;
+  if (!db) return;
+  
+  const confirmClear = confirm('⚠️ Tem certeza? Todas as mensagens desta conversa serão apagadas permanentemente.');
+  if (!confirmClear) return;
+  
+  try {
+    const { collection, getDocs, deleteDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const msgsRef = collection(db, `chats/${chatId}/messages`);
+    const snap = await getDocs(msgsRef);
+    
+    for (const msgDoc of snap.docs) {
+      await deleteDoc(doc(db, `chats/${chatId}/messages`, msgDoc.id));
+    }
+    
+    showToast('🗑️ Conversa limpa com sucesso!');
+    $('#chatMsgs').innerHTML = '<div style="text-align:center;color:var(--mt);padding:20px">Nenhuma mensagem ainda.</div>';
+  } catch (err) {
+    console.error('Erro ao limpar conversa:', err);
+    showToast('❌ Erro ao limpar conversa');
+  }
+};
+
+// ==============================================================
+// FUNÇÃO PARA ADICIONAR BOTÃO DE LIMPAR CHAT
+// ==============================================================
+function addClearChatButton() {
+  const existingBtn = $('#clearChatBtn');
+  if (existingBtn) return;
+  
+  const clearBtn = document.createElement('button');
+  clearBtn.id = 'clearChatBtn';
+  clearBtn.className = 'btn-sec';
+  clearBtn.style.margin = '10px 20px';
+  clearBtn.style.width = 'calc(100% - 40px)';
+  clearBtn.innerHTML = '🗑️ Limpar histórico da conversa';
+  clearBtn.onclick = () => window.clearChatHistory();
+  
+  const msgsDiv = $('#chatMsgs');
+  if (msgsDiv && msgsDiv.parentNode) {
+    msgsDiv.parentNode.insertBefore(clearBtn, msgsDiv.nextSibling);
+  }
+}
 
 // ==============================================================
 // MODAL DE CHAMADO
@@ -927,6 +1036,41 @@ window.modalIgnore = () => {
   pendingRequest = null;
   showToast('❌ Você ignorou o chamado');
 };
+
+// ==============================================================
+// ESCUTA NOTIFICAÇÕES (para quem FEZ o pedido)
+// ==============================================================
+async function listenForRequestAccepted() {
+  if (!R.user || !window._firebaseDB) return;
+  const db = window._firebaseDB;
+  const { collection, query, where, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  
+  const q = query(collection(db, 'notifications'), where('to', '==', R.user.uid), where('type', '==', 'request_accepted'), where('read', '==', false));
+  
+  onSnapshot(q, (snap) => {
+    snap.docChanges().forEach(async (change) => {
+      if (change.type === 'added') {
+        const notif = change.doc.data();
+        
+        // Marcar como lida
+        await change.doc.ref.update({ read: true });
+        
+        // Tocar som
+        audio.play('accept');
+        
+        // Abrir chat automaticamente para quem FEZ o pedido
+        const accepterName = notif.fromName || 'Piloto';
+        showToast(`🎉 ${accepterName} aceitou seu chamado! Abrindo chat...`);
+        
+        R.chatTarget = { uid: notif.from, name: accepterName };
+        $('#chatName').textContent = accepterName;
+        openSheet('shChat');
+        await chat.openWith(notif.from, accepterName);
+        $('#chatNotifDot').style.display = 'none';
+      }
+    });
+  });
+}
 
 // ==============================================================
 // FUNÇÕES PRINCIPAIS
@@ -1020,6 +1164,9 @@ function setupMap(lat,lon) {
   
   // Inicia listener de mensagens do chat
   listenForNewMessages();
+  
+  // Inicia listener de aceitação de chamados
+  listenForRequestAccepted();
 }
 
 function publishSelf(lat,lon,status) {
@@ -1265,63 +1412,10 @@ async function listenRequests(){
   });
 }
 
-// Função para aceitar chamado e abrir chat automaticamente
-window.acceptReq = async (uid, name, message) => {
-  // Para o loop de alerta
-  stopAlertLoop();
-  
-  // Toca som de aceitação
-  audio.play('accept');
-  
-  // Fecha o modal se estiver aberto
-  $('modalChamado')?.classList.remove('on');
-  
-  // Atualiza o pedido no banco para closed
-  const db = window._firebaseDB;
-  if (db) {
-    try {
-      const { collection, query, where, getDocs, updateDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const q = query(collection(db, 'requests'), where('uid', '==', uid), where('status', '==', 'open'));
-      const snap = await getDocs(q);
-      for (const reqDoc of snap.docs) {
-        await updateDoc(doc(db, 'requests', reqDoc.id), { status: 'closed' });
-      }
-    } catch(e) { console.error('Erro ao fechar pedido:', e); }
-  }
-  
-  // Abre o chat com o usuário
-  R.chatTarget = { uid, name: name || 'Piloto' };
-  
-  // Atualiza UI do chat
-  const nameEl = $('#chatName');
-  const chatSheet = $('#shChat');
-  if (nameEl) nameEl.textContent = name || 'Piloto';
-  
-  // Abre a sheet de chat
-  window.openSheet('shChat');
-  
-  showToast(`✅ Você aceitou o chamado de ${name}! Chat aberto.`);
-  
-  // Inicializa o chat
-  await chat.openWith(uid, name || 'Piloto');
-  
-  // Envia mensagem automática
-  setTimeout(async () => {
-    const autoMsg = `✅ Olá! Sou ${chat.getName()} e aceitei seu chamado: "${message}". Como posso ajudar?`;
-    await chat.send(autoMsg);
-  }, 500);
-  
-  // Esconde o badge de notificação
-  const notifDot = $('#chatNotifDot');
-  if (notifDot) notifDot.style.display = 'none';
-};
-
 // Listener para novas mensagens (para mostrar badge no ícone do chat)
 function listenForNewMessages() {
   if (!R.user) return;
   
-  // Verifica periodicamente se há mensagens não lidas nas conversas
-  // Isso é feito pelo próprio chat.js, mas adicionamos um badge visual
   setInterval(async () => {
     if (!R.user || !window._firebaseDB) return;
     
@@ -1329,13 +1423,11 @@ function listenForNewMessages() {
       const { collection, query, where, getDocs, orderBy, limit } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       const db = window._firebaseDB;
       
-      // Busca conversas do usuário
       const chatsSnap = await getDocs(collection(db, 'chats'));
       let hasUnread = false;
       
       for (const chatDoc of chatsSnap.docs) {
         if (chatDoc.id.includes(R.user.uid)) {
-          // Verifica última mensagem
           const msgsQuery = query(
             collection(db, `chats/${chatDoc.id}/messages`),
             orderBy('createdAt', 'desc'),
@@ -1344,7 +1436,6 @@ function listenForNewMessages() {
           const msgsSnap = await getDocs(msgsQuery);
           if (!msgsSnap.empty) {
             const lastMsg = msgsSnap.docs[0].data();
-            // Se a última mensagem não é minha e o chat não está aberto
             if (lastMsg.uid !== R.user.uid && (!R.chatTarget || !chatDoc.id.includes(R.chatTarget.uid))) {
               hasUnread = true;
               break;
