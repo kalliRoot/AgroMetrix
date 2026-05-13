@@ -1269,8 +1269,8 @@ function setupMap(lat,lon) {
   });
 
   chat.init(window._firebaseDB, R.user, R.profile);
-  chat.listenNotifications();
-  listenNotifications(); // Inicializa a escuta de notificações globais (como request_accepted)
+  // chat.listenNotifications(); // Removido para evitar conflito com a escuta global abaixo
+  listenNotifications(); // Fonte única de verdade para notificações bilaterais
 
   // Integrar notif-dot do chat com o sistema de mensagens
   chat.onNewMessage = (senderId, senderName, text) => {
@@ -1798,39 +1798,49 @@ async function listenNotifications(){
       snapshot.docChanges().forEach((change)=>{
         if(change.type==='added'){
           const notif=change.doc.data();
-          if(!notif.read){
-            // Correção: usar updateDoc do SDK modular para evitar erro de .update()
+          
+          // Se a notificação for de aceite, processamos IMEDIATAMENTE
+          if(notif.type==='request_accepted' || notif.type==='accept'){
+            // Marcar como lida para não repetir
             import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(({ updateDoc }) => {
               updateDoc(change.doc.ref, { read: true }).catch(() => {});
             });
-            // Tratar aceite de chamado (tipo 'request_accepted' legado OU tipo 'accept' do chat.js)
-            // Tratar aceite de chamado (tipo 'request_accepted' legado OU tipo 'accept' do chat.js)
-            if(notif.type==='request_accepted' || notif.type==='accept'){
-              // Parar alertas
-              stopLoopAlert(); stopLoopSound(); audio.stopLoop?.();
-              audio.play('accept');
 
-              const accepterName = notif.accepterName || notif.fromName || 'Piloto';
-              const accepterUid  = notif.from;
+            // Parar alertas
+            stopLoopAlert(); stopLoopSound(); audio.stopLoop?.();
+            audio.play('accept');
 
-              // FORÇAR ABERTURA DO CHAT PRINCIPAL (shChat) PARA QUEM SOLICITOU
-              setTimeout(async () => {
-                // Se já estiver aberto com essa pessoa, não faz nada
-                if (R.chatTarget?.uid === accepterUid && $('shChat').classList.contains('on')) return;
-                
-                // Abre o chat principal instantaneamente
+            const accepterName = notif.accepterName || notif.fromName || 'Piloto';
+            const accepterUid  = notif.from;
+
+            // FORÇAR ABERTURA DO CHAT PRINCIPAL (shChat) PARA QUEM SOLICITOU
+            setTimeout(async () => {
+              // Se já estiver aberto com essa pessoa, não faz nada
+              if (R.chatTarget?.uid === accepterUid && $('shChat').classList.contains('on')) return;
+              
+              // Abre o chat principal instantaneamente
+              if (window.openChatWith) {
                 await window.openChatWith(accepterUid, accepterName);
                 showToast(`🎉 ${accepterName} aceitou seu chamado! Chat aberto.`, 5000);
-              }, 100);
-            } else if(notif.type==='new_message' || notif.type==='message'){
+              }
+            }, 200);
+            return;
+          }
+
+          // Para outras notificações, mantemos a verificação de 'read'
+          if(!notif.read){
+            import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(({ updateDoc }) => {
+              updateDoc(change.doc.ref, { read: true }).catch(() => {});
+            });
+
+            if(notif.type==='new_message' || notif.type==='message'){
               audio.play('message');
-              // Acender notif-dot no ícone de chat se o chat não estiver aberto
               const shChat = $('shChat');
               if(!shChat || !shChat.classList.contains('on')) {
                 const chatDot = $('chatDot');
                 if(chatDot) chatDot.classList.add('on');
               }
-              showToast(`💬 ${notif.senderName}: ${(notif.message||'').substring(0,30)}`, 5000);
+              showToast(`💬 ${notif.senderName || notif.fromName || 'Piloto'}: ${(notif.message || notif.preview || '').substring(0,30)}`, 5000);
             }
           }
         }
@@ -1868,7 +1878,7 @@ window.enterRadar = async()=>{
   R.user=user; R.profile=profile; R.plan=getPlanStatus(profile);
   if(R.plan.active){
     showRadar();
-    listenNotifications(); // Iniciar escuta de notificações bilaterais imediatamente após login
+    // listenNotifications() já é chamado dentro de setupMap() que é chamado por showRadar()
   } else window.openSheet('shPaywall');
 };
 
