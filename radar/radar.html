@@ -661,19 +661,22 @@ function fixGooglePhoto(url) {
   return url;
 }
 
+function cleanName(name, user) {
+  if (!name) return user?.email ? user.email.split('@')[0] : 'Piloto';
+  let n = String(name).trim();
+  // Se for URL, banir e usar alternativa
+  if (n.startsWith('http') || n.includes('googleusercontent') || n.includes('firebasestorage')) {
+    return user?.displayName || (user?.email ? user.email.split('@')[0] : 'Piloto');
+  }
+  // Limitar tamanho
+  if (n.length > 20) n = n.substring(0, 18) + '…';
+  return n;
+}
+
 function getNickname(profile, user) {
   // Priorizar nickname do perfil, depois nome do perfil, depois displayName do user
   let nick = profile?.nickname || profile?.name || user?.displayName;
-  
-  // Se for uma URL ou vazio, usar parte do email ou 'Piloto'
-  if (!nick || isValidUrl(nick)) {
-    nick = user?.email ? user.email.split('@')[0] : 'Piloto';
-  }
-  
-  // Limitar tamanho
-  if (nick.length > 20) nick = nick.substring(0, 18) + '…';
-  
-  return nick;
+  return cleanName(nick, user);
 }
 
 // ==============================================================
@@ -1239,8 +1242,8 @@ function publishSelf(lat,lon,status) {
   if (!R.user||!R.profile) return;
   const p = R.profile;
   
-  // Garantir que o nome não seja uma URL
-  const displayName = getNickname(p, R.user);
+  // Garantir que o nome não seja uma URL (Sanitização tripla)
+  const displayName = cleanName(p.nickname || p.name, R.user);
   
   let userPhoto = fixGooglePhoto(p.photo);
   if (!userPhoto && R.user?.photoURL) userPhoto = fixGooglePhoto(R.user.photoURL);
@@ -1259,7 +1262,7 @@ function publishSelf(lat,lon,status) {
   
   updateProfile(R.user.uid,{
     lat, lon, status,
-    nickname: displayName, // Salvar o nome limpo
+    nickname: displayName, // Salvar o nome limpo definitivamente
     visibility: p.visibility||'online',
     lastSeen: window._fsTimestamp?.(),
   });
@@ -1695,16 +1698,23 @@ window.changeProfilePhoto = () => {
 
 window.saveProfile = async()=>{
   const uid=R.user?.uid; if(!uid)return;
-  const nickname=$('pfNick')?.value.trim();
+  let nickname=$('pfNick')?.value.trim();
+  
+  // Garantir que o nickname não seja uma URL antes de salvar
+  nickname = cleanName(nickname, R.user);
+  
   const city=$('pfCity')?.value.trim();
   const drone=$('pfDrone')?.value;
   const photo = R.plan?.plan === 'paid' ? $('pfPhoto')?.value.trim() : null;
   const updateData = {nickname,city,drone};
   if(photo) updateData.photo = photo;
+  
   await updateProfile(uid, updateData);
   Object.assign(R.profile, updateData);
+  
   publishSelf(R.lat||(-15.78),R.lon||(-47.93),isOperating()?'operating':'online');
   chat.currentProfile = R.profile;
+  
   showToast('✅ Perfil salvo! Nome atualizado no radar.');
   window.closeSheet('shProfile');
 };
@@ -1801,11 +1811,11 @@ window.enterRadar = async()=>{
     await updateProfile(user.uid, { photo: novaFoto });
     profile.photo = novaFoto;
   }
-  // Garantir nome limpo no perfil carregado
-  if(!profile.nickname || isValidUrl(profile.nickname)) {
-    const fixedName = user.displayName || user.email?.split('@')[0] || 'Piloto';
-    await updateProfile(user.uid, { name: fixedName, nickname: fixedName });
-    profile.name = fixedName; profile.nickname = fixedName;
+  // Garantir nome limpo no perfil carregado (Sanitização em cascata)
+  const safeName = cleanName(profile.nickname || profile.name, user);
+  if (profile.nickname !== safeName || profile.name !== safeName) {
+    await updateProfile(user.uid, { name: safeName, nickname: safeName });
+    profile.name = safeName; profile.nickname = safeName;
   }
   R.user=user; R.profile=profile; R.plan=getPlanStatus(profile);
   if(R.plan.active){
