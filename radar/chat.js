@@ -1,8 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
-//  AgroMetrix Radar — chat.js v10
-//  Chat em tempo real via Firestore (WhatsApp/Messenger style)
-//  v10: Usa createdAtMs (Date.now()) para ordenação imediata
-//       Fallback de timestamp, logs de depuração, renderização robusta
+//  AgroMetrix Radar — chat.js v11
+//  Chat em tempo real via Firestore (WhatsApp/Discord style)
+//  v11: Abertura bilateral + createdAtMs + logs + renderização otimizada
 // ═══════════════════════════════════════════════════════════════
 
 import { audio } from './audio.js';
@@ -15,7 +14,6 @@ class ChatManager {
     this.currentUser = null;
     this.currentProfile = null;
     this._lastRenderedHtml = '';
-    this.onNewMessage = null; // Callback para indicador discreto (dot)
   }
 
   init(db, user, profile) {
@@ -35,100 +33,89 @@ class ChatManager {
     return name && String(name).startsWith('http') ? 'Piloto' : name;
   }
 
-  /**
-   * Abre conversa com um piloto e inicia o listener realtime.
-   * Garante que onSnapshot seja o único responsável por renderizar mensagens.
-   */
-  async openWith(targetUid, targetName = 'Piloto') {
-    if (!this.db || !this.currentUser || !targetUid) return;
-
+  // Abre chat com um piloto (Painel Principal shChat)
+  async openWith(targetUid, targetName) {
+    if (!this.db || !this.currentUser) return;
     const chatId = this.getChatId(this.currentUser.uid, targetUid);
     
-    // Se já é o chat atual, não reinicia
+    // Se já for o chat atual, não reinicia tudo
     if (this.currentChatId === chatId) return;
-
+    
     this.currentChatId = chatId;
-    this._lastRenderedHtml = '';
-
     console.log('[CHAT OPEN]', { chatId, targetUid, targetName });
 
+    // Atualiza UI do painel principal
     const nameEl = document.getElementById('chatName');
     if (nameEl) nameEl.textContent = targetName || 'Piloto';
 
-    // Inicia escuta realtime
-    await this.listenMessages(chatId, targetUid, targetName);
+    // Inicia escuta em tempo real
+    await this.listenMessages(chatId, targetUid);
   }
 
-  /**
-   * Listener realtime: onSnapshot dispara sempre que há mudança.
-   * Renderiza DIRETAMENTE no #chatMsgs, sem intermediários.
-   * Usa createdAtMs para ordenação imediata (evita delay do serverTimestamp).
-   */
-  async listenMessages(chatId, targetUid, targetName = 'Piloto') {
-    // Cancela listener anterior se houver
-    const previous = this.activeChats.get(chatId);
-    if (previous?.unsub) {
+  // Escuta mensagens em tempo real
+  async listenMessages(chatId, targetUid) {
+    // Cancela qualquer escuta anterior para este chat
+    const existing = this.activeChats.get(chatId);
+    if (existing?.unsub) {
       console.log('[CHAT UNSUB]', chatId);
-      previous.unsub();
+      existing.unsub();
     }
 
     const { collection, query, orderBy, onSnapshot, limit } =
       await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
     const container = document.getElementById('chatMsgs');
-    if (container) {
-      container.innerHTML = '<div class="chat-empty">🔄 Carregando histórico…</div>';
-    }
+    if (container) container.innerHTML = '<div style="text-align:center;color:var(--mt);padding:16px;font-size:11px">🔄 Carregando…</div>';
 
-    // IMPORTANTE: Ordena por createdAtMs (timestamp local) para evitar delay do serverTimestamp
-    const messagesQuery = query(
-      collection(this.db, 'chats', chatId, 'messages'),
-      orderBy('createdAtMs', 'asc'),
+    // Ordena por createdAt (todas as mensagens têm este campo)
+    // createdAtMs é apenas para novas mensagens (otimização)
+    const q = query(
+      collection(this.db, `chats/${chatId}/messages`),
+      orderBy('createdAt', 'asc'),
       limit(100)
     );
 
-    let isFirstSnapshot = true;
+    const unsub = onSnapshot(q, snap => {
+      if (!container || this.currentChatId !== chatId) {
+        console.log('[CHAT IGNORED] Listener disparou para chat inativo');
+        return;
+      }
 
-    const unsub = onSnapshot(
-      messagesQuery,
-      (snap) => {
-        // Debug: verifica se o listener está ativo
-        console.log('[ACTIVE CHAT]', {
-          currentChatId: this.currentChatId,
-          incomingChatId: chatId,
-          match: this.currentChatId === chatId,
-        });
+      console.log('[CHAT SNAP]', {
+        chatId,
+        docsCount: snap.docs.length,
+        fromCache: snap.metadata.fromCache,
+      });
 
-        // Verifica se ainda é o chat ativo
-        if (this.currentChatId !== chatId) {
-          console.log('[CHAT IGNORED] Listener disparou para chat inativo');
-          return;
-        }
+      // Se o snapshot vier do cache local enquanto o servidor ainda não confirmou,
+      // e já tivermos renderizado algo, podemos esperar o snapshot do servidor
+      // para evitar "pulos" ou repetições visuais.
+      if (snap.metadata.fromCache && this._lastRenderedHtml !== '') {
+        console.log('[CHAT CACHE] Aguardando snapshot do servidor');
+        return;
+      }
 
-        const messages = snap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+      if (snap.empty) {
+        container.innerHTML = '<div class="chat-empty">💬 Nenhuma mensagem ainda.<br><span style="font-size:10px;opacity:.7">Diga olá para iniciar a conversa!</span></div>';
+        this._lastRenderedHtml = '';
+        return;
+      }
 
-        // Debug: log do snapshot
-        console.log('[CHAT SNAP]', {
+      // Renderização COMPLETA apenas se houver mudança real no conteúdo
+      const messagesHtml = snap.docs.map(doc => this._renderMsg(doc.data())).join('');
+      
+      if (this._lastRenderedHtml !== messagesHtml) {
+        console.log('[CHAT RENDER]', {
           chatId,
-          docsCount: snap.docs.length,
-          messages: messages.map((m) => ({
-            uid: m.uid,
-            text: m.text?.substring(0, 30),
-            createdAtMs: m.createdAtMs,
-            createdAt: m.createdAt,
-          })),
+          messagesCount: snap.docs.length,
+          htmlLength: messagesHtml.length,
         });
+        container.innerHTML = messagesHtml;
+        this._lastRenderedHtml = messagesHtml;
+        container.scrollTop = container.scrollHeight;
 
-        // ═══════════════════════════════════════════════════════════
-        // FLUXO CORRETO: onSnapshot → renderMessages() → container
-        // ═══════════════════════════════════════════════════════════
-        this.renderMessages(messages, chatId);
-
-        // Detecta mensagens RECEBIDAS (não minhas) que acabaram de chegar
-        if (!isFirstSnapshot && !snap.metadata.hasPendingWrites) {
+        // Tocar som apenas para mensagens RECEBIDAS que acabaram de chegar do servidor
+        if (!snap.metadata.hasPendingWrites && !snap.metadata.fromCache) {
           const receivedMessages = snap.docChanges().filter((change) => {
             const msg = change.doc.data();
             return (
@@ -141,108 +128,43 @@ class ChatManager {
           if (receivedMessages.length > 0) {
             console.log('[CHAT RECEIVED]', {
               count: receivedMessages.length,
-              messages: receivedMessages.map((r) => ({
-                uid: r.doc.data().uid,
-                text: r.doc.data().text?.substring(0, 30),
-              })),
             });
-
-            const lastReceived = receivedMessages[receivedMessages.length - 1];
-            const msgData = lastReceived.doc.data();
-
-            // Toca som de mensagem recebida
             audio.play('message');
-
-            // Callback para acender indicador discreto (dot) se necessário
-            if (typeof this.onNewMessage === 'function') {
-              this.onNewMessage(
-                msgData.uid,
-                msgData.name || targetName || 'Piloto',
-                msgData.text || ''
-              );
-            }
           }
         }
-
-        isFirstSnapshot = false;
-      },
-      (err) => {
-        console.error('[CHAT ERROR]', { chatId, error: err.message });
-        if (container && this.currentChatId === chatId) {
-          container.innerHTML =
-            '<div class="chat-empty">⚠️ Erro ao carregar mensagens.</div>';
-        }
       }
-    );
+    }, err => {
+      console.error('[CHAT ERROR]', { chatId, error: err.message });
+      if (container && this.currentChatId === chatId) {
+        container.innerHTML = '<div class="chat-empty">⚠️ Erro ao carregar mensagens.</div>';
+      }
+    });
 
-    this.activeChats.set(chatId, { uid: targetUid, name: targetName, unsub });
+    this.activeChats.set(chatId, { uid: targetUid, unsub });
     console.log('[CHAT LISTEN STARTED]', chatId);
   }
 
-  /**
-   * Renderiza mensagens DIRETAMENTE no container #chatMsgs.
-   * Nunca renderiza fora deste container.
-   */
-  renderMessages(messages, chatId = this.currentChatId) {
-    const container = document.getElementById('chatMsgs');
-    if (!container || this.currentChatId !== chatId) return;
-
-    // Se vazio, mostra placeholder
-    if (!messages || messages.length === 0) {
-      const emptyHtml =
-        '<div class="chat-empty">💬 Nenhuma mensagem ainda.<br><span style="font-size:10px;opacity:.7">Diga olá para iniciar a conversa!</span></div>';
-      if (this._lastRenderedHtml !== emptyHtml) {
-        container.innerHTML = emptyHtml;
-        this._lastRenderedHtml = emptyHtml;
-      }
-      container.scrollTop = container.scrollHeight;
-      return;
-    }
-
-    // Renderiza todas as mensagens
-    const messagesHtml = messages.map((msg) => this._renderMsg(msg)).join('');
-
-    // Atualiza apenas se houver mudança real
-    if (this._lastRenderedHtml !== messagesHtml) {
-      console.log('[CHAT RENDER]', {
-        chatId,
-        messagesCount: messages.length,
-        htmlLength: messagesHtml.length,
-      });
-      container.innerHTML = messagesHtml;
-      this._lastRenderedHtml = messagesHtml;
-    }
-
-    // AUTO-SCROLL: sempre vai para a última mensagem
-    container.scrollTop = container.scrollHeight;
-  }
-
-  /**
-   * Renderiza uma mensagem individual em HTML.
-   * Suporta tanto createdAt (serverTimestamp) quanto createdAtMs (Date.now()).
-   */
   _renderMsg(m) {
     const isMe = m.uid === this.currentUser?.uid;
     let time = '';
-
-    // Fallback robusto de timestamp
+    
+    // Fallback robusto: tenta createdAtMs primeiro, depois createdAt
     let date = null;
-    if (m.createdAt?.toDate) {
-      date = m.createdAt.toDate();
-    } else if (m.createdAtMs) {
+    if (m.createdAtMs) {
       date = new Date(m.createdAtMs);
+    } else if (m.createdAt?.toDate) {
+      date = m.createdAt.toDate();
+    } else if (m.createdAt) {
+      date = new Date(m.createdAt);
     }
-
+    
     if (date && !Number.isNaN(date.getTime())) {
-      time = date.toLocaleTimeString('pt-BR', {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      time = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     }
-
+    
     const text = this._escHtml(m.text || '');
     const name = this._escHtml(m.name || 'Piloto');
-
+    
     return `
       <div class="message ${isMe ? 'mine' : 'theirs'}">
         <div class="bubble">
@@ -254,57 +176,43 @@ class ChatManager {
     `;
   }
 
-  /**
-   * Envia mensagem: addDoc → Firestore → onSnapshot → renderMessages()
-   * Inclui AMBOS createdAt (serverTimestamp) e createdAtMs (Date.now())
-   * para garantir ordenação imediata e timestamp correto.
-   */
+  // Envia mensagem
   async send(text) {
-    if (!text?.trim() || !this.currentChatId || !this.db || !this.currentUser) {
-      return false;
-    }
-
+    if (!text?.trim() || !this.currentChatId || !this.db) return false;
     const { collection, addDoc, serverTimestamp } =
       await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
     try {
-      const cleanText = text.trim();
       const msgData = {
         uid: this.currentUser.uid,
         name: this.getName(),
-        text: cleanText,
+        text: text.trim(),
         createdAt: serverTimestamp(),
         createdAtMs: Date.now(), // Timestamp local para ordenação imediata
       };
 
       console.log('[CHAT SEND]', msgData);
 
-      // 1. Grava mensagem no Firestore
-      await addDoc(
-        collection(this.db, 'chats', this.currentChatId, 'messages'),
-        msgData
-      );
-
+      // 1. Salva a mensagem
+      await addDoc(collection(this.db, `chats/${this.currentChatId}/messages`), msgData);
+      
       console.log('[CHAT SENT OK]', this.currentChatId);
 
-      // 2. Notifica o outro lado (para acender dot/toast se estiver em outro chat)
-      const target = this.activeChats.get(this.currentChatId);
-      if (target?.uid) {
+      // 2. Notifica o outro lado
+      const targetUid = this.activeChats.get(this.currentChatId)?.uid;
+      if (targetUid) {
         await addDoc(collection(this.db, 'notifications'), {
-          to: target.uid,
+          to: targetUid,
           from: this.currentUser.uid,
           fromName: this.getName(),
-          senderName: this.getName(),
           type: 'message',
-          preview: cleanText.substring(0, 60),
-          message: cleanText,
+          preview: text.trim().substring(0, 60),
           chatId: this.currentChatId,
           createdAt: serverTimestamp(),
           createdAtMs: Date.now(),
           read: false,
         });
       }
-
       return true;
     } catch (err) {
       console.error('[CHAT SEND ERROR]', err);
@@ -312,9 +220,53 @@ class ChatManager {
     }
   }
 
-  /**
-   * Carrega lista de conversas ativas (para o drawer de chats).
-   */
+  _escHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = String(str ?? '');
+    return div.innerHTML;
+  }
+
+  async acceptRequest(targetUid, targetName, requestMessage) {
+    if (!this.db || !this.currentUser) return;
+    const chatId = this.getChatId(this.currentUser.uid, targetUid);
+    this.currentChatId = chatId;
+
+    console.log('[ACCEPT REQUEST]', { targetUid, targetName, chatId });
+
+    const { collection, addDoc, serverTimestamp } =
+      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+    // 1. Salva mensagem inicial no chat
+    await addDoc(collection(this.db, `chats/${chatId}/messages`), {
+      uid: this.currentUser.uid,
+      name: this.getName(),
+      text: `✅ Olá! Sou ${this.getName()} e posso te ajudar com: "${requestMessage}". Onde você está?`,
+      createdAt: serverTimestamp(),
+      createdAtMs: Date.now(),
+    });
+
+    // 2. Envia notificação de aceite para abrir chat no outro usuário
+    await addDoc(collection(this.db, 'notifications'), {
+      to: targetUid,
+      from: this.currentUser.uid,
+      fromName: this.getName(),
+      type: 'accept',
+      preview: requestMessage,
+      chatId,
+      createdAt: serverTimestamp(),
+      createdAtMs: Date.now(),
+      read: false,
+    });
+
+    console.log('[ACCEPT SENT]', { to: targetUid, chatId });
+
+    // 3. Abre chat para quem aceitou
+    if (typeof window.openChatWith === 'function') {
+      await window.openChatWith(targetUid, targetName || 'Piloto');
+    }
+  }
+
+  // Carrega lista de conversas ativas
   async loadActiveChats() {
     if (!this.db || !this.currentUser) return [];
 
@@ -366,8 +318,8 @@ class ChatManager {
       try {
         const lastSnap = await getDocs(
           query(
-            collection(this.db, 'chats', item.chatId, 'messages'),
-            orderBy('createdAtMs', 'desc'),
+            collection(this.db, `chats/${item.chatId}/messages`),
+            orderBy('createdAt', 'desc'),
             limit(1)
           )
         );
@@ -388,130 +340,6 @@ class ChatManager {
       (a, b) => (b.updatedAtMs || 0) - (a.updatedAtMs || 0)
     );
   }
-
-  /**
-   * Aceita um pedido de ajuda e envia mensagem inicial.
-   * Dispara notificação com trigger 'open_chat' para abrir chat no outro usuário.
-   */
-  async acceptRequest(targetUid, targetName, requestMessage) {
-    if (!this.db || !this.currentUser || !targetUid) return;
-
-    const chatId = this.getChatId(this.currentUser.uid, targetUid);
-    this.currentChatId = chatId;
-
-    const { collection, addDoc, serverTimestamp } =
-      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-
-    await addDoc(collection(this.db, 'chats', chatId, 'messages'), {
-      uid: this.currentUser.uid,
-      name: this.getName(),
-      text: `✅ Olá! Sou ${this.getName()} e posso te ajudar com: "${requestMessage}". Onde você está?`,
-      createdAt: serverTimestamp(),
-      createdAtMs: Date.now(),
-    });
-
-    // Notificação com trigger 'open_chat' para abrir chat nos DOIS usuários
-    await addDoc(collection(this.db, 'notifications'), {
-      to: targetUid,
-      from: this.currentUser.uid,
-      fromName: this.getName(),
-      accepterName: this.getName(),
-      type: 'accept',
-      action: 'open_chat', // Trigger para abertura automática
-      preview: requestMessage,
-      chatId,
-      createdAt: serverTimestamp(),
-      createdAtMs: Date.now(),
-      read: false,
-    });
-
-    if (typeof window.openChatWith === 'function') {
-      await window.openChatWith(targetUid, targetName || 'Piloto');
-    }
-  }
-
-  /**
-   * Listener de notificações para abertura automática de chats.
-   * Detecta trigger 'open_chat' e abre o chat bilateralmente.
-   */
-  async listenNotifications() {
-    if (!this.db || !this.currentUser) return;
-
-    const { collection, query, where, orderBy, onSnapshot, limit } =
-      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-
-    const q = query(
-      collection(this.db, 'notifications'),
-      where('to', '==', this.currentUser.uid),
-      orderBy('createdAtMs', 'desc'),
-      limit(20)
-    );
-
-    onSnapshot(
-      q,
-      (snap) => {
-        snap.docChanges().forEach(async (change) => {
-          if (change.type !== 'added') return;
-
-          const data = change.doc.data();
-
-          console.log('[NOTIF ACTION]', {
-            action: data.action,
-            type: data.type,
-            from: data.from,
-            chatId: data.chatId,
-          });
-
-          // Trigger de abertura automática do chat
-          if (data.action === 'open_chat' && data.chatId) {
-            console.log('[OPEN CHAT TRIGGER]', data);
-
-            // Evita loop: se já está no chat, não reabre
-            if (this.currentChatId === data.chatId) {
-              console.log('[CHAT ALREADY OPEN]', data.chatId);
-              return;
-            }
-
-            if (typeof window.openChatWith === 'function') {
-              await window.openChatWith(
-                data.from,
-                data.fromName || 'Piloto'
-              );
-              console.log('[CHAT OPENED AUTO]', {
-                from: data.from,
-                chatId: data.chatId,
-              });
-            }
-          }
-        });
-      },
-      (err) => {
-        console.error('[NOTIF LISTENER ERROR]', err);
-      }
-    );
-  }
-
-  /**
-   * Escapa HTML para evitar XSS.
-   */
-  _escHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = String(str ?? '');
-    return div.innerHTML;
-  }
 }
 
 export const chat = new ChatManager();
-
-// Inicia listener de notificações automaticamente após inicialização
-if (typeof window !== 'undefined') {
-  window.addEventListener('load', () => {
-    if (window._firebaseDB && window.R?.user) {
-      setTimeout(() => {
-        chat.listenNotifications().catch((err) => {
-          console.error('[INIT NOTIF LISTENER]', err);
-        });
-      }, 500);
-    }
-  });
-}
