@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-//  AgroMetrix Radar — radar.js v4.0 (Consolidado e Corrigido)
+//  AgroMetrix Radar — radar.js v5.0 (Correção Definitiva de Nomes)
 //  Mapa Leaflet · Pilotos reais · Bots espalhados · SOS · Operações
 // ═══════════════════════════════════════════════════════════════
 
@@ -14,6 +14,40 @@ let _operationConfig = {};
 let _pauseTimer = null;
 let _autoEndTimer = null;
 let _currentUid = null;
+
+// ── Função robusta cleanName() ────────────────────────────────
+function cleanName(name, user) {
+  let n = String(name || '').trim();
+
+  const invalid =
+    !n ||
+    n.startsWith('http') ||
+    n.includes('googleusercontent.com') ||
+    n.includes('lh3.googleusercontent.com') ||
+    n.includes('.com/') ||
+    n.includes('=s96-c');
+
+  if (invalid) {
+    n =
+      user?.displayName ||
+      user?.email?.split('@')[0] ||
+      'Piloto';
+  }
+
+  if (
+    !n ||
+    n.startsWith('http') ||
+    n.includes('googleusercontent.com')
+  ) {
+    n = 'Piloto';
+  }
+
+  if (n.length > 25) {
+    n = n.substring(0, 22) + '...';
+  }
+
+  return n;
+}
 
 // ── Bots fixos (usados pelo spawnBots legado) ─────────────────
 const BOTS = [
@@ -98,16 +132,18 @@ function pilotIcon(status, isUser = false) {
 
 // ── Popup do piloto ───────────────────────────────────────────
 function buildPopup(pilot) {
-  const safeName = (pilot.name || '').replace(/'/g, "\\'");
+  // Sanitização definitiva do nome
+  const safeName = cleanName(pilot.nickname || pilot.name, window.AgroRadar?.user);
+  const safeNameEscaped = safeName.replace(/'/g, "\\'");
   const safeMsg  = (pilot.requestMsg || '').replace(/'/g, "\\'");
 
   const reqBtn = (pilot.status === 'request' && !pilot.isCurrentUser)
-    ? `<button onclick="window.acceptReq('${pilot.id}','${safeName}','${safeMsg}')"
+    ? `<button onclick="window.acceptReq('${pilot.id}','${safeNameEscaped}','${safeMsg}')"
         style="margin-top:8px;width:100%;padding:7px;border-radius:8px;border:none;background:#f5a623;color:#0d1a0f;font-weight:700;font-size:12px;cursor:pointer">
         ✅ Aceitar chamado</button>` : '';
 
   const sosBtn = (pilot.status === 'sos' && !pilot.isCurrentUser)
-    ? `<button onclick="window.acceptReq('${pilot.id}','${safeName}','🚨 SOS — Preciso de ajuda!')"
+    ? `<button onclick="window.acceptReq('${pilot.id}','${safeNameEscaped}','🚨 SOS — Preciso de ajuda!')"
         style="margin-top:8px;width:100%;padding:7px;border-radius:8px;border:none;background:#e03535;color:white;font-weight:700;font-size:12px;cursor:pointer">
         🚨 Responder SOS</button>` : '';
 
@@ -121,11 +157,22 @@ function buildPopup(pilot) {
   else if (pilot.status === 'request')   statusText = '🔧 Pedido';
   else if (pilot.status === 'operating') statusText = '🚁 Operando';
 
+  // Sanitização da foto (se for URL gigante ou inválida, usa emoji)
+  let photoHtml = '👨‍✈️';
+  if (pilot.photo && !pilot.photo.startsWith('http') && pilot.photo.length < 10) {
+    photoHtml = pilot.photo;
+  } else if (pilot.photo && pilot.photo.startsWith('http') && !pilot.photo.includes('googleusercontent.com')) {
+    photoHtml = `<img src="${pilot.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.outerHTML='👨‍✈️'">`;
+  } else if (pilot.photo && pilot.photo.includes('googleusercontent.com')) {
+    // Se for Google, tenta usar a URL mas com fallback
+    photoHtml = `<img src="${pilot.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.outerHTML='👨‍✈️'">`;
+  }
+
   return `<div style="font-family:'Syne',sans-serif;min-width:190px;padding:4px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <div style="font-size:24px">${pilot.photo || '👨‍✈️'}</div>
+      <div style="font-size:24px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:50%;background:rgba(61,168,102,.1)">${photoHtml}</div>
       <div>
-        <div style="font-weight:700;font-size:14px;color:#e8f5eb">${pilot.name || 'Piloto'}</div>
+        <div class="p-card-name" style="font-weight:700;font-size:14px;color:#e8f5eb;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${safeName}</div>
         <div style="font-size:10px;color:#5a8a65">${pilot.city || ''}</div>
       </div>
     </div>
