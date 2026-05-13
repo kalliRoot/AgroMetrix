@@ -622,16 +622,20 @@ import { firebaseConfig, isFirebaseConfigured } from './firebase-config.js';
 import { initFirebase, loginGoogle, logout, onAuthChange, getProfile, updateProfile, getPlanStatus } from './auth.js';
 import { initMap, upsertPilot as originalUpsertPilot, spawnBots, startBotUpdates, startLocationTracking, listenPilots,
          startOperation, endOperation, isOperating, calcAMXScore, calcOperationEstimate, amxLabel } from './radar.js';
+import { audio } from './audio.js';
+import { chat } from './chat.js';
 
 // Interceptar upsertPilot para sanitizar nomes em tempo real antes da exibição no mapa
 function upsertPilot(data) {
   if (data) {
     // Limpeza forçada de nome em tempo de exibição (NUNCA mostrar URL)
-    if (!data.name || String(data.name).startsWith('http') || String(data.name).includes('googleusercontent')) {
-      data.name = (data.nickname && !String(data.nickname).startsWith('http')) ? data.nickname : 'Piloto';
+    const nameStr = String(data.name || '');
+    if (!data.name || nameStr.startsWith('http') || nameStr.includes('googleusercontent.com')) {
+      const nickStr = String(data.nickname || '');
+      data.name = (data.nickname && !nickStr.startsWith('http') && !nickStr.includes('googleusercontent.com')) ? data.nickname : 'Piloto';
     }
     // Limpeza de foto (se for URL gigante do Google, simplifica ou usa emoji)
-    if (data.photo && String(data.photo).length > 500) data.photo = '👨‍✈️';
+    if (data.photo && String(data.photo).length > 1000) data.photo = '👨‍✈️';
 
     // Se for o usuário atual, garantir que os dados do card venham do perfil atualizado
     if (data.isCurrentUser && R.profile) {
@@ -645,8 +649,6 @@ function upsertPilot(data) {
   }
   return originalUpsertPilot(data);
 }
-import { audio } from './audio.js';
-import { chat } from './chat.js';
 
 // ==============================================================
 // SISTEMA DE ÁUDIO — usa o objeto `audio` importado de audio.js
@@ -704,15 +706,20 @@ function fixGooglePhoto(url) {
 }
 
 function cleanName(name, user) {
-  let n = name;
-  // Se for nulo ou URL, tenta alternativas
-  if (!n || String(n).startsWith('http') || String(n).includes('googleusercontent')) {
+  let n = String(name || '').trim();
+  
+  // Se o nome for uma URL ou contiver padrões de URL do Google, descartamos
+  if (!n || n.startsWith('http') || n.includes('googleusercontent.com') || n.includes('lh3.googleusercontent.com')) {
+    // Tenta pegar o nome real do objeto user (que vem do Firebase Auth)
     n = user?.displayName || (user?.email ? user.email.split('@')[0] : 'Piloto');
   }
-  n = String(n).trim();
-  // Segunda trava contra URLs
-  if (n.startsWith('http')) n = 'Piloto';
-  // Limitar tamanho
+  
+  // Sanitização final: se ainda for uma URL, força 'Piloto'
+  if (n.startsWith('http') || n.includes('googleusercontent.com')) {
+    n = 'Piloto';
+  }
+
+  // Limitar tamanho para não quebrar o layout
   if (n.length > 25) n = n.substring(0, 23) + '…';
   return n;
 }
