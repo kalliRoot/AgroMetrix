@@ -1359,22 +1359,10 @@ function setupMap(lat,lon) {
     publishSelf(nlat,nlon, isOperating()?'operating':'online');
   });
 
+  // Inicializa chat (listeners de notificações já iniciam aqui)
   chat.init(window._firebaseDB, R.user, R.profile);
-  // chat.listenNotifications(); // Removido para evitar conflito com a escuta global abaixo
-  listenNotifications(); // Fonte única de verdade para notificações bilaterais
-
-  // Integrar notif-dot do chat com o sistema de mensagens
-  chat.onNewMessage = (senderId, senderName, text) => {
-    // Só acende o dot se o chat não estiver aberto com esse piloto
-    const shChat = $('shChat');
-    const isOpen = shChat && shChat.classList.contains('on') && R.chatTarget?.uid === senderId;
-    if(!isOpen) {
-      const chatDot = $('chatDot');
-      if(chatDot) chatDot.classList.add('on');
-      audio.play('message');
-      showToast(`💬 ${senderName}: ${(text||'').substring(0,30)}`, 5000);
-    }
-  };
+  console.log('[APP INIT] Chat inicializado');
+  // Nota: chat.js v12 gerencia tudo - não há mais listeners duplicados
 
   listenRequests();
   updateAMX(R.weather);
@@ -1859,102 +1847,14 @@ function isValidUrl(string) {
 }
 
 // ==============================================================
-// NOTIFICAÇÕES
+// NOTIFICAÇÕES - DELEGADO AO chat.js
 // ==============================================================
+// O chat.js v12 já gerencia listeners de notificações.
+// Esta função é mantida apenas para compatibilidade.
+// Não chame esta função - o chat.init() já inicia tudo.
 async function listenNotifications(){
-  const db=window._firebaseDB; if(!db||!R.user)return;
-  try {
-    const{collection,query,where,orderBy,onSnapshot}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    // Ordena por createdAt (compatibilidade com notificações antigas)
-    const q=query(collection(db,'notifications'), where('to','==',R.user.uid), orderBy('createdAt', 'desc'));
-    onSnapshot(q,(snapshot)=>{
-      snapshot.docChanges().forEach(async (change)=>{
-        if(change.type==='added'){
-          const notif=change.doc.data();
-          console.log('[NOTIF RECEIVED]', {
-            type: notif.type,
-            action: notif.action,
-            from: notif.from,
-            createdAtMs: notif.createdAtMs,
-            message: notif.message?.substring(0, 30),
-          });
-          
-          // Se a notificação for de aceite com trigger 'open_chat', abre automaticamente
-          if(notif.action === 'open_chat' && notif.chatId && notif.type === 'accept'){
-            console.log('[NOTIF OPEN CHAT]', { chatId: notif.chatId, from: notif.from });
-            // Delega para o listener do chat.js que já trata isso
-            // Aqui apenas logamos para confirmar que chegou
-            return;
-          }
-          
-          // Se a notificação for de aceite, processamos IMEDIATAMENTE
-          if(notif.type==='request_accepted' || notif.type==='accept'){
-            // Marcar como lida para não repetir
-            import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(({ updateDoc }) => {
-              updateDoc(change.doc.ref, { read: true }).catch(() => {});
-            });
-
-            // Parar alertas
-            stopLoopAlert(); stopLoopSound(); audio.stopLoop?.();
-            audio.play('accept');
-
-            const accepterName = notif.accepterName || notif.fromName || 'Piloto';
-            const accepterUid  = notif.from;
-
-            // FORÇAR ABERTURA DO CHAT PRINCIPAL (shChat) PARA QUEM SOLICITOU
-            setTimeout(async () => {
-              // Se já estiver aberto com essa pessoa, não faz nada
-              if (R.chatTarget?.uid === accepterUid && $('shChat').classList.contains('on')) return;
-              
-              // Abre o chat principal instantaneamente
-              if (window.openChatWith) {
-                await window.openChatWith(accepterUid, accepterName);
-                showToast(`🎉 ${accepterName} aceitou seu chamado! Chat aberto.`, 5000);
-              }
-            }, 200);
-            return;
-          }
-
-          // Para outras notificações, mantemos a verificação de 'read'
-          if(!notif.read){
-            import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(({ updateDoc }) => {
-              updateDoc(change.doc.ref, { read: true }).catch(() => {});
-            });
-
-            if(notif.type==='new_message' || notif.type==='message'){
-              const senderUid = notif.from;
-              const senderName = notif.senderName || notif.fromName || 'Piloto';
-              const preview = notif.message || notif.preview || '';
-              const shChat = $('shChat');
-              const isChatOpenWithSender = shChat && shChat.classList.contains('on') && R.chatTarget?.uid === senderUid;
-
-              if(isChatOpenWithSender) {
-                // Se a conversa já está aberta, a mensagem deve aparecer no #chatMsgs via onSnapshot,
-                // não em popup/toast. Apenas garante que o listener correto esteja ativo.
-                console.log('[CHAT ALREADY OPEN]', { senderUid, senderName });
-                const expectedChatId = chat.getChatId(R.user.uid, senderUid);
-                if(chat.currentChatId !== expectedChatId) {
-                  console.log('[OPENING CHAT]', { senderUid, senderName });
-                  await chat.openWith(senderUid, senderName);
-                }
-                const chatMsgsEl = $('chatMsgs');
-                if(chatMsgsEl) chatMsgsEl.scrollTop = chatMsgsEl.scrollHeight;
-              } else {
-                // Fora da conversa, manter apenas aviso pequeno e indicador discreto.
-                console.log('[CHAT NOT OPEN]', { senderUid, senderName });
-                audio.play('message');
-                const chatDot = $('chatDot');
-                if(chatDot) chatDot.classList.add('on');
-                showToast(`💬 ${senderName}: ${preview.substring(0,30)}`, 3000);
-              }
-            }
-          }
-        }
-      });
-    });
-  } catch(error) {
-    console.error('❌ Erro ao configurar notificações:', error);
-  }
+  console.log('[NOTIF] Delegado ao chat.js');
+  // Nada aqui - chat.js cuida de tudo
 }
 
 // ==============================================================
