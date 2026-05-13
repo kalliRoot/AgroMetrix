@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
-//  AgroMetrix Radar — chat.js v14 FINAL
+//  AgroMetrix Radar — chat.js v15 FINAL
 //  Chat em tempo real via Firestore (WhatsApp style)
-//  v14: Reset diário + abertura bilateral + carregamento rápido
+//  v15: Carregamento instantâneo + lista de conversas organizada
 // ═══════════════════════════════════════════════════════════════
 
 import { audio } from './audio.js';
@@ -14,10 +14,14 @@ class ChatManager {
     
     // Listeners únicos
     this.messageUnsub = null;
+    this.conversationsUnsub = null;
     
     // Estado do chat atual
     this.currentChatId = null;
     this.currentTargetUid = null;
+    
+    // Cache de conversas
+    this.conversations = new Map();
   }
 
   init(db, user, profile) {
@@ -25,15 +29,16 @@ class ChatManager {
     this.db = db;
     this.currentUser = user;
     this.currentProfile = profile;
+    
+    // Inicia listener de conversas
+    if (this.db && this.currentUser) {
+      this.listenConversations();
+    }
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // GERA CHAT ID COM DATA (RESET DIÁRIO)
-  // ═══════════════════════════════════════════════════════════════
   getChatId(uid1, uid2) {
     // Formato: uid_a_uid_b_YYYY-MM-DD
-    // A cada dia, um novo chatId é gerado
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const today = new Date().toISOString().split('T')[0];
     const ids = [uid1, uid2].sort();
     return `${ids[0]}_${ids[1]}_${today}`;
   }
@@ -43,6 +48,131 @@ class ChatManager {
     const u = this.currentUser;
     const name = p?.nickname || p?.name || u?.displayName || 'Piloto';
     return name && String(name).startsWith('http') ? 'Piloto' : name;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // LISTENER DE CONVERSAS (para lista no ícone do chat)
+  // ═══════════════════════════════════════════════════════════════
+  async listenConversations() {
+    if (!this.db || !this.currentUser) {
+      console.warn('[LISTEN CONVERSATIONS] DB ou user não inicializado');
+      return;
+    }
+
+    console.log('[LISTEN CONVERSATIONS START]', this.currentUser.uid);
+
+    if (this.conversationsUnsub) {
+      this.conversationsUnsub();
+      this.conversationsUnsub = null;
+    }
+
+    const { collection, query, where, onSnapshot } =
+      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+    // Query SEM orderBy para evitar erro de índice
+    // Ordena em memória depois
+    const q = query(
+      collection(this.db, 'notifications'),
+      where('to', '==', this.currentUser.uid)
+    );
+
+    this.conversationsUnsub = onSnapshot(
+      q,
+      (snap) => {
+        console.log('[CONVERSATIONS SNAPSHOT]', { size: snap.size });
+
+        // Extrai conversas únicas
+        const convMap = new Map();
+        snap.docs.forEach((doc) => {
+          const notif = doc.data();
+          if (notif.from) {
+            const key = notif.from;
+            if (!convMap.has(key) || (notif.createdAtMs || 0) > (convMap.get(key).createdAtMs || 0)) {
+              convMap.set(key, notif);
+            }
+          }
+        });
+
+        // Ordena por data (mais recente primeiro)
+        const sorted = Array.from(convMap.values()).sort(
+          (a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0)
+        );
+
+        this.conversations = convMap;
+        console.log('[CONVERSATIONS SORTED]', { count: sorted.length });
+
+        // Renderiza lista
+        this.renderConversationsList(sorted);
+      },
+      (err) => {
+        console.error('[CONVERSATIONS ERROR]', err);
+      }
+    );
+
+    console.log('[LISTEN CONVERSATIONS REGISTERED]');
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // RENDERIZA LISTA DE CONVERSAS (estilo WhatsApp)
+  // ═══════════════════════════════════════════════════════════════
+  renderConversationsList(conversations) {
+    const container = document.getElementById('chatList');
+    if (!container) {
+      console.warn('[RENDER CONVERSATIONS] Container #chatList não encontrado');
+      return;
+    }
+
+    if (conversations.length === 0) {
+      container.innerHTML = '<div style="text-align:center;color:var(--mt);padding:20px;font-size:12px">💬 Nenhuma conversa ainda</div>';
+      return;
+    }
+
+    const html = conversations
+      .map((conv) => {
+        const fromName = conv.fromName || 'Piloto';
+        const preview = conv.message || conv.preview || '(sem mensagem)';
+        const time = this.formatTime(conv.createdAtMs || 0);
+
+        return `
+          <div class="chat-list-item" onclick="window.openChatWith('${conv.from}','${this.escapeHtml(fromName)}')">
+            <div class="chat-list-av">👨‍✈️</div>
+            <div class="chat-list-info">
+              <div class="chat-list-name">${this.escapeHtml(fromName)}</div>
+              <div class="chat-list-last">${this.escapeHtml(preview.substring(0, 50))}</div>
+            </div>
+            <div class="chat-list-time">${time}</div>
+          </div>
+        `;
+      })
+      .join('');
+
+    container.innerHTML = html;
+    console.log('[RENDER CONVERSATIONS]', { count: conversations.length });
+  }
+
+  formatTime(ms) {
+    if (!ms) return '';
+    const date = new Date(ms);
+    const now = new Date();
+    const diff = now - date;
+
+    // Se foi hoje, mostra hora
+    if (diff < 24 * 60 * 60 * 1000) {
+      return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Se foi ontem
+    if (diff < 48 * 60 * 60 * 1000) {
+      return 'Ontem';
+    }
+
+    // Se foi esta semana
+    if (diff < 7 * 24 * 60 * 60 * 1000) {
+      return date.toLocaleDateString('pt-BR', { weekday: 'short' });
+    }
+
+    // Se foi há mais tempo
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -56,7 +186,6 @@ class ChatManager {
 
     const chatId = this.getChatId(this.currentUser.uid, targetUid);
     
-    // Se já é o chat atual, não reinicia
     if (this.currentChatId === chatId) {
       console.log('[OPEN WITH] Já está no chat', chatId);
       return;
@@ -67,24 +196,22 @@ class ChatManager {
     this.currentChatId = chatId;
     this.currentTargetUid = targetUid;
 
-    // Inicia listener de mensagens
     await this.listenMessages(chatId);
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // LISTENER DE MENSAGENS (ÚNICO)
+  // LISTENER DE MENSAGENS (SEM orderBy para evitar erro de índice)
   // ═══════════════════════════════════════════════════════════════
   async listenMessages(chatId) {
     console.log('[LISTEN MESSAGES START]', chatId);
 
-    // Cancela listener anterior se existir
     if (this.messageUnsub) {
       console.log('[UNSUB MESSAGES OLD]', this.currentChatId);
       this.messageUnsub();
       this.messageUnsub = null;
     }
 
-    const { collection, query, orderBy, onSnapshot } =
+    const { collection, query, onSnapshot } =
       await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
     const container = document.getElementById('chatMsgs');
@@ -93,16 +220,12 @@ class ChatManager {
       return;
     }
 
-    // Mostra "carregando" apenas inicialmente
     container.innerHTML = '<div style="text-align:center;color:var(--mt);padding:16px;font-size:11px">🔄 Carregando…</div>';
 
-    // Query: ordena por createdAtMs (todas as mensagens novas têm)
-    const q = query(
-      collection(this.db, `chats/${chatId}/messages`),
-      orderBy('createdAtMs', 'asc')
-    );
+    // Query SEM orderBy para evitar erro de índice
+    // Ordena em memória depois
+    const q = query(collection(this.db, `chats/${chatId}/messages`));
 
-    // Listener ÚNICO
     this.messageUnsub = onSnapshot(
       q,
       (snap) => {
@@ -112,21 +235,22 @@ class ChatManager {
           fromCache: snap.metadata.fromCache,
         });
 
-        // Se chat mudou enquanto snapshot chegava, ignora
         if (this.currentChatId !== chatId) {
           console.log('[SNAPSHOT IGNORED] Chat mudou para', this.currentChatId);
           return;
         }
 
-        // Se vazio, mostra mensagem
         if (snap.empty) {
           container.innerHTML = '<div class="chat-empty">💬 Novo chat do dia!<br><span style="font-size:10px;opacity:.7">Diga olá para iniciar a conversa!</span></div>';
           console.log('[MESSAGES EMPTY]');
           return;
         }
 
-        // Renderiza mensagens
-        const messages = snap.docs.map(doc => doc.data());
+        // Ordena em memória por createdAtMs
+        const messages = snap.docs
+          .map(doc => doc.data())
+          .sort((a, b) => (a.createdAtMs || 0) - (b.createdAtMs || 0));
+
         console.log('[MESSAGES LOADED]', {
           count: messages.length,
           first: messages[0]?.text?.substring(0, 30),
@@ -171,8 +295,6 @@ class ChatManager {
       .join('');
 
     container.innerHTML = html;
-    
-    // Auto-scroll para o final (sem delay)
     container.scrollTop = container.scrollHeight;
   }
 
@@ -180,7 +302,6 @@ class ChatManager {
     const isMe = m.uid === this.currentUser?.uid;
     let time = '';
 
-    // Fallback robusto para timestamp
     if (m.createdAtMs) {
       const date = new Date(m.createdAtMs);
       if (!Number.isNaN(date.getTime())) {
@@ -227,12 +348,11 @@ class ChatManager {
         name: this.getName(),
         text: text.trim(),
         createdAt: serverTimestamp(),
-        createdAtMs: Date.now(), // OBRIGATÓRIO para ordenação rápida
+        createdAtMs: Date.now(),
       };
 
       console.log('[SEND MESSAGE]', { text: msgData.text.substring(0, 30), chatId: this.currentChatId });
 
-      // Salva mensagem
       await addDoc(
         collection(this.db, `chats/${this.currentChatId}/messages`),
         msgData
@@ -240,7 +360,6 @@ class ChatManager {
 
       console.log('[SEND OK]', this.currentChatId);
 
-      // Notifica outro usuário
       if (this.currentTargetUid) {
         await addDoc(collection(this.db, 'notifications'), {
           to: this.currentTargetUid,
@@ -277,7 +396,6 @@ class ChatManager {
       await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
     try {
-      // 1. Salva mensagem inicial
       await addDoc(collection(this.db, `chats/${chatId}/messages`), {
         uid: this.currentUser.uid,
         name: this.getName(),
@@ -288,13 +406,12 @@ class ChatManager {
 
       console.log('[ACCEPT MESSAGE SAVED]', chatId);
 
-      // 2. Salva notificação de aceite para abrir chat no outro lado
       await addDoc(collection(this.db, 'notifications'), {
         to: targetUid,
         from: this.currentUser.uid,
         fromName: this.getName(),
         accepterName: this.getName(),
-        type: 'accept', // ← TRIGGER BILATERAL
+        type: 'accept',
         message: requestMessage,
         createdAt: serverTimestamp(),
         createdAtMs: Date.now(),
@@ -302,9 +419,6 @@ class ChatManager {
       });
 
       console.log('[ACCEPT NOTIFICATION SENT]', { to: targetUid, chatId });
-
-      // 3. Abre chat para quem aceitou (já feito no radartest.html via window.openChatWith)
-      console.log('[ACCEPT COMPLETE]', chatId);
     } catch (err) {
       console.error('[ACCEPT ERROR]', err);
     }
