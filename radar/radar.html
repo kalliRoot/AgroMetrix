@@ -57,8 +57,23 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 #sRadar{background:var(--bg)}
 #mapEl{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
 .leaflet-tile{filter:brightness(.42) saturate(.35) hue-rotate(88deg)}
-.leaflet-popup-content-wrapper{background:rgba(10,20,12,.96)!important;border:1px solid var(--bdm)!important;border-radius:14px!important;color:var(--tx)!important;box-shadow:0 8px 32px rgba(0,0,0,.6)!important}
-.leaflet-popup-tip{background:rgba(10,20,12,.96)!important}
+.leaflet-popup-content-wrapper{background:rgba(10,20,12,.98)!important;border:1px solid var(--bdm)!important;border-radius:16px!important;color:var(--tx)!important;box-shadow:0 12px 48px rgba(0,0,0,.7)!important;backdrop-filter:blur(12px)}
+.leaflet-popup-tip{background:rgba(10,20,12,.98)!important}
+.leaflet-popup-content{margin:12px!important;min-width:200px}
+
+/* Estilos internos do Card no Mapa */
+.p-card{display:flex;flex-direction:column;gap:8px}
+.p-card-hdr{display:flex;align-items:center;gap:10px}
+.p-card-av{width:32px;height:32px;border-radius:50%;background:var(--g7);display:flex;align-items:center;justify-content:center;font-size:16px;overflow:hidden}
+.p-card-av img{width:100%;height:100%;object-fit:cover}
+.p-card-name{font-size:14px;font-weight:800;color:var(--tx);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.p-card-body{display:flex;flex-direction:column;gap:4px}
+.p-card-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase}
+.p-card-tag.amx{background:rgba(61,168,102,.15);color:var(--g4)}
+.p-card-tag.status{background:rgba(255,255,255,.05);color:var(--mt)}
+.p-card-info{font-size:11px;color:var(--tx2);display:flex;align-items:center;gap:4px}
+.p-card-btn{margin-top:4px;width:100%;padding:8px;border-radius:8px;background:var(--g7);color:white;border:none;font-family:var(--fu);font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+.p-card-btn:hover{background:var(--g6)}
 .leaflet-popup-close-button{color:var(--mt)!important;font-size:16px!important;top:8px!important;right:8px!important}
 .leaflet-control-zoom a{background:rgba(10,20,12,.9)!important;color:var(--tx)!important;border-color:var(--bdm)!important}
 .leaflet-container{background:var(--bg)!important}
@@ -607,13 +622,22 @@ import { initMap, upsertPilot as originalUpsertPilot, spawnBots, startBotUpdates
 // Interceptar upsertPilot para sanitizar nomes em tempo real antes da exibição no mapa
 function upsertPilot(data) {
   if (data) {
-    // Limpeza forçada de nome em tempo de exibição
+    // Limpeza forçada de nome em tempo de exibição (NUNCA mostrar URL)
     if (!data.name || String(data.name).startsWith('http') || String(data.name).includes('googleusercontent')) {
-      // Tentar usar apelido se disponível, senão usar 'Piloto'
       data.name = (data.nickname && !String(data.nickname).startsWith('http')) ? data.nickname : 'Piloto';
     }
-    // Limpeza forçada de foto
+    // Limpeza de foto (se for URL gigante do Google, simplifica ou usa emoji)
     if (data.photo && String(data.photo).length > 500) data.photo = '👨‍✈️';
+
+    // Se for o usuário atual, garantir que os dados do card venham do perfil atualizado
+    if (data.isCurrentUser && R.profile) {
+      data.name = cleanName(R.profile.nickname || R.profile.name, R.user);
+      data.score = R.profile.amxScore || 0;
+      data.city = R.profile.city || '';
+      data.drone = R.profile.drone || '';
+      data.opsTotal = R.profile.opsTotal || 0;
+      data.hoursTotal = R.profile.hoursTotal || 0;
+    }
   }
   return originalUpsertPilot(data);
 }
@@ -676,14 +700,16 @@ function fixGooglePhoto(url) {
 }
 
 function cleanName(name, user) {
-  if (!name) return user?.email ? user.email.split('@')[0] : 'Piloto';
-  let n = String(name).trim();
-  // Se for URL, banir e usar alternativa
-  if (n.startsWith('http') || n.includes('googleusercontent') || n.includes('firebasestorage')) {
-    return user?.displayName || (user?.email ? user.email.split('@')[0] : 'Piloto');
+  let n = name;
+  // Se for nulo ou URL, tenta alternativas
+  if (!n || String(n).startsWith('http') || String(n).includes('googleusercontent')) {
+    n = user?.displayName || (user?.email ? user.email.split('@')[0] : 'Piloto');
   }
+  n = String(n).trim();
+  // Segunda trava contra URLs
+  if (n.startsWith('http')) n = 'Piloto';
   // Limitar tamanho
-  if (n.length > 20) n = n.substring(0, 18) + '…';
+  if (n.length > 25) n = n.substring(0, 23) + '…';
   return n;
 }
 
