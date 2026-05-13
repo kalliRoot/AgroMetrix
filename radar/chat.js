@@ -1,36 +1,25 @@
 // ═══════════════════════════════════════════════════════════════
-//  AgroMetrix Radar — chat.js v12 REFATORADO
-//  Chat em tempo real via Firestore (WhatsApp style)
-//  v12: Fluxo limpo, listeners únicos, sem duplicidade, sem popups
+//  AgroMetrix Radar — chat.js v7
+//  Chat em tempo real via Firestore (Estilo WhatsApp/Discord)
+//  v7: Correção de loop de repetição e duplicidade
 // ═══════════════════════════════════════════════════════════════
 
 import { audio } from './audio.js';
 
 class ChatManager {
   constructor() {
+    this.activeChats = new Map(); // chatId -> { uid, name, unsub }
+    this.currentChatId = null;
     this.db = null;
     this.currentUser = null;
     this.currentProfile = null;
-    
-    // Listeners únicos (não Map complexo)
-    this.messageUnsub = null;
-    this.notifUnsub = null;
-    
-    // Estado do chat atual
-    this.currentChatId = null;
-    this.currentTargetUid = null;
+    this._lastRenderedHtml = ""; // Cache para evitar re-renderização desnecessária
   }
 
   init(db, user, profile) {
-    console.log('[INIT]', { uid: user?.uid, name: profile?.nickname || user?.displayName });
     this.db = db;
     this.currentUser = user;
     this.currentProfile = profile;
-    
-    // Inicia listener de notificações AQUI, uma única vez
-    if (this.db && this.currentUser) {
-      this.listenNotifications();
-    }
   }
 
   getChatId(uid1, uid2) {
@@ -41,169 +30,102 @@ class ChatManager {
     const p = this.currentProfile;
     const u = this.currentUser;
     const name = p?.nickname || p?.name || u?.displayName || 'Piloto';
-    return name && String(name).startsWith('http') ? 'Piloto' : name;
+    return name.startsWith('http') ? 'Piloto' : name;
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // ABRE CHAT COM OUTRO USUÁRIO
-  // ═══════════════════════════════════════════════════════════════
+  // Abre chat com um piloto (Painel Principal shChat)
   async openWith(targetUid, targetName) {
-    if (!this.db || !this.currentUser) {
-      console.error('[OPEN WITH] DB ou user não inicializado');
-      return;
-    }
-
+    if (!this.db || !this.currentUser) return;
     const chatId = this.getChatId(this.currentUser.uid, targetUid);
     
-    // Se já é o chat atual, não reinicia
-    if (this.currentChatId === chatId) {
-      console.log('[OPEN WITH] Já está no chat', chatId);
-      return;
-    }
-
-    console.log('[OPEN WITH]', { chatId, targetUid, targetName });
-
+    // Se já for o chat atual, não reinicia tudo
+    if (this.currentChatId === chatId) return;
+    
     this.currentChatId = chatId;
-    this.currentTargetUid = targetUid;
 
-    // Atualiza UI
+    // Atualiza UI do painel principal
     const nameEl = document.getElementById('chatName');
-    if (nameEl) nameEl.textContent = targetName || 'Piloto';
+    if (nameEl) nameEl.textContent = targetName;
 
-    // Inicia listener de mensagens
-    await this.listenMessages(chatId);
+    // Inicia escuta em tempo real
+    await this.listenMessages(chatId, targetUid);
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // LISTENER DE MENSAGENS (ÚNICO)
-  // ═══════════════════════════════════════════════════════════════
-  async listenMessages(chatId) {
-    console.log('[LISTEN START]', chatId);
-
-    // Cancela listener anterior se existir
-    if (this.messageUnsub) {
-      console.log('[UNSUB OLD]', this.currentChatId);
-      this.messageUnsub();
-      this.messageUnsub = null;
+  // Escuta mensagens em tempo real
+  async listenMessages(chatId, targetUid) {
+    // Cancela qualquer escuta anterior para este chat
+    const existing = this.activeChats.get(chatId);
+    if (existing?.unsub) {
+      existing.unsub();
     }
 
-    const { collection, query, orderBy, onSnapshot } =
+    const { collection, query, orderBy, onSnapshot, limit } =
       await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
     const container = document.getElementById('chatMsgs');
-    if (!container) {
-      console.error('[LISTEN] Container #chatMsgs não encontrado');
-      return;
-    }
+    if (container) container.innerHTML = '<div style="text-align:center;color:var(--mt);padding:16px;font-size:11px">Carregando…</div>';
 
-    // Mostra "carregando" apenas inicialmente
-    container.innerHTML = '<div style="text-align:center;color:var(--mt);padding:16px;font-size:11px">🔄 Carregando…</div>';
-
-    // Query: ordena por createdAtMs (todas as mensagens novas têm)
     const q = query(
       collection(this.db, `chats/${chatId}/messages`),
-      orderBy('createdAtMs', 'asc')
+      orderBy('createdAt', 'asc'),
+      limit(100)
     );
 
-    // Listener ÚNICO
-    this.messageUnsub = onSnapshot(
-      q,
-      (snap) => {
-        console.log('[SNAPSHOT RECEIVED]', {
-          chatId,
-          size: snap.size,
-          fromCache: snap.metadata.fromCache,
-          hasPendingWrites: snap.metadata.hasPendingWrites,
-        });
+    const unsub = onSnapshot(q, snap => {
+      if (!container || this.currentChatId !== chatId) return;
 
-        // Se chat mudou enquanto snapshot chegava, ignora
-        if (this.currentChatId !== chatId) {
-          console.log('[SNAPSHOT IGNORED] Chat mudou para', this.currentChatId);
-          return;
-        }
+      // Se o snapshot vier do cache local enquanto o servidor ainda não confirmou,
+      // e já tivermos renderizado algo, podemos esperar o snapshot do servidor
+      // para evitar "pulos" ou repetições visuais.
+      if (snap.metadata.fromCache && this._lastRenderedHtml !== "") return;
 
-        // Se vazio, mostra mensagem
-        if (snap.empty) {
-          container.innerHTML = '<div class="chat-empty">💬 Nenhuma mensagem ainda.<br><span style="font-size:10px;opacity:.7">Diga olá para iniciar a conversa!</span></div>';
-          console.log('[MESSAGES] Vazio');
-          return;
-        }
+      if (snap.empty) {
+        container.innerHTML = '<div class="chat-empty">💬 Nenhuma mensagem ainda.<br><span style="font-size:10px;opacity:.7">Diga olá para iniciar a conversa!</span></div>';
+        this._lastRenderedHtml = "";
+        return;
+      }
 
-        // Renderiza mensagens
-        const messages = snap.docs.map(doc => doc.data());
-        console.log('[MESSAGES]', {
-          count: messages.length,
-          first: messages[0]?.text?.substring(0, 30),
-          last: messages[messages.length - 1]?.text?.substring(0, 30),
-        });
+      // Renderização COMPLETA apenas se houver mudança real no conteúdo
+      const messagesHtml = snap.docs.map(doc => this._renderMsg(doc.data())).join('');
+      
+      if (this._lastRenderedHtml !== messagesHtml) {
+        container.innerHTML = messagesHtml;
+        this._lastRenderedHtml = messagesHtml;
+        container.scrollTop = container.scrollHeight;
 
-        this.renderMessages(container, messages);
-
-        // Toca som apenas se recebeu mensagem NOVA de outro usuário
-        const changes = snap.docChanges();
-        const newReceivedMessages = changes.filter(
-          (c) =>
-            c.type === 'added' &&
-            c.doc.data().uid !== this.currentUser?.uid &&
-            !snap.metadata.fromCache
-        );
-
-        if (newReceivedMessages.length > 0) {
-          console.log('[PLAY SOUND] Mensagem recebida');
-          audio.play('message');
-        }
-      },
-      (err) => {
-        console.error('[SNAPSHOT ERROR]', { chatId, error: err.message });
-        if (this.currentChatId === chatId) {
-          container.innerHTML = '<div class="chat-empty">⚠️ Erro ao carregar mensagens.<br><span style="font-size:10px;opacity:.7">' + err.message + '</span></div>';
+        // Tocar som apenas para mensagens RECEBIDAS que acabaram de chegar do servidor
+        if (!snap.metadata.hasPendingWrites && !snap.metadata.fromCache) {
+          const lastDoc = snap.docs[snap.docs.length - 1];
+          if (lastDoc) {
+            const lastMsg = lastDoc.data();
+            // Só toca se a mensagem for do outro e for "nova" (não do carregamento inicial)
+            if (lastMsg.uid !== this.currentUser.uid && snap.docChanges().some(c => c.type === 'added')) {
+              audio.play('message');
+            }
+          }
         }
       }
-    );
+    }, err => {
+      console.error('[Chat] Erro:', err);
+    });
 
-    console.log('[LISTEN REGISTERED]', chatId);
+    this.activeChats.set(chatId, { uid: targetUid, unsub });
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // RENDERIZA MENSAGENS NO CONTAINER
-  // ═══════════════════════════════════════════════════════════════
-  renderMessages(container, messages) {
-    console.log('[RENDER]', { count: messages.length });
-
-    const html = messages
-      .map((m) => this.renderMessage(m))
-      .join('');
-
-    container.innerHTML = html;
-    container.scrollTop = container.scrollHeight;
-  }
-
-  renderMessage(m) {
+  _renderMsg(m) {
     const isMe = m.uid === this.currentUser?.uid;
     let time = '';
-
-    // Fallback robusto para timestamp
-    if (m.createdAtMs) {
-      const date = new Date(m.createdAtMs);
-      if (!Number.isNaN(date.getTime())) {
-        time = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-      }
-    } else if (m.createdAt?.toDate) {
-      try {
-        const date = m.createdAt.toDate();
-        time = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-      } catch (e) {
-        console.warn('[RENDER TIME ERROR]', e);
-      }
+    if (m.createdAt) {
+      const date = m.createdAt.toDate ? m.createdAt.toDate() : new Date(m.createdAt);
+      time = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     }
-
-    const text = this.escapeHtml(m.text || '');
-    const name = this.escapeHtml(m.name || 'Piloto');
-
+    
+    const text = this._escHtml(m.text || '');
+    
     return `
       <div class="message ${isMe ? 'mine' : 'theirs'}">
         <div class="bubble">
-          ${!isMe ? `<div class="chat-msg-name">${name}</div>` : ''}
+          ${!isMe ? `<div class="chat-msg-name">${m.name || 'Piloto'}</div>` : ''}
           <div class="text">${text}</div>
           <div class="time">${time}</div>
         </div>
@@ -211,15 +133,9 @@ class ChatManager {
     `;
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // ENVIA MENSAGEM
-  // ═══════════════════════════════════════════════════════════════
+  // Envia mensagem
   async send(text) {
-    if (!text?.trim() || !this.currentChatId || !this.db) {
-      console.warn('[SEND] Dados inválidos', { text: !!text?.trim(), chatId: !!this.currentChatId, db: !!this.db });
-      return false;
-    }
-
+    if (!text?.trim() || !this.currentChatId || !this.db) return false;
     const { collection, addDoc, serverTimestamp } =
       await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
@@ -229,206 +145,67 @@ class ChatManager {
         name: this.getName(),
         text: text.trim(),
         createdAt: serverTimestamp(),
-        createdAtMs: Date.now(), // OBRIGATÓRIO para ordenação rápida
       };
 
-      console.log('[SEND]', msgData);
-
-      // Salva mensagem
-      await addDoc(
-        collection(this.db, `chats/${this.currentChatId}/messages`),
-        msgData
-      );
-
-      console.log('[SEND OK]', this.currentChatId);
-
-      // Notifica outro usuário
-      if (this.currentTargetUid) {
+      // 1. Salva a mensagem
+      await addDoc(collection(this.db, `chats/${this.currentChatId}/messages`), msgData);
+      
+      // 2. Notifica o outro lado
+      const targetUid = this.activeChats.get(this.currentChatId)?.uid;
+      if (targetUid) {
         await addDoc(collection(this.db, 'notifications'), {
-          to: this.currentTargetUid,
+          to: targetUid,
           from: this.currentUser.uid,
           fromName: this.getName(),
           type: 'message',
           preview: text.trim().substring(0, 60),
           chatId: this.currentChatId,
-          createdAtMs: Date.now(),
+          createdAt: serverTimestamp(),
           read: false,
         });
       }
-
       return true;
     } catch (err) {
-      console.error('[SEND ERROR]', err);
+      console.error('[Chat] Erro ao enviar:', err);
       return false;
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // ACEITA PEDIDO (BILATERAL)
-  // ═══════════════════════════════════════════════════════════════
-  async acceptRequest(targetUid, targetName, requestMessage) {
-    if (!this.db || !this.currentUser) {
-      console.error('[ACCEPT] DB ou user não inicializado');
-      return;
-    }
+  _escHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
 
+  async acceptRequest(targetUid, targetName, requestMessage) {
+    if (!this.db || !this.currentUser) return;
     const chatId = this.getChatId(this.currentUser.uid, targetUid);
-    console.log('[ACCEPT REQUEST]', { chatId, targetUid, targetName });
+    this.currentChatId = chatId;
 
     const { collection, addDoc, serverTimestamp } =
       await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
-    try {
-      // 1. Salva mensagem inicial
-      await addDoc(collection(this.db, `chats/${chatId}/messages`), {
-        uid: this.currentUser.uid,
-        name: this.getName(),
-        text: `✅ Olá! Sou ${this.getName()} e posso te ajudar com: "${requestMessage}". Onde você está?`,
-        createdAt: serverTimestamp(),
-        createdAtMs: Date.now(),
-      });
+    await addDoc(collection(this.db, `chats/${chatId}/messages`), {
+      uid: this.currentUser.uid,
+      name: this.getName(),
+      text: `✅ Olá! Sou ${this.getName()} e posso te ajudar com: "${requestMessage}". Onde você está?`,
+      createdAt: serverTimestamp(),
+    });
 
-      console.log('[ACCEPT MESSAGE SAVED]', chatId);
+    await addDoc(collection(this.db, 'notifications'), {
+      to: targetUid,
+      from: this.currentUser.uid,
+      fromName: this.getName(),
+      type: 'accept',
+      preview: requestMessage,
+      chatId,
+      createdAt: serverTimestamp(),
+      read: false,
+    });
 
-      // 2. Salva notificação de abertura bilateral
-      await addDoc(collection(this.db, 'notifications'), {
-        to: targetUid,
-        from: this.currentUser.uid,
-        fromName: this.getName(),
-        type: 'open_chat', // ← TRIGGER BILATERAL
-        preview: requestMessage,
-        chatId,
-        createdAtMs: Date.now(),
-        read: false,
-      });
-
-      console.log('[ACCEPT NOTIFICATION SENT]', { to: targetUid, chatId });
-
-      // 3. Abre chat para quem aceitou
-      if (typeof window.openChatWith === 'function') {
-        console.log('[ACCEPT OPENING CHAT]', { targetUid, targetName });
-        await window.openChatWith(targetUid, targetName || 'Piloto');
-      } else {
-        console.warn('[ACCEPT] window.openChatWith não existe');
-      }
-    } catch (err) {
-      console.error('[ACCEPT ERROR]', err);
+    if (typeof window.openChatWith === 'function') {
+      await window.openChatWith(targetUid, targetName);
     }
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // LISTENER DE NOTIFICAÇÕES (ÚNICO, INICIA NO INIT)
-  // ═══════════════════════════════════════════════════════════════
-  async listenNotifications() {
-    if (!this.db || !this.currentUser) {
-      console.warn('[LISTEN NOTIF] DB ou user não inicializado');
-      return;
-    }
-
-    console.log('[LISTEN NOTIF START]', this.currentUser.uid);
-
-    // Cancela listener anterior se existir
-    if (this.notifUnsub) {
-      console.log('[UNSUB NOTIF OLD]');
-      this.notifUnsub();
-      this.notifUnsub = null;
-    }
-
-    const { collection, query, where, orderBy, onSnapshot } =
-      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-
-    // Query SEM orderBy para evitar erro com notificações antigas
-    // Ordena em memória depois
-    const q = query(
-      collection(this.db, 'notifications'),
-      where('to', '==', this.currentUser.uid)
-    );
-
-    this.notifUnsub = onSnapshot(
-      q,
-      (snap) => {
-        console.log('[NOTIF SNAPSHOT]', { size: snap.size, uid: this.currentUser.uid });
-
-        snap.docChanges().forEach(async (change) => {
-          if (change.type !== 'added') return;
-
-          const notif = change.doc.data();
-          const createdAtMs = notif.createdAtMs || (notif.createdAt?.toDate ? notif.createdAt.toDate().getTime() : 0);
-          
-          console.log('[NOTIFICATION RECEIVED]', {
-            type: notif.type,
-            from: notif.from,
-            fromName: notif.fromName,
-            chatId: notif.chatId,
-            createdAtMs,
-          });
-
-          // Trigger de abertura bilateral (tipo 'open_chat')
-          if (notif.type === 'open_chat' && notif.chatId) {
-            console.log('[OPEN CHAT TRIGGER DETECTED]', {
-              chatId: notif.chatId,
-              from: notif.from,
-              fromName: notif.fromName,
-            });
-
-            // Evita loop: se já está neste chat, não reabre
-            if (this.currentChatId === notif.chatId) {
-              console.log('[ALREADY IN CHAT] Ignorando trigger', notif.chatId);
-              return;
-            }
-
-            // Abre chat automaticamente
-            console.log('[CHECKING OPEN CHAT FUNCTION]', typeof window.openChatWith);
-            if (typeof window.openChatWith === 'function') {
-              console.log('[OPENING CHAT AUTO NOW]', {
-                from: notif.from,
-                fromName: notif.fromName,
-                chatId: notif.chatId,
-              });
-              try {
-                await window.openChatWith(notif.from, notif.fromName || 'Piloto');
-                console.log('[CHAT OPENED SUCCESS]', notif.chatId);
-              } catch (err) {
-                console.error('[OPEN CHAT ERROR]', err);
-              }
-            } else {
-              console.warn('[OPEN CHAT FUNCTION NOT FOUND]', {
-                windowOpenChatWith: window.openChatWith,
-                type: typeof window.openChatWith,
-              });
-            }
-
-            return;
-          }
-
-          // Notificação de mensagem (apenas log, renderização é via onSnapshot)
-          if (notif.type === 'message') {
-            console.log('[MESSAGE NOTIF]', {
-              from: notif.from,
-              preview: notif.preview?.substring(0, 30),
-            });
-            // Som já toca no onSnapshot das mensagens
-            return;
-          }
-
-          console.log('[UNKNOWN NOTIF TYPE]', notif.type);
-        });
-      },
-      (err) => {
-        console.error('[NOTIF ERROR]', { error: err.message, code: err.code });
-      }
-    );
-
-    console.log('[LISTEN NOTIF REGISTERED]', this.currentUser.uid);
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // UTILITÁRIOS
-  // ═══════════════════════════════════════════════════════════════
-  escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = String(str ?? '');
-    return div.innerHTML;
   }
 }
 
