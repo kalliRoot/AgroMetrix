@@ -1865,18 +1865,27 @@ async function listenNotifications(){
   const db=window._firebaseDB; if(!db||!R.user)return;
   try {
     const{collection,query,where,orderBy,onSnapshot}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    // Ordena por createdAtMs para garantir ordem consistente
-    const q=query(collection(db,'notifications'), where('to','==',R.user.uid), orderBy('createdAtMs', 'desc'));
+    // Ordena por createdAt (compatibilidade com notificações antigas)
+    const q=query(collection(db,'notifications'), where('to','==',R.user.uid), orderBy('createdAt', 'desc'));
     onSnapshot(q,(snapshot)=>{
       snapshot.docChanges().forEach(async (change)=>{
         if(change.type==='added'){
           const notif=change.doc.data();
           console.log('[NOTIF RECEIVED]', {
             type: notif.type,
+            action: notif.action,
             from: notif.from,
             createdAtMs: notif.createdAtMs,
             message: notif.message?.substring(0, 30),
           });
+          
+          // Se a notificação for de aceite com trigger 'open_chat', abre automaticamente
+          if(notif.action === 'open_chat' && notif.chatId && notif.type === 'accept'){
+            console.log('[NOTIF OPEN CHAT]', { chatId: notif.chatId, from: notif.from });
+            // Delega para o listener do chat.js que já trata isso
+            // Aqui apenas logamos para confirmar que chegou
+            return;
+          }
           
           // Se a notificação for de aceite, processamos IMEDIATAMENTE
           if(notif.type==='request_accepted' || notif.type==='accept'){
