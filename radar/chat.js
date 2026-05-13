@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
-//  AgroMetrix Radar — chat.js v2
+//  AgroMetrix Radar — chat.js v3
 //  Chat em tempo real via Firestore
+//  v3: Abertura bilateral automática do shChat ao aceitar chamado
 // ═══════════════════════════════════════════════════════════════
 
 import { audio } from './audio.js';
@@ -173,6 +174,33 @@ class ChatManager {
     }
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Abre o shChat (painel principal) para o usuário que recebeu
+  // a notificação de aceite — garante abertura bilateral
+  // ─────────────────────────────────────────────────────────────
+  async _abrirChatPrincipal(uid, name) {
+    // Preferir openChatWith do radar (fecha outros painéis, atualiza header com foto)
+    if (typeof window.openChatWith === 'function') {
+      await window.openChatWith(uid, name);
+    } else {
+      // Fallback manual: atualiza estado, abre shChat e inicia escuta
+      if (window.AgroRadar) window.AgroRadar.chatTarget = { uid, name };
+      const nameEl = document.getElementById('chatName');
+      const chatStatusEl = document.getElementById('chatStatus');
+      const chatHeaderAv = document.getElementById('chatHeaderAv');
+      if (nameEl) nameEl.textContent = name;
+      if (chatStatusEl) chatStatusEl.innerHTML = '🟢 Online';
+      if (chatHeaderAv) chatHeaderAv.innerHTML = '👨‍✈️';
+      // Fechar outros painéis que possam estar abertos
+      window.closeSheet?.('shReq');
+      window.closeChatDrawer?.();
+      // Abrir o painel de chat principal
+      window.openSheet?.('shChat');
+      // Iniciar escuta de mensagens
+      await this.openWith(uid, name);
+    }
+  }
+
   // Escuta notificações recebidas
   async listenNotifications() {
     if (!this.db || !this.currentUser) return;
@@ -197,33 +225,26 @@ class ChatManager {
           audio.play('message');
           window.showToast?.(`💬 ${n.fromName}: ${n.preview}`, 5000);
 
-          // Se chat com esse usuário não está aberto, abre automaticamente
+          // Se chat com esse usuário não está aberto, apenas notifica (não interrompe o piloto)
           const chatId = this.getChatId(this.currentUser.uid, n.from);
           if (!this.activeChats.has(chatId)) {
-            // Só notifica, não abre automaticamente (não interrompe o piloto)
-          } else {
-            // Chat já aberto — apenas toca som
+            // Só notifica via toast (já feito acima)
           }
 
         } else if (n.type === 'accept') {
-          // Alguém aceitou nosso chamado
+          // ── LADO DO SOLICITANTE ──
+          // Alguém aceitou o chamado: parar alertas e abrir chat bilateral
           audio.play('accept');
           audio.stopLoop();
           window.showToast?.(`✅ ${n.fromName} aceitou seu chamado! Abrindo chat…`, 6000);
 
-          // Abre chat com quem aceitou
+          // Aguarda 300ms para o Firestore propagar a sala de chat criada pelo aceitante
           setTimeout(async () => {
-            window.AgroRadar && (window.AgroRadar.chatTarget = { uid: n.from, name: n.fromName });
-            const nameEl = document.getElementById('chatName');
-            const section = document.getElementById('chatSection');
-            if (nameEl) nameEl.textContent = n.fromName;
-            if (section) section.style.display = 'block';
-            window.openSheet?.('shReq');
-            await this.openWith(n.from, n.fromName);
-          }, 500);
+            await this._abrirChatPrincipal(n.from, n.fromName);
+          }, 300);
         }
 
-        // Marca como lida
+        // Marca notificação como lida
         try {
           await updateDoc(doc(this.db, 'notifications', n.id), { read: true });
         } catch {}
@@ -258,7 +279,10 @@ class ChatManager {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  // Aceita chamado e inicia chat com mensagem automática
+  // ─────────────────────────────────────────────────────────────
+  // Aceita chamado: envia mensagem automática, notifica solicitante
+  // e abre o shChat para o aceitante (lado de quem aceitou)
+  // ─────────────────────────────────────────────────────────────
   async acceptRequest(targetUid, targetName, requestMessage) {
     if (!this.db || !this.currentUser) return;
     const chatId = this.getChatId(this.currentUser.uid, targetUid);
@@ -267,7 +291,7 @@ class ChatManager {
     const { collection, addDoc, serverTimestamp } =
       await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
-    // Mensagem automática
+    // Mensagem automática de boas-vindas no chat
     await addDoc(collection(this.db, `chats/${chatId}/messages`), {
       uid: this.currentUser.uid,
       name: this.getName(),
@@ -275,7 +299,7 @@ class ChatManager {
       createdAt: serverTimestamp(),
     });
 
-    // Notifica quem pediu ajuda
+    // Notifica o solicitante (tipo 'accept') para que o chat abra automaticamente no lado dele
     await addDoc(collection(this.db, 'notifications'), {
       to: targetUid,
       from: this.currentUser.uid,
@@ -287,8 +311,9 @@ class ChatManager {
       read: false,
     });
 
-    // Abre chat local
-    await this.openWith(targetUid, targetName);
+    // ── LADO DO ACEITANTE ──
+    // Abre o shChat (painel principal) imediatamente para quem aceitou
+    await this._abrirChatPrincipal(targetUid, targetName);
   }
 }
 
