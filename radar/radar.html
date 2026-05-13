@@ -601,8 +601,22 @@ select.inp{cursor:pointer}
 <script type="module">
 import { firebaseConfig, isFirebaseConfigured } from './firebase-config.js';
 import { initFirebase, loginGoogle, logout, onAuthChange, getProfile, updateProfile, getPlanStatus } from './auth.js';
-import { initMap, upsertPilot, spawnBots, startBotUpdates, startLocationTracking, listenPilots,
+import { initMap, upsertPilot as originalUpsertPilot, spawnBots, startBotUpdates, startLocationTracking, listenPilots,
          startOperation, endOperation, isOperating, calcAMXScore, calcOperationEstimate, amxLabel } from './radar.js';
+
+// Interceptar upsertPilot para sanitizar nomes em tempo real antes da exibição no mapa
+function upsertPilot(data) {
+  if (data) {
+    // Limpeza forçada de nome em tempo de exibição
+    if (!data.name || String(data.name).startsWith('http') || String(data.name).includes('googleusercontent')) {
+      // Tentar usar apelido se disponível, senão usar 'Piloto'
+      data.name = (data.nickname && !String(data.nickname).startsWith('http')) ? data.nickname : 'Piloto';
+    }
+    // Limpeza forçada de foto
+    if (data.photo && String(data.photo).length > 500) data.photo = '👨‍✈️';
+  }
+  return originalUpsertPilot(data);
+}
 import { audio } from './audio.js';
 import { chat } from './chat.js';
 
