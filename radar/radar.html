@@ -1026,12 +1026,10 @@ window.centerOnUser = () => {
 // CHAT DRAWER
 // ==============================================================
 // Clique no ícone de chat: se há chat ativo, abre direto; senão abre o drawer
-window.onChatIconClick = () => {
+window.onChatIconClick = async () => {
   if(R.chatTarget && R.chatTarget.uid) {
-    // Reabrir o chat ativo diretamente
-    const chatNameEl = $('chatName');
-    if(chatNameEl) chatNameEl.textContent = R.chatTarget.name || 'Piloto';
-    window.openSheet('shChat');
+    // Reabrir o chat ativo pelo mesmo fluxo que liga o listener realtime.
+    await window.openChatWith(R.chatTarget.uid, R.chatTarget.name || 'Piloto');
     const chatDot = $('chatDot');
     if(chatDot) chatDot.classList.remove('on');
   } else {
@@ -1188,20 +1186,13 @@ window.openChatWith = async (uid, name) => {
   // O chat.openWith deve ser responsável por buscar as mensagens do Firestore
   await chat.openWith(uid, pilotName);
 
-  // Garantir que as mensagens apareçam e o scroll vá para o final
+  // Garantir foco e auto-scroll após o primeiro snapshot do Firestore.
   setTimeout(() => { 
     const chatMsgsEl = $('chatMsgs');
-    if(chatMsgsEl) {
-      // Se ainda estiver com o placeholder, forçar uma verificação
-      if(chatMsgsEl.innerHTML.includes('Carregando')) {
-         console.log('🔄 Tentando recarregar histórico...');
-         chat.loadMessages?.(uid); 
-      }
-      chatMsgsEl.scrollTop = chatMsgsEl.scrollHeight;
-    }
+    if(chatMsgsEl) chatMsgsEl.scrollTop = chatMsgsEl.scrollHeight;
     const inp = $('chatInp'); 
     if(inp) inp.focus();
-  }, 800);
+  }, 300);
 
   // Limpar notif-dot
   const chatDot = $('chatDot');
@@ -1368,22 +1359,12 @@ function setupMap(lat,lon) {
     publishSelf(nlat,nlon, isOperating()?'operating':'online');
   });
 
+  // Inicializa chat
   chat.init(window._firebaseDB, R.user, R.profile);
-  // chat.listenNotifications(); // Removido para evitar conflito com a escuta global abaixo
-  listenNotifications(); // Fonte única de verdade para notificações bilaterais
-
-  // Integrar notif-dot do chat com o sistema de mensagens
-  chat.onNewMessage = (senderId, senderName, text) => {
-    // Só acende o dot se o chat não estiver aberto com esse piloto
-    const shChat = $('shChat');
-    const isOpen = shChat && shChat.classList.contains('on') && R.chatTarget?.uid === senderId;
-    if(!isOpen) {
-      const chatDot = $('chatDot');
-      if(chatDot) chatDot.classList.add('on');
-      audio.play('message');
-      showToast(`💬 ${senderName}: ${(text||'').substring(0,30)}`, 5000);
-    }
-  };
+  console.log('[APP INIT] Chat inicializado');
+  
+  // Inicia listener de notificações para abertura bilateral
+  listenNotifications();
 
   listenRequests();
   updateAMX(R.weather);
@@ -1705,33 +1686,18 @@ window.sendMsg = async () => {
   const db = window._firebaseDB;
   if (!db) { showToast('⚠️ Sem conexão com o servidor'); return; }
 
-  const senderName = R.profile?.nickname || R.profile?.name || 'Piloto';
-  const chatId = [R.user.uid, R.chatTarget.uid].sort().join('_');
-
   try {
-    const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    // Garante que o listener realtime esteja ligado na conversa aberta.
+    const expectedChatId = chat.getChatId(R.user.uid, R.chatTarget.uid);
+    if (chat.currentChatId !== expectedChatId) {
+      await chat.openWith(R.chatTarget.uid, R.chatTarget.name || 'Piloto');
+    }
 
-    // Salvar mensagem no chat
-    await addDoc(collection(db, `chats/${chatId}/messages`), {
-      uid: R.user.uid,
-      name: senderName,
-      text: txt,
-      createdAt: window._fsTimestamp?.(),
-    });
+    // Envia por um único fluxo: addDoc -> onSnapshot -> renderMessages().
+    const ok = await chat.send(txt);
+    if (!ok) throw new Error('Falha ao enviar pelo gerenciador de chat');
 
-    // Tocar som de envio
     audio.play('message');
-
-    // Notificar destinatário
-    await addDoc(collection(db, 'notifications'), {
-      to: R.chatTarget.uid,
-      from: R.user.uid,
-      type: 'new_message',
-      senderName,
-      message: txt,
-      createdAt: window._fsTimestamp?.(),
-      read: false
-    });
   } catch (error) {
     console.error('❌ Erro ao enviar mensagem:', error);
     showToast('❌ Erro ao enviar mensagem');
@@ -1883,22 +1849,24 @@ function isValidUrl(string) {
 }
 
 // ==============================================================
-// NOTIFICAÇÕES
+// NOTIFICAÇÕES - ABERTURA BILATERAL
 // ==============================================================
+// Listener que detecta quando um pedido é aceito e abre o chat
+// para quem solicitou (abertura bilateral)
 async function listenNotifications(){
   const db=window._firebaseDB; if(!db||!R.user)return;
   try {
-    const{collection,query,where,orderBy,onSnapshot}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    // Simplificado ao máximo: sem orderBy e sem filtros extras para garantir funcionamento sem índices
+    const{collection,query,where,onSnapshot}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    // Simplificado: sem orderBy para garantir funcionamento sem índices
     const q=query(collection(db,'notifications'), where('to','==',R.user.uid));
     onSnapshot(q,(snapshot)=>{
       snapshot.docChanges().forEach((change)=>{
         if(change.type==='added'){
           const notif=change.doc.data();
-          console.log('[Notif] Recebida:', notif.type, notif);
+          console.log('[NOTIF RECEIVED]', notif.type, notif.from);
           
-          // Se a notificação for de aceite, processamos IMEDIATAMENTE
-          if(notif.type==='request_accepted' || notif.type==='accept'){
+          // Se a notificação for de aceite, abre o chat para quem solicitou
+          if(notif.type==='accept'){
             // Marcar como lida para não repetir
             import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(({ updateDoc }) => {
               updateDoc(change.doc.ref, { read: true }).catch(() => {});
@@ -1911,13 +1879,14 @@ async function listenNotifications(){
             const accepterName = notif.accepterName || notif.fromName || 'Piloto';
             const accepterUid  = notif.from;
 
-            // FORÇAR ABERTURA DO CHAT PRINCIPAL (shChat) PARA QUEM SOLICITOU
+            // ABERTURA BILATERAL: Abre o chat para quem solicitou
             setTimeout(async () => {
               // Se já estiver aberto com essa pessoa, não faz nada
               if (R.chatTarget?.uid === accepterUid && $('shChat').classList.contains('on')) return;
               
-              // Abre o chat principal instantaneamente
+              // Abre o chat instantaneamente
               if (window.openChatWith) {
+                console.log('[OPENING CHAT BILATERAL]', accepterUid);
                 await window.openChatWith(accepterUid, accepterName);
                 showToast(`🎉 ${accepterName} aceitou seu chamado! Chat aberto.`, 5000);
               }
@@ -1931,14 +1900,21 @@ async function listenNotifications(){
               updateDoc(change.doc.ref, { read: true }).catch(() => {});
             });
 
-            if(notif.type==='new_message' || notif.type==='message'){
-              audio.play('message');
+            if(notif.type==='new_message'){
+              const senderUid = notif.from;
+              const senderName = notif.fromName || 'Piloto';
+              const preview = notif.message || '';
               const shChat = $('shChat');
-              if(!shChat || !shChat.classList.contains('on')) {
+              const isChatOpenWithSender = shChat && shChat.classList.contains('on') && R.chatTarget?.uid === senderUid;
+
+              if(!isChatOpenWithSender) {
+                // Fora da conversa, mostrar notificação discreta
+                console.log('[MESSAGE NOTIF]', senderUid);
+                audio.play('message');
                 const chatDot = $('chatDot');
                 if(chatDot) chatDot.classList.add('on');
+                showToast(`💬 ${senderName}: ${preview.substring(0,30)}`, 3000);
               }
-              showToast(`💬 ${notif.senderName || notif.fromName || 'Piloto'}: ${(notif.message || notif.preview || '').substring(0,30)}`, 5000);
             }
           }
         }
