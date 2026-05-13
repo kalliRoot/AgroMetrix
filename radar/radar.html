@@ -1578,29 +1578,11 @@ window.acceptReq = async (uid, name, message) => {
     } catch(e) { console.error('❌ Erro ao marcar request:', e); }
   }
 
-  // Abrir chat automaticamente
-  await window.openChatWith(uid, name);
-
-  // Registrar aceite no chat
-  if(chat.acceptRequest) await chat.acceptRequest(uid, name, message);
-
-  // Notificar o solicitante que seu chamado foi aceito (para abrir chat no lado dele)
-  if (db) {
-    try {
-      const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      await addDoc(collection(db, 'notifications'), {
-        to: uid,
-        from: R.user.uid,
-        type: 'request_accepted',
-        accepterName: R.profile?.nickname || R.profile?.name || 'Piloto',
-        message: `Seu chamado foi aceito por ${R.profile?.nickname || R.profile?.name || 'Piloto'}`,
-        createdAt: serverTimestamp ? serverTimestamp() : new Date().toISOString(),
-        read: false
-      });
-    } catch (error) {
-      console.error('❌ Erro ao notificar solicitante:', error);
-    }
-  }
+  // chat.acceptRequest cuida de:
+  //   1. Enviar mensagem automática de boas-vindas no chat
+  //   2. Notificar o solicitante (tipo 'accept') para abrir chat no lado dele
+  //   3. Abrir o shChat (painel principal) para quem aceitou — abertura bilateral
+  if (chat.acceptRequest) await chat.acceptRequest(uid, name, message);
 
   showToast(`✅ Chamado aceito! Conectando com ${name || 'Piloto'}...`);
 };
@@ -1807,26 +1789,30 @@ async function listenNotifications(){
           const notif=change.doc.data();
           if(!notif.read){
             change.doc.ref.update({read:true});
-            if(notif.type==='request_accepted'){
+            // Tratar aceite de chamado (tipo 'request_accepted' legado OU tipo 'accept' do chat.js v3)
+            if(notif.type==='request_accepted' || notif.type==='accept'){
               // Parar qualquer alerta sonoro ativo IMEDIATAMENTE
               stopLoopAlert();
               stopLoopSound();
               audio.stopLoop?.();
-              
+
               // Tocar som de aceite para confirmar a conexão
               audio.play('accept');
-              
-              // Se o chat já estiver aberto com esta pessoa, apenas garante que está visível
-              if (R.chatTarget && R.chatTarget.uid === notif.from && $('shChat').classList.contains('on')) {
-                showToast(`🚀 Conectado com ${notif.accepterName}!`);
+
+              // Resolver nome de quem aceitou (suporta ambos os formatos de notificação)
+              const accepterName = notif.accepterName || notif.fromName || 'Piloto';
+              const accepterUid  = notif.from;
+
+              // Se o chat já estiver aberto com esta pessoa, apenas confirma
+              if (R.chatTarget && R.chatTarget.uid === accepterUid && $('shChat').classList.contains('on')) {
+                showToast(`🚀 Conectado com ${accepterName}!`);
                 return;
               }
 
-              // FORÇAR ABERTURA DO CHAT (Sincronização Bilateral)
-              // O delay de 300ms é o tempo ideal para o Firestore propagar a criação da sala de chat
+              // ABERTURA BILATERAL DO CHAT — abre shChat na tela principal
               setTimeout(async () => {
-                await window.openChatWith(notif.from, notif.accepterName);
-                showToast(`🎉 ${notif.accepterName} aceitou seu chamado! Conectando...`, 5000);
+                await window.openChatWith(accepterUid, accepterName);
+                showToast(`🎉 ${accepterName} aceitou seu chamado! Chat aberto.`, 5000);
               }, 300);
             } else if(notif.type==='new_message'){
               audio.play('message');
