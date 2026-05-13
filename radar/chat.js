@@ -325,7 +325,7 @@ class ChatManager {
       return;
     }
 
-    console.log('[LISTEN NOTIF START]');
+    console.log('[LISTEN NOTIF START]', this.currentUser.uid);
 
     // Cancela listener anterior se existir
     if (this.notifUnsub) {
@@ -337,46 +337,65 @@ class ChatManager {
     const { collection, query, where, orderBy, onSnapshot } =
       await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
+    // Query SEM orderBy para evitar erro com notificações antigas
+    // Ordena em memória depois
     const q = query(
       collection(this.db, 'notifications'),
-      where('to', '==', this.currentUser.uid),
-      orderBy('createdAtMs', 'desc')
+      where('to', '==', this.currentUser.uid)
     );
 
     this.notifUnsub = onSnapshot(
       q,
       (snap) => {
-        console.log('[NOTIF SNAPSHOT]', { size: snap.size });
+        console.log('[NOTIF SNAPSHOT]', { size: snap.size, uid: this.currentUser.uid });
 
         snap.docChanges().forEach(async (change) => {
           if (change.type !== 'added') return;
 
           const notif = change.doc.data();
-          console.log('[NOTIFICATION]', {
+          const createdAtMs = notif.createdAtMs || (notif.createdAt?.toDate ? notif.createdAt.toDate().getTime() : 0);
+          
+          console.log('[NOTIFICATION RECEIVED]', {
             type: notif.type,
             from: notif.from,
+            fromName: notif.fromName,
             chatId: notif.chatId,
+            createdAtMs,
           });
 
-          // Trigger de abertura bilateral
+          // Trigger de abertura bilateral (tipo 'open_chat')
           if (notif.type === 'open_chat' && notif.chatId) {
-            console.log('[OPEN CHAT TRIGGER]', notif.chatId);
+            console.log('[OPEN CHAT TRIGGER DETECTED]', {
+              chatId: notif.chatId,
+              from: notif.from,
+              fromName: notif.fromName,
+            });
 
             // Evita loop: se já está neste chat, não reabre
             if (this.currentChatId === notif.chatId) {
-              console.log('[ALREADY IN CHAT]', notif.chatId);
+              console.log('[ALREADY IN CHAT] Ignorando trigger', notif.chatId);
               return;
             }
 
             // Abre chat automaticamente
+            console.log('[CHECKING OPEN CHAT FUNCTION]', typeof window.openChatWith);
             if (typeof window.openChatWith === 'function') {
-              console.log('[OPENING CHAT AUTO]', {
+              console.log('[OPENING CHAT AUTO NOW]', {
                 from: notif.from,
                 fromName: notif.fromName,
+                chatId: notif.chatId,
               });
-              await window.openChatWith(notif.from, notif.fromName || 'Piloto');
+              try {
+                await window.openChatWith(notif.from, notif.fromName || 'Piloto');
+                console.log('[CHAT OPENED SUCCESS]', notif.chatId);
+              } catch (err) {
+                console.error('[OPEN CHAT ERROR]', err);
+              }
             } else {
-              console.warn('[OPEN CHAT] window.openChatWith não existe');
+              console.warn('[OPEN CHAT FUNCTION NOT FOUND]', {
+                windowOpenChatWith: window.openChatWith,
+                type: typeof window.openChatWith,
+              });
             }
 
             return;
@@ -391,14 +410,16 @@ class ChatManager {
             // Som já toca no onSnapshot das mensagens
             return;
           }
+
+          console.log('[UNKNOWN NOTIF TYPE]', notif.type);
         });
       },
       (err) => {
-        console.error('[NOTIF ERROR]', err);
+        console.error('[NOTIF ERROR]', { error: err.message, code: err.code });
       }
     );
 
-    console.log('[LISTEN NOTIF REGISTERED]');
+    console.log('[LISTEN NOTIF REGISTERED]', this.currentUser.uid);
   }
 
   // ═══════════════════════════════════════════════════════════════
