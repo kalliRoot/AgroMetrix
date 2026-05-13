@@ -1026,12 +1026,10 @@ window.centerOnUser = () => {
 // CHAT DRAWER
 // ==============================================================
 // Clique no ícone de chat: se há chat ativo, abre direto; senão abre o drawer
-window.onChatIconClick = () => {
+window.onChatIconClick = async () => {
   if(R.chatTarget && R.chatTarget.uid) {
-    // Reabrir o chat ativo diretamente
-    const chatNameEl = $('chatName');
-    if(chatNameEl) chatNameEl.textContent = R.chatTarget.name || 'Piloto';
-    window.openSheet('shChat');
+    // Reabrir o chat ativo pelo mesmo fluxo que liga o listener realtime.
+    await window.openChatWith(R.chatTarget.uid, R.chatTarget.name || 'Piloto');
     const chatDot = $('chatDot');
     if(chatDot) chatDot.classList.remove('on');
   } else {
@@ -1188,20 +1186,13 @@ window.openChatWith = async (uid, name) => {
   // O chat.openWith deve ser responsável por buscar as mensagens do Firestore
   await chat.openWith(uid, pilotName);
 
-  // Garantir que as mensagens apareçam e o scroll vá para o final
+  // Garantir foco e auto-scroll após o primeiro snapshot do Firestore.
   setTimeout(() => { 
     const chatMsgsEl = $('chatMsgs');
-    if(chatMsgsEl) {
-      // Se ainda estiver com o placeholder, forçar uma verificação
-      if(chatMsgsEl.innerHTML.includes('Carregando')) {
-         console.log('🔄 Tentando recarregar histórico...');
-         chat.loadMessages?.(uid); 
-      }
-      chatMsgsEl.scrollTop = chatMsgsEl.scrollHeight;
-    }
+    if(chatMsgsEl) chatMsgsEl.scrollTop = chatMsgsEl.scrollHeight;
     const inp = $('chatInp'); 
     if(inp) inp.focus();
-  }, 800);
+  }, 300);
 
   // Limpar notif-dot
   const chatDot = $('chatDot');
@@ -1705,33 +1696,18 @@ window.sendMsg = async () => {
   const db = window._firebaseDB;
   if (!db) { showToast('⚠️ Sem conexão com o servidor'); return; }
 
-  const senderName = R.profile?.nickname || R.profile?.name || 'Piloto';
-  const chatId = [R.user.uid, R.chatTarget.uid].sort().join('_');
-
   try {
-    const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    // Garante que o listener realtime esteja ligado na conversa aberta.
+    const expectedChatId = chat.getChatId(R.user.uid, R.chatTarget.uid);
+    if (chat.currentChatId !== expectedChatId) {
+      await chat.openWith(R.chatTarget.uid, R.chatTarget.name || 'Piloto');
+    }
 
-    // Salvar mensagem no chat
-    await addDoc(collection(db, `chats/${chatId}/messages`), {
-      uid: R.user.uid,
-      name: senderName,
-      text: txt,
-      createdAt: window._fsTimestamp?.(),
-    });
+    // Envia por um único fluxo: addDoc -> onSnapshot -> renderMessages().
+    const ok = await chat.send(txt);
+    if (!ok) throw new Error('Falha ao enviar pelo gerenciador de chat');
 
-    // Tocar som de envio
     audio.play('message');
-
-    // Notificar destinatário
-    await addDoc(collection(db, 'notifications'), {
-      to: R.chatTarget.uid,
-      from: R.user.uid,
-      type: 'new_message',
-      senderName,
-      message: txt,
-      createdAt: window._fsTimestamp?.(),
-      read: false
-    });
   } catch (error) {
     console.error('❌ Erro ao enviar mensagem:', error);
     showToast('❌ Erro ao enviar mensagem');
@@ -1892,7 +1868,7 @@ async function listenNotifications(){
     // Simplificado ao máximo: sem orderBy e sem filtros extras para garantir funcionamento sem índices
     const q=query(collection(db,'notifications'), where('to','==',R.user.uid));
     onSnapshot(q,(snapshot)=>{
-      snapshot.docChanges().forEach((change)=>{
+      snapshot.docChanges().forEach(async (change)=>{
         if(change.type==='added'){
           const notif=change.doc.data();
           console.log('[Notif] Recebida:', notif.type, notif);
@@ -1932,13 +1908,26 @@ async function listenNotifications(){
             });
 
             if(notif.type==='new_message' || notif.type==='message'){
-              audio.play('message');
+              const senderUid = notif.from;
+              const senderName = notif.senderName || notif.fromName || 'Piloto';
+              const preview = notif.message || notif.preview || '';
               const shChat = $('shChat');
-              if(!shChat || !shChat.classList.contains('on')) {
+              const isChatOpenWithSender = shChat && shChat.classList.contains('on') && R.chatTarget?.uid === senderUid;
+
+              if(isChatOpenWithSender) {
+                // Se a conversa já está aberta, a mensagem deve aparecer no #chatMsgs via onSnapshot,
+                // não em popup/toast. Apenas garante que o listener correto esteja ativo.
+                const expectedChatId = chat.getChatId(R.user.uid, senderUid);
+                if(chat.currentChatId !== expectedChatId) await chat.openWith(senderUid, senderName);
+                const chatMsgsEl = $('chatMsgs');
+                if(chatMsgsEl) chatMsgsEl.scrollTop = chatMsgsEl.scrollHeight;
+              } else {
+                // Fora da conversa, manter apenas aviso pequeno e indicador discreto.
+                audio.play('message');
                 const chatDot = $('chatDot');
                 if(chatDot) chatDot.classList.add('on');
+                showToast(`💬 ${senderName}: ${preview.substring(0,30)}`, 3000);
               }
-              showToast(`💬 ${notif.senderName || notif.fromName || 'Piloto'}: ${(notif.message || notif.preview || '').substring(0,30)}`, 5000);
             }
           }
         }
