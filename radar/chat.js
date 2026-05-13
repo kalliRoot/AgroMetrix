@@ -622,6 +622,8 @@ import { firebaseConfig, isFirebaseConfigured } from './firebase-config.js';
 import { initFirebase, loginGoogle, logout, onAuthChange, getProfile, updateProfile, getPlanStatus } from './auth.js';
 import { initMap, upsertPilot as originalUpsertPilot, spawnBots, startBotUpdates, startLocationTracking, listenPilots,
          startOperation, endOperation, isOperating, calcAMXScore, calcOperationEstimate, amxLabel } from './radar.js';
+import { audio } from './audio.js';
+import { chat } from './chat.js';
 
 // Interceptar upsertPilot para sanitizar nomes em tempo real antes da exibição no mapa
 function upsertPilot(data) {
@@ -647,8 +649,6 @@ function upsertPilot(data) {
   }
   return originalUpsertPilot(data);
 }
-import { audio } from './audio.js';
-import { chat } from './chat.js';
 
 // ==============================================================
 // SISTEMA DE ÁUDIO — usa o objeto `audio` importado de audio.js
