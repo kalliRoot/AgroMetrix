@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
-//  AgroMetrix Radar — chat.js v6
+//  AgroMetrix Radar — chat.js v7
 //  Chat em tempo real via Firestore (Estilo WhatsApp/Discord)
+//  v7: Correção de loop de repetição e duplicidade
 // ═══════════════════════════════════════════════════════════════
 
 import { audio } from './audio.js';
@@ -12,6 +13,7 @@ class ChatManager {
     this.db = null;
     this.currentUser = null;
     this.currentProfile = null;
+    this._lastRenderedHtml = ""; // Cache para evitar re-renderização desnecessária
   }
 
   init(db, user, profile) {
@@ -35,13 +37,15 @@ class ChatManager {
   async openWith(targetUid, targetName) {
     if (!this.db || !this.currentUser) return;
     const chatId = this.getChatId(this.currentUser.uid, targetUid);
+    
+    // Se já for o chat atual, não reinicia tudo
+    if (this.currentChatId === chatId) return;
+    
     this.currentChatId = chatId;
 
     // Atualiza UI do painel principal
     const nameEl = document.getElementById('chatName');
-    const section = document.getElementById('chatSection');
     if (nameEl) nameEl.textContent = targetName;
-    if (section) section.style.display = 'block';
 
     // Inicia escuta em tempo real
     await this.listenMessages(chatId, targetUid);
@@ -49,8 +53,11 @@ class ChatManager {
 
   // Escuta mensagens em tempo real
   async listenMessages(chatId, targetUid) {
+    // Cancela qualquer escuta anterior para este chat
     const existing = this.activeChats.get(chatId);
-    if (existing?.unsub) existing.unsub();
+    if (existing?.unsub) {
+      existing.unsub();
+    }
 
     const { collection, query, orderBy, onSnapshot, limit } =
       await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
@@ -65,44 +72,41 @@ class ChatManager {
     );
 
     const unsub = onSnapshot(q, snap => {
-      if (!container) return;
+      if (!container || this.currentChatId !== chatId) return;
+
+      // Se o snapshot vier do cache local enquanto o servidor ainda não confirmou,
+      // e já tivermos renderizado algo, podemos esperar o snapshot do servidor
+      // para evitar "pulos" ou repetições visuais.
+      if (snap.metadata.fromCache && this._lastRenderedHtml !== "") return;
 
       if (snap.empty) {
         container.innerHTML = '<div class="chat-empty">💬 Nenhuma mensagem ainda.<br><span style="font-size:10px;opacity:.7">Diga olá para iniciar a conversa!</span></div>';
+        this._lastRenderedHtml = "";
         return;
       }
 
-      // Renderização COMPLETA a cada snapshot para garantir sincronia estilo WhatsApp
-      // Isso evita que mensagens sumam ou fiquem fora de ordem
-      const messagesHtml = snap.docs.map(doc => {
-        const m = doc.data();
-        return this._renderMsg(m);
-      }).join('');
-
-      container.innerHTML = messagesHtml;
+      // Renderização COMPLETA apenas se houver mudança real no conteúdo
+      const messagesHtml = snap.docs.map(doc => this._renderMsg(doc.data())).join('');
       
-      // Auto-scroll para a última mensagem
-      container.scrollTop = container.scrollHeight;
+      if (this._lastRenderedHtml !== messagesHtml) {
+        container.innerHTML = messagesHtml;
+        this._lastRenderedHtml = messagesHtml;
+        container.scrollTop = container.scrollHeight;
 
-      // Tocar som se a última mensagem for recebida
-      const lastDoc = snap.docs[snap.docs.length - 1];
-      if (lastDoc) {
-        const lastMsg = lastDoc.data();
-        if (lastMsg.uid !== this.currentUser.uid && !snap.metadata.hasPendingWrites) {
-          audio.play('message');
-          
-          // GATILHO DE SEGURANÇA: Se o chat não estiver aberto, abre na marra
-          const shChat = document.getElementById('shChat');
-          if (shChat && !shChat.classList.contains('on')) {
-            if (typeof window.openChatWith === 'function') {
-              window.openChatWith(lastMsg.uid, lastMsg.name || 'Piloto');
+        // Tocar som apenas para mensagens RECEBIDAS que acabaram de chegar do servidor
+        if (!snap.metadata.hasPendingWrites && !snap.metadata.fromCache) {
+          const lastDoc = snap.docs[snap.docs.length - 1];
+          if (lastDoc) {
+            const lastMsg = lastDoc.data();
+            // Só toca se a mensagem for do outro e for "nova" (não do carregamento inicial)
+            if (lastMsg.uid !== this.currentUser.uid && snap.docChanges().some(c => c.type === 'added')) {
+              audio.play('message');
             }
           }
         }
       }
     }, err => {
       console.error('[Chat] Erro:', err);
-      if (container) container.innerHTML = `<div style="text-align:center;color:var(--red);padding:16px;font-size:11px">Erro ao carregar mensagens.</div>`;
     });
 
     this.activeChats.set(chatId, { uid: targetUid, unsub });
@@ -110,7 +114,6 @@ class ChatManager {
 
   _renderMsg(m) {
     const isMe = m.uid === this.currentUser?.uid;
-    // Tratamento robusto de timestamp
     let time = '';
     if (m.createdAt) {
       const date = m.createdAt.toDate ? m.createdAt.toDate() : new Date(m.createdAt);
@@ -119,7 +122,6 @@ class ChatManager {
     
     const text = this._escHtml(m.text || '');
     
-    // Estrutura estilo WhatsApp/Discord com classes mine/theirs
     return `
       <div class="message ${isMe ? 'mine' : 'theirs'}">
         <div class="bubble">
@@ -145,9 +147,10 @@ class ChatManager {
         createdAt: serverTimestamp(),
       };
 
+      // 1. Salva a mensagem
       await addDoc(collection(this.db, `chats/${this.currentChatId}/messages`), msgData);
       
-      // Notificação para o outro lado
+      // 2. Notifica o outro lado
       const targetUid = this.activeChats.get(this.currentChatId)?.uid;
       if (targetUid) {
         await addDoc(collection(this.db, 'notifications'), {
@@ -182,7 +185,6 @@ class ChatManager {
     const { collection, addDoc, serverTimestamp } =
       await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
-    // 1. Mensagem automática
     await addDoc(collection(this.db, `chats/${chatId}/messages`), {
       uid: this.currentUser.uid,
       name: this.getName(),
@@ -190,7 +192,6 @@ class ChatManager {
       createdAt: serverTimestamp(),
     });
 
-    // 2. Notifica o solicitante
     await addDoc(collection(this.db, 'notifications'), {
       to: targetUid,
       from: this.currentUser.uid,
@@ -202,7 +203,6 @@ class ChatManager {
       read: false,
     });
 
-    // 3. Abre o chat para quem aceitou
     if (typeof window.openChatWith === 'function') {
       await window.openChatWith(targetUid, targetName);
     }
