@@ -1,7 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
-//  AgroMetrix Radar — chat.js v5
-//  Chat em tempo real via Firestore
-//  v5: Abertura bilateral automática do shChat principal
+//  AgroMetrix Radar — chat.js v6
+//  Chat em tempo real via Firestore (Estilo WhatsApp/Discord)
 // ═══════════════════════════════════════════════════════════════
 
 import { audio } from './audio.js';
@@ -53,57 +52,57 @@ class ChatManager {
     const existing = this.activeChats.get(chatId);
     if (existing?.unsub) existing.unsub();
 
-    const { collection, query, orderBy, onSnapshot, limit, serverTimestamp } =
+    const { collection, query, orderBy, onSnapshot, limit } =
       await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
-    const msgs = document.getElementById('chatMsgs');
-    if (msgs) msgs.innerHTML = '<div style="text-align:center;color:var(--mt);padding:16px;font-size:11px">Carregando…</div>';
+    const container = document.getElementById('chatMsgs');
+    if (container) container.innerHTML = '<div style="text-align:center;color:var(--mt);padding:16px;font-size:11px">Carregando…</div>';
 
     const q = query(
       collection(this.db, `chats/${chatId}/messages`),
-      orderBy('createdAt'),
+      orderBy('createdAt', 'asc'),
       limit(100)
     );
 
-    let firstLoad = true;
-
     const unsub = onSnapshot(q, snap => {
-      const container = document.getElementById('chatMsgs');
       if (!container) return;
 
-      if (firstLoad) {
-        firstLoad = false;
-        if (snap.empty) {
-          container.innerHTML = '<div data-placeholder style="text-align:center;color:var(--mt);padding:20px;font-size:11px">Nenhuma mensagem ainda. Diga olá! 👋</div>';
-        } else {
-          container.innerHTML = snap.docs.map(d => this._renderMsg(d.data())).join('');
-        }
-      } else {
-        snap.docChanges().forEach(change => {
-          if (change.type !== 'added') return;
-          const m = change.doc.data();
-          container.querySelector('[data-placeholder]')?.remove();
-          const div = document.createElement('div');
-          div.innerHTML = this._renderMsg(m);
-          container.appendChild(div.firstElementChild);
-          if (m.uid !== this.currentUser.uid) {
-            audio.play('message');
-            this._showMsgNotification(m);
-            
-            // GATILHO DE SEGURANÇA: Se receber mensagem e o chat não estiver aberto, abre na marra
-            const shChat = document.getElementById('shChat');
-            if (shChat && !shChat.classList.contains('on')) {
-              console.log('[Chat] Gatilho de segurança: abrindo chat por nova mensagem.');
-              if (typeof window.openChatWith === 'function') {
-                window.openChatWith(m.uid, m.name || 'Piloto');
-              }
+      if (snap.empty) {
+        container.innerHTML = '<div class="chat-empty">💬 Nenhuma mensagem ainda.<br><span style="font-size:10px;opacity:.7">Diga olá para iniciar a conversa!</span></div>';
+        return;
+      }
+
+      // Renderização COMPLETA a cada snapshot para garantir sincronia estilo WhatsApp
+      // Isso evita que mensagens sumam ou fiquem fora de ordem
+      const messagesHtml = snap.docs.map(doc => {
+        const m = doc.data();
+        return this._renderMsg(m);
+      }).join('');
+
+      container.innerHTML = messagesHtml;
+      
+      // Auto-scroll para a última mensagem
+      container.scrollTop = container.scrollHeight;
+
+      // Tocar som se a última mensagem for recebida
+      const lastDoc = snap.docs[snap.docs.length - 1];
+      if (lastDoc) {
+        const lastMsg = lastDoc.data();
+        if (lastMsg.uid !== this.currentUser.uid && !snap.metadata.hasPendingWrites) {
+          audio.play('message');
+          
+          // GATILHO DE SEGURANÇA: Se o chat não estiver aberto, abre na marra
+          const shChat = document.getElementById('shChat');
+          if (shChat && !shChat.classList.contains('on')) {
+            if (typeof window.openChatWith === 'function') {
+              window.openChatWith(lastMsg.uid, lastMsg.name || 'Piloto');
             }
           }
-        });
+        }
       }
-      container.scrollTop = container.scrollHeight;
     }, err => {
       console.error('[Chat] Erro:', err);
+      if (container) container.innerHTML = `<div style="text-align:center;color:var(--red);padding:16px;font-size:11px">Erro ao carregar mensagens.</div>`;
     });
 
     this.activeChats.set(chatId, { uid: targetUid, unsub });
@@ -111,29 +110,25 @@ class ChatManager {
 
   _renderMsg(m) {
     const isMe = m.uid === this.currentUser?.uid;
-    const time = m.createdAt?.toDate?.()?.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) || '';
-    const text = this._escHtml(m.text || '');
-    return `<div class="chat-msg ${isMe ? 'me' : 'them'}">
-      ${!isMe ? `<div class="chat-msg-name">${m.name || 'Piloto'}</div>` : ''}
-      <div>${text}</div>
-      <div style="font-size:9px;color:${isMe ? 'rgba(255,255,255,.5)' : 'var(--mt)'};margin-top:3px;text-align:right">${time}</div>
-    </div>`;
-  }
-
-  _showMsgNotification(m) {
-    const preview = (m.text || '').substring(0, 50);
-    window.showToast?.(`💬 ${m.name || 'Piloto'}: ${preview}`, 5000);
-    const chatBtn = document.querySelector('.chat-float .ico-btn');
-    if (chatBtn) {
-      let dot = chatBtn.querySelector('.chat-notif-dot');
-      if (!dot) {
-        dot = document.createElement('div');
-        dot.className = 'chat-notif-dot notif-dot';
-        chatBtn.appendChild(dot);
-      }
-      dot.textContent = '!';
-      dot.classList.add('on');
+    // Tratamento robusto de timestamp
+    let time = '';
+    if (m.createdAt) {
+      const date = m.createdAt.toDate ? m.createdAt.toDate() : new Date(m.createdAt);
+      time = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     }
+    
+    const text = this._escHtml(m.text || '');
+    
+    // Estrutura estilo WhatsApp/Discord com classes mine/theirs
+    return `
+      <div class="message ${isMe ? 'mine' : 'theirs'}">
+        <div class="bubble">
+          ${!isMe ? `<div class="chat-msg-name">${m.name || 'Piloto'}</div>` : ''}
+          <div class="text">${text}</div>
+          <div class="time">${time}</div>
+        </div>
+      </div>
+    `;
   }
 
   // Envia mensagem
@@ -143,14 +138,16 @@ class ChatManager {
       await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
     try {
-      await addDoc(collection(this.db, `chats/${this.currentChatId}/messages`), {
+      const msgData = {
         uid: this.currentUser.uid,
         name: this.getName(),
         text: text.trim(),
         createdAt: serverTimestamp(),
-      });
-      audio.play('message');
+      };
 
+      await addDoc(collection(this.db, `chats/${this.currentChatId}/messages`), msgData);
+      
+      // Notificação para o outro lado
       const targetUid = this.activeChats.get(this.currentChatId)?.uid;
       if (targetUid) {
         await addDoc(collection(this.db, 'notifications'), {
@@ -171,40 +168,12 @@ class ChatManager {
     }
   }
 
-  // Escuta notificações recebidas (Desativado: centralizado no radartest.html)
-  async listenNotifications() {
-    console.log('[Chat] Escuta de notificações centralizada no Radar.');
-  }
-
-  // Carrega conversas ativas reais
-  async loadActiveChats() {
-    if (!this.db || !this.currentUser) return [];
-    const { collection, query, getDocs } =
-      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    try {
-      const snap = await getDocs(collection(this.db, 'chats'));
-      const myChats = [];
-      snap.forEach(d => {
-        if (d.id.includes(this.currentUser.uid)) {
-          const otherId = d.id.replace(this.currentUser.uid + '_', '').replace('_' + this.currentUser.uid, '');
-          if (otherId && otherId !== this.currentUser.uid) {
-            myChats.push({ chatId: d.id, otherId });
-          }
-        }
-      });
-      return myChats;
-    } catch {
-      return [];
-    }
-  }
-
   _escHtml(str) {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // Aceita chamado: envia msg automática e notifica o outro lado
-  // ─────────────────────────────────────────────────────────────
   async acceptRequest(targetUid, targetName, requestMessage) {
     if (!this.db || !this.currentUser) return;
     const chatId = this.getChatId(this.currentUser.uid, targetUid);
@@ -213,7 +182,7 @@ class ChatManager {
     const { collection, addDoc, serverTimestamp } =
       await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
-    // 1. Mensagem automática de boas-vindas
+    // 1. Mensagem automática
     await addDoc(collection(this.db, `chats/${chatId}/messages`), {
       uid: this.currentUser.uid,
       name: this.getName(),
@@ -221,7 +190,7 @@ class ChatManager {
       createdAt: serverTimestamp(),
     });
 
-    // 2. Notifica o solicitante (tipo 'accept') para abrir o chat no lado dele
+    // 2. Notifica o solicitante
     await addDoc(collection(this.db, 'notifications'), {
       to: targetUid,
       from: this.currentUser.uid,
@@ -233,8 +202,7 @@ class ChatManager {
       read: false,
     });
 
-    // 3. ── LADO DO ACEITANTE ──
-    // Abre o chat principal imediatamente para quem aceitou
+    // 3. Abre o chat para quem aceitou
     if (typeof window.openChatWith === 'function') {
       await window.openChatWith(targetUid, targetName);
     }
