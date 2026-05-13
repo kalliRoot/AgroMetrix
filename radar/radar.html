@@ -1865,13 +1865,18 @@ async function listenNotifications(){
   const db=window._firebaseDB; if(!db||!R.user)return;
   try {
     const{collection,query,where,orderBy,onSnapshot}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    // Simplificado ao máximo: sem orderBy e sem filtros extras para garantir funcionamento sem índices
-    const q=query(collection(db,'notifications'), where('to','==',R.user.uid));
+    // Ordena por createdAtMs para garantir ordem consistente
+    const q=query(collection(db,'notifications'), where('to','==',R.user.uid), orderBy('createdAtMs', 'desc'));
     onSnapshot(q,(snapshot)=>{
       snapshot.docChanges().forEach(async (change)=>{
         if(change.type==='added'){
           const notif=change.doc.data();
-          console.log('[Notif] Recebida:', notif.type, notif);
+          console.log('[NOTIF RECEIVED]', {
+            type: notif.type,
+            from: notif.from,
+            createdAtMs: notif.createdAtMs,
+            message: notif.message?.substring(0, 30),
+          });
           
           // Se a notificação for de aceite, processamos IMEDIATAMENTE
           if(notif.type==='request_accepted' || notif.type==='accept'){
@@ -1917,12 +1922,17 @@ async function listenNotifications(){
               if(isChatOpenWithSender) {
                 // Se a conversa já está aberta, a mensagem deve aparecer no #chatMsgs via onSnapshot,
                 // não em popup/toast. Apenas garante que o listener correto esteja ativo.
+                console.log('[CHAT ALREADY OPEN]', { senderUid, senderName });
                 const expectedChatId = chat.getChatId(R.user.uid, senderUid);
-                if(chat.currentChatId !== expectedChatId) await chat.openWith(senderUid, senderName);
+                if(chat.currentChatId !== expectedChatId) {
+                  console.log('[OPENING CHAT]', { senderUid, senderName });
+                  await chat.openWith(senderUid, senderName);
+                }
                 const chatMsgsEl = $('chatMsgs');
                 if(chatMsgsEl) chatMsgsEl.scrollTop = chatMsgsEl.scrollHeight;
               } else {
                 // Fora da conversa, manter apenas aviso pequeno e indicador discreto.
+                console.log('[CHAT NOT OPEN]', { senderUid, senderName });
                 audio.play('message');
                 const chatDot = $('chatDot');
                 if(chatDot) chatDot.classList.add('on');
