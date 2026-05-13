@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
-//  AgroMetrix Radar — chat.js v4
+//  AgroMetrix Radar — chat.js v5
 //  Chat em tempo real via Firestore
-//  v4: Abertura bilateral automática via Chat Popup (salta na tela)
+//  v5: Abertura bilateral automática do shChat principal
 // ═══════════════════════════════════════════════════════════════
 
 import { audio } from './audio.js';
@@ -32,7 +32,7 @@ class ChatManager {
     return name.startsWith('http') ? 'Piloto' : name;
   }
 
-  // Abre chat com um piloto (Painel Principal)
+  // Abre chat com um piloto (Painel Principal shChat)
   async openWith(targetUid, targetName) {
     if (!this.db || !this.currentUser) return;
     const chatId = this.getChatId(this.currentUser.uid, targetUid);
@@ -162,20 +162,6 @@ class ChatManager {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // Abre o Chat Popup (salta na tela) para garantir abertura bilateral
-  // ─────────────────────────────────────────────────────────────
-  async _abrirChatPopup(uid, name) {
-    if (typeof window.openChatPopup === 'function') {
-      await window.openChatPopup(uid, name);
-    } else {
-      // Fallback para o painel principal se o popup não existir
-      if (window.AgroRadar) window.AgroRadar.chatTarget = { uid, name };
-      window.openSheet?.('shChat');
-      await this.openWith(uid, name);
-    }
-  }
-
   // Escuta notificações recebidas
   async listenNotifications() {
     if (!this.db || !this.currentUser) return;
@@ -195,19 +181,11 @@ class ChatManager {
         if (change.type !== 'added') return;
         const n = { id: change.doc.id, ...change.doc.data() };
 
+        // NOTA: A abertura bilateral de aceite agora é tratada no radartest.html
+        // para garantir que o painel shChat abra corretamente via window.openChatWith
         if (n.type === 'message') {
           audio.play('message');
           window.showToast?.(`💬 ${n.fromName}: ${n.preview}`, 5000);
-        } else if (n.type === 'accept') {
-          // ── LADO DO SOLICITANTE ──
-          audio.play('accept');
-          audio.stopLoop();
-          window.showToast?.(`✅ ${n.fromName} aceitou seu chamado!`, 6000);
-
-          // Salta o chat na tela do solicitante
-          setTimeout(async () => {
-            await this._abrirChatPopup(n.from, n.fromName);
-          }, 300);
         }
 
         try {
@@ -244,7 +222,7 @@ class ChatManager {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // Aceita chamado: envia msg automática e abre popup bilateral
+  // Aceita chamado: envia msg automática e notifica o outro lado
   // ─────────────────────────────────────────────────────────────
   async acceptRequest(targetUid, targetName, requestMessage) {
     if (!this.db || !this.currentUser) return;
@@ -254,7 +232,7 @@ class ChatManager {
     const { collection, addDoc, serverTimestamp } =
       await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
-    // 1. Mensagem automática
+    // 1. Mensagem automática de boas-vindas
     await addDoc(collection(this.db, `chats/${chatId}/messages`), {
       uid: this.currentUser.uid,
       name: this.getName(),
@@ -262,7 +240,7 @@ class ChatManager {
       createdAt: serverTimestamp(),
     });
 
-    // 2. Notifica o solicitante (tipo 'accept')
+    // 2. Notifica o solicitante (tipo 'accept') para abrir o chat no lado dele
     await addDoc(collection(this.db, 'notifications'), {
       to: targetUid,
       from: this.currentUser.uid,
@@ -275,8 +253,10 @@ class ChatManager {
     });
 
     // 3. ── LADO DO ACEITANTE ──
-    // Abre o popup imediatamente para quem aceitou
-    await this._abrirChatPopup(targetUid, targetName);
+    // Abre o chat principal imediatamente para quem aceitou
+    if (typeof window.openChatWith === 'function') {
+      await window.openChatWith(targetUid, targetName);
+    }
   }
 }
 
