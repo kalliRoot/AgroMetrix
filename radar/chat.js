@@ -89,6 +89,15 @@ class ChatManager {
           if (m.uid !== this.currentUser.uid) {
             audio.play('message');
             this._showMsgNotification(m);
+            
+            // GATILHO DE SEGURANÇA: Se receber mensagem e o chat não estiver aberto, abre na marra
+            const shChat = document.getElementById('shChat');
+            if (shChat && !shChat.classList.contains('on')) {
+              console.log('[Chat] Gatilho de segurança: abrindo chat por nova mensagem.');
+              if (typeof window.openChatWith === 'function') {
+                window.openChatWith(m.uid, m.name || 'Piloto');
+              }
+            }
           }
         });
       }
@@ -162,37 +171,9 @@ class ChatManager {
     }
   }
 
-  // Escuta notificações recebidas
+  // Escuta notificações recebidas (Desativado: centralizado no radartest.html)
   async listenNotifications() {
-    if (!this.db || !this.currentUser) return;
-    const { collection, query, where, onSnapshot, orderBy, limit, updateDoc, doc, serverTimestamp } =
-      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-
-    const q = query(
-      collection(this.db, 'notifications'),
-      where('to', '==', this.currentUser.uid),
-      where('read', '==', false),
-      orderBy('createdAt', 'desc'),
-      limit(20)
-    );
-
-    onSnapshot(q, snap => {
-      snap.docChanges().forEach(async change => {
-        if (change.type !== 'added') return;
-        const n = { id: change.doc.id, ...change.doc.data() };
-
-        // NOTA: A abertura bilateral de aceite agora é tratada no radartest.html
-        // para garantir que o painel shChat abra corretamente via window.openChatWith
-        if (n.type === 'message') {
-          audio.play('message');
-          window.showToast?.(`💬 ${n.fromName}: ${n.preview}`, 5000);
-        }
-
-        try {
-          await updateDoc(doc(this.db, 'notifications', n.id), { read: true });
-        } catch {}
-      });
-    });
+    console.log('[Chat] Escuta de notificações centralizada no Radar.');
   }
 
   // Carrega conversas ativas reais
