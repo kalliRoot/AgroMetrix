@@ -391,6 +391,7 @@ class ChatManager {
 
   /**
    * Aceita um pedido de ajuda e envia mensagem inicial.
+   * Dispara notificação com trigger 'open_chat' para abrir chat no outro usuário.
    */
   async acceptRequest(targetUid, targetName, requestMessage) {
     if (!this.db || !this.currentUser || !targetUid) return;
@@ -409,12 +410,14 @@ class ChatManager {
       createdAtMs: Date.now(),
     });
 
+    // Notificação com trigger 'open_chat' para abrir chat nos DOIS usuários
     await addDoc(collection(this.db, 'notifications'), {
       to: targetUid,
       from: this.currentUser.uid,
       fromName: this.getName(),
       accepterName: this.getName(),
       type: 'accept',
+      action: 'open_chat', // Trigger para abertura automática
       preview: requestMessage,
       chatId,
       createdAt: serverTimestamp(),
@@ -428,6 +431,67 @@ class ChatManager {
   }
 
   /**
+   * Listener de notificações para abertura automática de chats.
+   * Detecta trigger 'open_chat' e abre o chat bilateralmente.
+   */
+  async listenNotifications() {
+    if (!this.db || !this.currentUser) return;
+
+    const { collection, query, where, orderBy, onSnapshot, limit } =
+      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+    const q = query(
+      collection(this.db, 'notifications'),
+      where('to', '==', this.currentUser.uid),
+      orderBy('createdAtMs', 'desc'),
+      limit(20)
+    );
+
+    onSnapshot(
+      q,
+      (snap) => {
+        snap.docChanges().forEach(async (change) => {
+          if (change.type !== 'added') return;
+
+          const data = change.doc.data();
+
+          console.log('[NOTIF ACTION]', {
+            action: data.action,
+            type: data.type,
+            from: data.from,
+            chatId: data.chatId,
+          });
+
+          // Trigger de abertura automática do chat
+          if (data.action === 'open_chat' && data.chatId) {
+            console.log('[OPEN CHAT TRIGGER]', data);
+
+            // Evita loop: se já está no chat, não reabre
+            if (this.currentChatId === data.chatId) {
+              console.log('[CHAT ALREADY OPEN]', data.chatId);
+              return;
+            }
+
+            if (typeof window.openChatWith === 'function') {
+              await window.openChatWith(
+                data.from,
+                data.fromName || 'Piloto'
+              );
+              console.log('[CHAT OPENED AUTO]', {
+                from: data.from,
+                chatId: data.chatId,
+              });
+            }
+          }
+        });
+      },
+      (err) => {
+        console.error('[NOTIF LISTENER ERROR]', err);
+      }
+    );
+  }
+
+  /**
    * Escapa HTML para evitar XSS.
    */
   _escHtml(str) {
@@ -438,3 +502,16 @@ class ChatManager {
 }
 
 export const chat = new ChatManager();
+
+// Inicia listener de notificações automaticamente após inicialização
+if (typeof window !== 'undefined') {
+  window.addEventListener('load', () => {
+    if (window._firebaseDB && window.R?.user) {
+      setTimeout(() => {
+        chat.listenNotifications().catch((err) => {
+          console.error('[INIT NOTIF LISTENER]', err);
+        });
+      }, 500);
+    }
+  });
+}
