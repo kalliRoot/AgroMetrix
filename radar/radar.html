@@ -675,7 +675,7 @@ select.inp{cursor:pointer}
     <button onclick="window.closeChatDrawer();showToast('📍 Toque em um piloto no mapa para iniciar conversa')" 
       style="font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--bdm);background:rgba(61,168,102,.1);color:var(--g3);cursor:pointer;font-family:var(--fu);font-weight:700">+ Nova</button>
   </div>
-  <div id="activeChatsList" style="max-height:58vh;overflow-y:auto;padding:0 20px">
+  <div id="chatList" style="max-height:58vh;overflow-y:auto;padding:0">
     <div style="text-align:center;color:var(--mt);padding:30px 20px;font-size:12px">💭 Nenhuma conversa ativa no momento.</div>
   </div>
   <button class="btn-sec" onclick="window.closeChatDrawer()" style="margin-top:10px;width:calc(100% - 40px)">Fechar</button>
@@ -1057,53 +1057,9 @@ window.closeChatDrawer = () => {
 };
 
 async function loadActiveChats() {
-  const container = $('activeChatsList');
-  if(!container) return;
-  container.innerHTML = '<div style="text-align:center;color:var(--mt);padding:40px 20px;font-size:12px">🔄 Carregando suas conversas…</div>';
-  
-  const chats = await chat.loadActiveChats();
-  if(!chats || !chats.length) {
-    container.innerHTML = '<div style="text-align:center;color:var(--mt);padding:40px 20px;font-size:12px">💭 Nenhuma conversa ativa no momento.<br><span style="font-size:10px;opacity:.6">Inicie um chamado ou aceite um para conversar.</span></div>';
-    return;
-  }
-  
-  const db = window._firebaseDB;
-  let out = '';
-  
-  for(const c of chats){
-    let pilotName = 'Piloto';
-    let pilotPhoto = '👨‍✈️';
-    
-    if(db){
-      try{
-        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-        const snap = await getDoc(doc(db, 'pilots', c.otherId));
-        if(snap.exists()){
-          const d = snap.data();
-          pilotName = d.nickname || d.name || pilotName;
-          if(d.photo) pilotPhoto = `<img src="${fixGooglePhoto(d.photo)}" onerror="this.outerHTML='👨‍✈️'">`;
-        }
-      }catch(e){}
-    }
-    
-    const safeName = pilotName.replace(/'/g,"\\'");
-    const lastMsg = c.lastMessage || 'Toque para conversar';
-    const time = c.updatedAt ? new Date(c.updatedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
-    
-    out += `
-      <div class="chat-list-item" onclick="window.openChatWith('${c.otherId}','${safeName}')">
-        <div class="chat-list-av">${pilotPhoto}</div>
-        <div class="chat-list-info">
-          <div class="chat-list-name">${pilotName}</div>
-          <div class="chat-list-last">${lastMsg}</div>
-        </div>
-        <div class="chat-list-meta">
-          <div class="chat-list-time">${time}</div>
-          <div class="chat-list-del" onclick="event.stopPropagation(); window.deleteConversation('${c.otherId}', '${safeName}')" title="Apagar conversa">🗑️</div>
-        </div>
-      </div>`;
-  }
-  container.innerHTML = out;
+  // A lista agora é renderizada automaticamente pelo chat.js
+  // Este arquivo é mantido apenas para compatibilidade
+  console.log('[LOAD ACTIVE CHATS] Delegado ao chat.js');
 }
 
 window.deleteConversation = async (otherUid, name) => {
