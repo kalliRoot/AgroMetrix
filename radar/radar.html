@@ -1213,6 +1213,7 @@ function setupMap(lat,lon) {
 
   chat.init(window._firebaseDB, R.user, R.profile);
   chat.listenNotifications();
+  listenNotifications(); // Inicializa a escuta de notificações globais (como request_accepted)
 
   // Integrar notif-dot do chat com o sistema de mensagens
   chat.onNewMessage = (senderId, senderName, text) => {
@@ -1533,14 +1534,14 @@ window.acceptReq = async (uid, name, message) => {
   // Notificar o solicitante que seu chamado foi aceito (para abrir chat no lado dele)
   if (db) {
     try {
-      const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
       await addDoc(collection(db, 'notifications'), {
         to: uid,
         from: R.user.uid,
         type: 'request_accepted',
         accepterName: R.profile?.nickname || R.profile?.name || 'Piloto',
         message: `Seu chamado foi aceito por ${R.profile?.nickname || R.profile?.name || 'Piloto'}`,
-        createdAt: window._fsTimestamp?.(),
+        createdAt: serverTimestamp ? serverTimestamp() : new Date().toISOString(),
         read: false
       });
     } catch (error) {
@@ -1548,7 +1549,7 @@ window.acceptReq = async (uid, name, message) => {
     }
   }
 
-  showToast(`✅ Chamado aceito! Chat aberto com ${name || 'Piloto'}`);
+  showToast(`✅ Chamado aceito! Conectando com ${name || 'Piloto'}...`);
 };
 
 window.sendMsg = async () => {
@@ -1754,12 +1755,15 @@ async function listenNotifications(){
               // Tocar som de aceite
               audio.play('accept');
               
+              // Se o chat já estiver aberto com esta pessoa, não faz nada
+              if (R.chatTarget && R.chatTarget.uid === notif.from && $('shChat').classList.contains('on')) return;
+
               // Abrir chat automaticamente com quem aceitou
-              // IMPORTANTE: Pequeno delay para garantir que o Firestore propagou os dados do chat
+              // Delay curto para garantir que o aceitador já criou a estrutura do chat
               setTimeout(() => {
                 window.openChatWith(notif.from, notif.accepterName);
                 showToast(`🎉 ${notif.accepterName} aceitou seu chamado! Chat aberto.`, 5000);
-              }, 500);
+              }, 400);
             } else if(notif.type==='new_message'){
               audio.play('message');
               // Acender notif-dot no ícone de chat se o chat não estiver aberto
@@ -1806,6 +1810,7 @@ window.enterRadar = async()=>{
   R.user=user; R.profile=profile; R.plan=getPlanStatus(profile);
   if(R.plan.active){
     showRadar();
+    listenNotifications(); // Iniciar escuta de notificações bilaterais imediatamente após login
   } else window.openSheet('shPaywall');
 };
 
