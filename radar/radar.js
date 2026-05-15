@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
-//  AgroMetrix Radar — radar.js v5.1
+//  AgroMetrix Radar — radar.js v5.2
 //  Mapa Leaflet · Pilotos reais · Bots espalhados · SOS · Operações
+//  SISTEMA DONO DA ÁREA: APENAS BEACONS (sem texto fixo)
 // ═══════════════════════════════════════════════════════════════
 
 let _map = null;
@@ -17,7 +18,7 @@ let _autoEndTimer = null;
 let _currentUid = null;
 
 // ═══════════════════════════════════════════════════════════════
-// SISTEMA "DONO DA ÁREA" v2 - VISUAL FUTURISTA LIMPO
+// SISTEMA "DONO DA ÁREA" v2 - SOMENTE BEACONS (SEM TEXTO FIXO)
 // ═══════════════════════════════════════════════════════════════
 
 const areaOwners = {};
@@ -64,12 +65,16 @@ function updateAreaOwner(pilot) {
   }
 }
 
+// ──────────────────────────────────────────────────────────────
+// RENDER BEACON — SOMENTE O FEIXE DE LUZ (SEM TEXTO)
+// ──────────────────────────────────────────────────────────────
 function renderBeacon(key) {
   if (!_map) return;
   
   const owner = areaOwners[key];
   if (!owner || owner.hectares < 10) return;
   
+  // Remove beacon antigo se existir
   if (areaBeacons[key]) {
     if (owner.beaconRef) owner.beaconRef.off('click');
     areaBeacons[key].remove();
@@ -77,14 +82,17 @@ function renderBeacon(key) {
     delete _beaconMarkers[key];
   }
   
+  // APENAS O FEIXE DE LUZ — sem label, sem texto fixo
   const beaconHtml = `
     <div class="agro-beacon" data-key="${key}" style="position: relative; width: 24px; height: 24px; cursor: pointer;">
+      <!-- Núcleo pulsante -->
       <div style="position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; background: #3da866; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 8px #3da866, 0 0 16px rgba(61,168,102,0.6); animation: beaconPulse 2s ease-in-out infinite;"></div>
+      <!-- Anel expansivo -->
       <div style="position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; border: 1.5px solid rgba(61,168,102,0.6); border-radius: 50%; transform: translate(-50%, -50%); animation: beaconRing 2s ease-in-out infinite;"></div>
+      <!-- Scanner giratório -->
       <div style="position: absolute; top: 50%; left: 50%; width: 32px; height: 32px; transform: translate(-50%, -50%);">
         <div style="position: absolute; top: 0; left: 50%; width: 2px; height: 16px; background: linear-gradient(180deg, #3da866 0%, transparent 100%); transform-origin: 50% 100%; animation: beaconScan 3s linear infinite;"></div>
       </div>
-      <div class="beacon-label" style="position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); background: rgba(6,14,8,0.85); backdrop-filter: blur(4px); padding: 2px 6px; border-radius: 12px; font-size: 9px; font-weight: 600; color: #5ec880; white-space: nowrap; font-family: 'Syne', monospace; letter-spacing: 0.5px; border: 0.5px solid rgba(61,168,102,0.3); opacity: 0; transition: opacity 0.2s ease; pointer-events: none;">${owner.name}</div>
     </div>
   `;
   
@@ -98,6 +106,7 @@ function renderBeacon(key) {
   
   const marker = L.marker([owner.lat, owner.lon], { icon, zIndexOffset: 200, interactive: true });
   
+  // Clique abre o painel (sem card fixo)
   marker.on('click', (e) => {
     e.originalEvent.stopPropagation();
     openOwnerPanel(key, owner, marker.getLatLng());
@@ -107,19 +116,11 @@ function renderBeacon(key) {
   areaBeacons[key] = marker;
   _beaconMarkers[key] = marker;
   owner.beaconRef = marker;
-  
-  const updateLabelVisibility = () => {
-    const zoom = _map.getZoom();
-    const el = marker.getElement();
-    const label = el?.querySelector('.beacon-label');
-    if (label) label.style.opacity = zoom >= 8 ? '1' : '0';
-  };
-  
-  marker.on('add', updateLabelVisibility);
-  _map.on('zoomend', updateLabelVisibility);
-  updateLabelVisibility();
 }
 
+// ──────────────────────────────────────────────────────────────
+// PAINEL QUE ABRE AO CLICAR NO BEACON (SOMENTE NESTE MOMENTO)
+// ──────────────────────────────────────────────────────────────
 let activePanel = null;
 let panelCloseHandler = null;
 
@@ -224,7 +225,6 @@ function updateBeaconVisual(owner) {
     @keyframes beaconScan { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     @keyframes panelSlideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .agro-beacon-marker { background: transparent !important; border: none !important; }
-    .agro-beacon-marker:hover .beacon-label { opacity: 1 !important; }
     .agro-owner-panel-container { position: fixed; z-index: 10000; animation: panelSlideIn 0.2s ease-out; }
   `;
   document.head.appendChild(style);
@@ -612,8 +612,7 @@ export function startBotUpdates() {
 
 export function stopBotUpdates() {
   if (_botInterval) clearInterval(_botInterval);
-}
-
+            }
 // ── Localização ───────────────────────────────────────────────
 export function startLocationTracking(uid, onUpdate) {
   let lastLat = null, lastLon = null;
@@ -657,79 +656,3 @@ export function endOperation(weatherState) {
   const estimate = calcOperationEstimate(durationMin, _operationConfig, _operationData);
   return { ..._operationData, endTime: new Date().toISOString(), durationMin, score, estimate, config: _operationConfig };
 }
-
-export function registerActivity() {
-  if (!_operationActive) return;
-  _operationData.lastActivity = Date.now();
-  if (_pauseTimer) { clearTimeout(_pauseTimer); _pauseTimer = null; }
-  _pauseTimer = setTimeout(() => { if (_operationActive) _operationData.pauses++; }, 5 * 60 * 1000);
-}
-
-export function calcOperationEstimate(durationMin, config, opData) {
-  const avgHaPerH = parseFloat(config?.avgHaPerH) || 20;
-  const hoursOp = Math.max(0, (durationMin - (opData?.pauses || 0) * 5)) / 60;
-  const estHa = (hoursOp * avgHaPerH).toFixed(1);
-  const vazao = parseFloat(config?.vazao) || 10;
-  const faixa = parseFloat(config?.faixa) || 9;
-  let conf = 100;
-  if (vazao < 3 || vazao > 50) conf -= 30;
-  if (faixa < 4 || faixa > 20) conf -= 20;
-  if (avgHaPerH > 45) conf -= 25;
-  if (durationMin < 10) conf -= 40;
-  conf = Math.max(0, conf);
-  return { estHa, hoursOp: hoursOp.toFixed(1), confiability: conf, label: conf >= 80 ? 'Alta' : conf >= 50 ? 'Média' : 'Baixa' };
-}
-
-export function calcAMXScore(durationMin, weather, opData, config) {
-  let score = 100;
-  const w = weather || {};
-  const dt = w.deltaT || 5, wind = w.wind || 0, hum = w.humidity || 70, temp = w.temp || 25;
-  if (dt < 2 || dt > 10) score -= 20; else if (dt > 8) score -= 10;
-  if (wind > 20) score -= 25; else if (wind > 15) score -= 15; else if (wind > 10) score -= 5;
-  if (hum > 90) score -= 10;
-  if (hum < 40) score -= 10;
-  if (temp > 35) score -= 15;
-  if (temp < 10) score -= 10;
-  if (durationMin < 5) score -= 30; else if (durationMin < 10) score -= 15;
-  const hour = new Date().getHours();
-  if (hour >= 0 && hour < 4) score -= 20;
-  if (hour >= 5 && hour <= 9) score += 5;
-  const vazao = parseFloat(config?.vazao) || 10;
-  if (vazao >= 5 && vazao <= 30) score += 5;
-  if ((opData?.pauses || 0) > 3) score -= 10;
-  return Math.max(0, Math.min(100, Math.round(score)));
-}
-
-export function amxLabel(score) {
-  if (score >= 90) return { label: 'Excelente', color: '#3da866' };
-  if (score >= 75) return { label: 'Ótimo', color: '#5ec880' };
-  if (score >= 60) return { label: 'Bom', color: '#1e88d0' };
-  if (score >= 40) return { label: 'Moderado', color: '#e07a00' };
-  return { label: 'Risco', color: '#e03535' };
-}
-
-// ── Getters / Helpers ─────────────────────────────────────────
-export function isOperating() { return _operationActive; }
-export function getMap() { return _map; }
-export function getMarkers() { return _markers; }
-
-export function calcDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dL = (lat2 - lat1) * Math.PI / 180;
-  const dN = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dL / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dN / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-export function findNearbyPilots(lat, lon, radiusKm) {
-  const nearby = [];
-  Object.values(_markers).forEach(marker => {
-    const pilot = marker._pilotData;
-    if (!pilot || pilot.isCurrentUser) return;
-    const d = calcDistance(lat, lon, pilot.lat, pilot.lon);
-    if (d <= radiusKm) nearby.push({ ...pilot, distKm: Math.round(d) });
-  });
-  return nearby;
-}
-
-export { _updatePilotCount as updatePilotCount };
