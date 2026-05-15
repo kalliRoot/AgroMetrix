@@ -236,38 +236,64 @@ function updateBeaconVisual(owner) {
 // ═══════════════════════════════════════════════════════════════
 
 const CIDADES_BRASIL = [
-  { name:'Sorriso, MT',            lat:-12.5500, lon:-55.7200 },
-  { name:'Lucas do Rio Verde, MT', lat:-13.0600, lon:-55.9100 },
-  { name:'Nova Mutum, MT',         lat:-13.8300, lon:-56.0800 },
-  { name:'Sinop, MT',              lat:-11.8600, lon:-55.5000 },
-  { name:'Rondonópolis, MT',       lat:-16.4700, lon:-54.6350 },
-  { name:'Primavera do Leste, MT', lat:-15.5500, lon:-54.2900 },
-  { name:'Rio Verde, GO',          lat:-17.7981, lon:-50.9278 },
-  { name:'Jataí, GO',              lat:-17.8831, lon:-51.7158 },
-  { name:'Campo Grande, MS',       lat:-20.4697, lon:-54.6201 },
-  { name:'Dourados, MS',           lat:-22.2211, lon:-54.8056 },
-  { name:'Ribeirão Preto, SP',     lat:-21.1787, lon:-47.8103 },
-  { name:'Uberlândia, MG',         lat:-18.9186, lon:-48.2772 },
-  { name:'Londrina, PR',           lat:-23.3107, lon:-51.1628 },
-  { name:'Cascavel, PR',           lat:-24.9578, lon:-53.4595 },
-  { name:'Passo Fundo, RS',        lat:-28.2620, lon:-52.4063 },
-  { name:'Chapecó, SC',            lat:-27.1003, lon:-52.6150 },
-  { name:'Barreiras, BA',          lat:-12.1522, lon:-44.9989 },
-  { name:'Palmas, TO',             lat:-10.2491, lon:-48.3243 },
-  { name:'Imperatriz, MA',         lat: -5.5267, lon:-47.4919 },
-  { name:'Balsas, MA',             lat: -7.5322, lon:-46.0353 },
-  { name:'Luís Eduardo Magalhães, BA', lat:-12.0964, lon:-45.7919 },
-  { name:'Cristalina, GO',         lat:-16.7683, lon:-47.6142 },
-  { name:'Sete Lagoas, MG',        lat:-19.4653, lon:-44.2461 },
-  { name:'Patos de Minas, MG',     lat:-18.5784, lon:-46.5185 },
-  { name:'Unaí, MG',               lat:-16.3594, lon:-46.9032 },
-  { name:'Coxim, MS',              lat:-18.5072, lon:-54.7600 },
-  { name:'Maracaju, MS',           lat:-21.6139, lon:-55.1681 },
-  { name:'Querência, MT',          lat:-12.5950, lon:-52.1878 },
-  { name:'Tangará da Serra, MT',   lat:-14.6233, lon:-57.4950 },
-  { name:'Porto Nacional, TO',     lat:-10.7077, lon:-48.4169 },
-];
+  // ════════════════════════
+  // MATO GROSSO (maior foco agro)
+  // ════════════════════════
+  { name:'Sorriso, MT', lat:-12.5500, lon:-55.7200, peso:10 },
+  { name:'Lucas do Rio Verde, MT', lat:-13.0600, lon:-55.9100, peso:10 },
+  { name:'Nova Mutum, MT', lat:-13.8300, lon:-56.0800, peso:9 },
+  { name:'Sinop, MT', lat:-11.8600, lon:-55.5000, peso:8 },
+  { name:'Rondonópolis, MT', lat:-16.4700, lon:-54.6350, peso:7 },
+  { name:'Primavera do Leste, MT', lat:-15.5500, lon:-54.2900, peso:8 },
+  { name:'Querência, MT', lat:-12.5950, lon:-52.1878, peso:7 },
+  { name:'Tangará da Serra, MT', lat:-14.6233, lon:-57.4950, peso:6 },
 
+  // ════════════════════════
+  // GOIÁS
+  // ════════════════════════
+  { name:'Rio Verde, GO', lat:-17.7981, lon:-50.9278, peso:9 },
+  { name:'Jataí, GO', lat:-17.8831, lon:-51.7158, peso:8 },
+  { name:'Cristalina, GO', lat:-16.7683, lon:-47.6142, peso:6 },
+
+  // ════════════════════════
+  // MATO GROSSO DO SUL
+  // ════════════════════════
+  { name:'Campo Grande, MS', lat:-20.4697, lon:-54.6201, peso:5 },
+  { name:'Dourados, MS', lat:-22.2211, lon:-54.8056, peso:8 },
+  { name:'Maracaju, MS', lat:-21.6139, lon:-55.1681, peso:7 },
+  { name:'Coxim, MS', lat:-18.5072, lon:-54.7600, peso:4 },
+
+  // ════════════════════════
+  // SÃO PAULO / TRIÂNGULO
+  // ════════════════════════
+  { name:'Ribeirão Preto, SP', lat:-21.1787, lon:-47.8103, peso:8 },
+  { name:'Uberlândia, MG', lat:-18.9186, lon:-48.2772, peso:7 },
+  { name:'Patos de Minas, MG', lat:-18.5784, lon:-46.5185, peso:5 },
+  { name:'Unaí, MG', lat:-16.3594, lon:-46.9032, peso:5 },
+  { name:'Sete Lagoas, MG', lat:-19.4653, lon:-44.2461, peso:3 },
+
+  // ════════════════════════
+  // PARANÁ
+  // ════════════════════════
+  { name:'Londrina, PR', lat:-23.3107, lon:-51.1628, peso:6 },
+  { name:'Cascavel, PR', lat:-24.9578, lon:-53.4595, peso:7 },
+
+  // ════════════════════════
+  // SUL
+  // ════════════════════════
+  { name:'Chapecó, SC', lat:-27.1003, lon:-52.6150, peso:5 },
+  { name:'Passo Fundo, RS', lat:-28.2620, lon:-52.4063, peso:4 },
+
+  // ════════════════════════
+  // MATOPIBA
+  // ════════════════════════
+  { name:'Barreiras, BA', lat:-12.1522, lon:-44.9989, peso:7 },
+  { name:'Luís Eduardo Magalhães, BA', lat:-12.0964, lon:-45.7919, peso:9 },
+  { name:'Palmas, TO', lat:-10.2491, lon:-48.3243, peso:5 },
+  { name:'Porto Nacional, TO', lat:-10.7077, lon:-48.4169, peso:4 },
+  { name:'Balsas, MA', lat:-7.5322, lon:-46.0353, peso:6 },
+  { name:'Imperatriz, MA', lat:-5.5267, lon:-47.4919, peso:3 },
+];
 // Seed diária: gera offset estável por bot+dia, muda todo dia
 function dailySeed(botId, component) {
   const dayKey = Math.floor(Date.now() / 86400000); // dia atual em ms
