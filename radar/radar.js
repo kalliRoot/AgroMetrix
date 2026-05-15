@@ -74,7 +74,6 @@ function renderBeacon(key) {
     if (owner.beaconRef) owner.beaconRef.off('click');
     areaBeacons[key].remove();
     delete areaBeacons[key];
-    // remove do índice de beacon markers
     delete _beaconMarkers[key];
   }
   
@@ -106,7 +105,7 @@ function renderBeacon(key) {
   
   marker.addTo(_map);
   areaBeacons[key] = marker;
-  _beaconMarkers[key] = marker; // índice separado para não afetar contagem de pilotos
+  _beaconMarkers[key] = marker;
   owner.beaconRef = marker;
   
   const updateLabelVisibility = () => {
@@ -236,103 +235,61 @@ function updateBeaconVisual(owner) {
 // ═══════════════════════════════════════════════════════════════
 
 const CIDADES_BRASIL = [
-  // ════════════════════════
-  // MATO GROSSO (maior foco agro)
-  // ════════════════════════
   { name:'Sorriso, MT', lat:-12.5500, lon:-55.7200, peso:10 },
   { name:'Lucas do Rio Verde, MT', lat:-13.0600, lon:-55.9100, peso:10 },
   { name:'Nova Mutum, MT', lat:-13.8300, lon:-56.0800, peso:9 },
   { name:'Sinop, MT', lat:-11.8600, lon:-55.5000, peso:8 },
   { name:'Rondonópolis, MT', lat:-16.4700, lon:-54.6350, peso:7 },
   { name:'Primavera do Leste, MT', lat:-15.5500, lon:-54.2900, peso:8 },
-  { name:'Querência, MT', lat:-12.5950, lon:-52.1878, peso:7 },
-  { name:'Tangará da Serra, MT', lat:-14.6233, lon:-57.4950, peso:6 },
-
-  // ════════════════════════
-  // GOIÁS
-  // ════════════════════════
   { name:'Rio Verde, GO', lat:-17.7981, lon:-50.9278, peso:9 },
   { name:'Jataí, GO', lat:-17.8831, lon:-51.7158, peso:8 },
-  { name:'Cristalina, GO', lat:-16.7683, lon:-47.6142, peso:6 },
-
-  // ════════════════════════
-  // MATO GROSSO DO SUL
-  // ════════════════════════
   { name:'Campo Grande, MS', lat:-20.4697, lon:-54.6201, peso:5 },
   { name:'Dourados, MS', lat:-22.2211, lon:-54.8056, peso:8 },
-  { name:'Maracaju, MS', lat:-21.6139, lon:-55.1681, peso:7 },
-  { name:'Coxim, MS', lat:-18.5072, lon:-54.7600, peso:4 },
-
-  // ════════════════════════
-  // SÃO PAULO / TRIÂNGULO
-  // ════════════════════════
   { name:'Ribeirão Preto, SP', lat:-21.1787, lon:-47.8103, peso:8 },
   { name:'Uberlândia, MG', lat:-18.9186, lon:-48.2772, peso:7 },
-  { name:'Patos de Minas, MG', lat:-18.5784, lon:-46.5185, peso:5 },
-  { name:'Unaí, MG', lat:-16.3594, lon:-46.9032, peso:5 },
-  { name:'Sete Lagoas, MG', lat:-19.4653, lon:-44.2461, peso:3 },
-
-  // ════════════════════════
-  // PARANÁ
-  // ════════════════════════
   { name:'Londrina, PR', lat:-23.3107, lon:-51.1628, peso:6 },
   { name:'Cascavel, PR', lat:-24.9578, lon:-53.4595, peso:7 },
-
-  // ════════════════════════
-  // SUL
-  // ════════════════════════
   { name:'Chapecó, SC', lat:-27.1003, lon:-52.6150, peso:5 },
   { name:'Passo Fundo, RS', lat:-28.2620, lon:-52.4063, peso:4 },
-
-  // ════════════════════════
-  // MATOPIBA
-  // ════════════════════════
   { name:'Barreiras, BA', lat:-12.1522, lon:-44.9989, peso:7 },
   { name:'Luís Eduardo Magalhães, BA', lat:-12.0964, lon:-45.7919, peso:9 },
   { name:'Palmas, TO', lat:-10.2491, lon:-48.3243, peso:5 },
-  { name:'Porto Nacional, TO', lat:-10.7077, lon:-48.4169, peso:4 },
   { name:'Balsas, MA', lat:-7.5322, lon:-46.0353, peso:6 },
-  { name:'Imperatriz, MA', lat:-5.5267, lon:-47.4919, peso:3 },
 ];
-// Seed diária: gera offset estável por bot+dia, muda todo dia
+
 function dailySeed(botId, component) {
-  const dayKey = Math.floor(Date.now() / 86400000); // dia atual em ms
+  const dayKey = Math.floor(Date.now() / 86400000);
   let hash = 0;
   const str = `${botId}_${component}_${dayKey}`;
   for (let i = 0; i < str.length; i++) {
     hash = ((hash << 5) - hash) + str.charCodeAt(i);
     hash |= 0;
   }
-  return (Math.abs(hash) % 1000) / 1000; // 0..1
+  return (Math.abs(hash) % 1000) / 1000;
 }
 
-// Gera bots com 30 pilotos, cada um fixado na sua cidade
 function generateRealisticBots(count = 30) {
   const bots = [];
   const drones = ['DJI Agras T40','DJI Agras T50','XAG P100 Pro','XAG V40','EAVision U10'];
-  const mascNames = ['João Silva','Pedro Oliveira','Lucas Lima','Rafael Alves','Gustavo Pereira','Bruno Ferreira','Rodrigo Gomes','Thiago Monteiro','Felipe Nogueira','Marcelo Batista','André Carvalho','Diego Nascimento','Leandro Ribeiro','Vinicius Castro','Eduardo Martins'];
-  const femNames  = ['Maria Santos','Ana Costa','Fernanda Souza','Patrícia Rocha','Carla Mendes','Juliana Almeida'];
-  const photos    = ['👨‍✈️','🧑‍✈️','👨‍🚀','👨‍🌾','🧑‍🌾','👩‍✈️','👩‍🚀','👩‍🌾'];
+  const mascNames = ['João Silva','Pedro Oliveira','Lucas Lima','Rafael Alves','Gustavo Pereira','Bruno Ferreira','Rodrigo Gomes','Thiago Monteiro','Felipe Nogueira','Marcelo Batista'];
+  const femNames = ['Maria Santos','Ana Costa','Fernanda Souza','Patrícia Rocha','Carla Mendes'];
+  const photos = ['👨‍✈️','🧑‍✈️','👨‍🚀','👨‍🌾','🧑‍🌾','👩‍✈️','👩‍🚀','👩‍🌾'];
 
   for (let i = 0; i < count; i++) {
-    // Cada bot usa sua própria cidade da lista (cycled se count > cidades)
     const cidade = CIDADES_BRASIL[i % CIDADES_BRASIL.length];
-    const isFem  = i % 6 === 0;
-    const names  = isFem ? femNames : mascNames;
-    const botId  = `bot_${i}`;
+    const isFem = i % 6 === 0;
+    const names = isFem ? femNames : mascNames;
+    const botId = `bot_${i}`;
 
-    // Distribuição realista de hectares
     const rand = Math.random();
     let hectares;
-    if (rand < 0.6)      hectares = 5  + Math.floor(Math.random() * 35);
+    if (rand < 0.6) hectares = 5 + Math.floor(Math.random() * 35);
     else if (rand < 0.85) hectares = 40 + Math.floor(Math.random() * 30);
-    else                  hectares = 70 + Math.floor(Math.random() * 30);
+    else hectares = 70 + Math.floor(Math.random() * 30);
 
-    const opsTotal   = Math.floor(hectares / 2) + Math.floor(Math.random() * 15);
+    const opsTotal = Math.floor(hectares / 2) + Math.floor(Math.random() * 15);
     const hoursTotal = Math.floor(opsTotal * 1.2) + Math.floor(Math.random() * 30);
 
-    // Posição base = cidade + drift diário de até ±0.25 graus (~28 km)
-    // Muda todo dia, mas é estável durante o dia
     const dailyLatOffset = (dailySeed(botId, 'lat') - 0.5) * 0.5;
     const dailyLonOffset = (dailySeed(botId, 'lon') - 0.5) * 0.5;
 
@@ -347,7 +304,6 @@ function generateRealisticBots(count = 30) {
       hoursTotal,
       opsTotal,
       hectares,
-      // Posição base diária (cidade + drift do dia)
       baseLat: cidade.lat + dailyLatOffset,
       baseLon: cidade.lon + dailyLonOffset,
       status: Math.random() > 0.6 ? 'online' : (Math.random() > 0.5 ? 'operating' : 'offline'),
@@ -361,16 +317,8 @@ const BOTS = generateRealisticBots(30);
 // ── Função robusta cleanName() ────────────────────────────────
 function cleanName(name, user) {
   let n = String(name || '').trim();
-  const invalid =
-    !n ||
-    n.startsWith('http') ||
-    n.includes('googleusercontent.com') ||
-    n.includes('lh3.googleusercontent.com') ||
-    n.includes('.com/') ||
-    n.includes('=s96-c');
-  if (invalid) {
-    n = user?.displayName || user?.email?.split('@')[0] || 'Piloto';
-  }
+  const invalid = !n || n.startsWith('http') || n.includes('googleusercontent.com') || n.includes('lh3.googleusercontent.com') || n.includes('.com/') || n.includes('=s96-c');
+  if (invalid) n = user?.displayName || user?.email?.split('@')[0] || 'Piloto';
   if (!n || n.startsWith('http') || n.includes('googleusercontent.com')) n = 'Piloto';
   if (n.length > 25) n = n.substring(0, 22) + '...';
   return n;
@@ -398,13 +346,13 @@ export function initMap(containerId, lat, lon) {
 
 // ── Ícone de piloto ───────────────────────────────────────────
 function pilotIcon(status, isUser = false) {
-  const isSOS      = status === 'sos';
-  const isOp       = status === 'operating';
-  const isRequest  = status === 'request';
+  const isSOS = status === 'sos';
+  const isOp = status === 'operating';
+  const isRequest = status === 'request';
 
   let color = '#1e88d0';
-  if (isOp)      color = '#3da866';
-  if (isSOS)     color = '#e03535';
+  if (isOp) color = '#3da866';
+  if (isSOS) color = '#e03535';
   if (isRequest) color = '#f5a623';
 
   const size = isUser ? 48 : 40;
@@ -436,10 +384,10 @@ function pilotIcon(status, isUser = false) {
   svg += `<circle cx="20" cy="20" r="14" fill="${color}" opacity="0.15"/>
     <circle cx="20" cy="20" r="10" fill="${color}" opacity="0.95"/>`;
 
-  if (isUser)         svg += `<circle cx="20" cy="20" r="5" fill="white" opacity="0.95"/>`;
-  if (isSOS)          svg += `<text x="20" y="25" text-anchor="middle" font-size="13" fill="white">🚨</text>`;
+  if (isUser) svg += `<circle cx="20" cy="20" r="5" fill="white" opacity="0.95"/>`;
+  if (isSOS) svg += `<text x="20" y="25" text-anchor="middle" font-size="13" fill="white">🚨</text>`;
   else if (isRequest) svg += `<text x="20" y="25" text-anchor="middle" font-size="13" fill="white">🔧</text>`;
-  else if (isOp)      svg += `<text x="20" y="25" text-anchor="middle" font-size="13" fill="white">🚁</text>`;
+  else if (isOp) svg += `<text x="20" y="25" text-anchor="middle" font-size="13" fill="white">🚁</text>`;
 
   svg += `</svg>`;
   return L.divIcon({ html: svg, className: '', iconSize: [size, size], iconAnchor: [size / 2, size / 2] });
@@ -449,7 +397,7 @@ function pilotIcon(status, isUser = false) {
 function buildPopup(pilot) {
   const safeName = cleanName(pilot.nickname || pilot.name, window.AgroRadar?.user);
   const safeNameEscaped = safeName.replace(/'/g, "\\'");
-  const safeMsg  = (pilot.requestMsg || '').replace(/'/g, "\\'");
+  const safeMsg = (pilot.requestMsg || '').replace(/'/g, "\\'");
 
   const reqBtn = (pilot.status === 'request' && !pilot.isCurrentUser)
     ? `<button onclick="window.acceptReq('${pilot.id}','${safeNameEscaped}','${safeMsg}')"
@@ -467,8 +415,8 @@ function buildPopup(pilot) {
         💬 Chat</button>` : '';
 
   let statusText = '🟢 Online';
-  if (pilot.status === 'sos')            statusText = '🚨 SOS';
-  else if (pilot.status === 'request')   statusText = '🔧 Pedido';
+  if (pilot.status === 'sos') statusText = '🚨 SOS';
+  else if (pilot.status === 'request') statusText = '🔧 Pedido';
   else if (pilot.status === 'operating') statusText = '🚁 Operando';
 
   let photoHtml = '👨‍✈️';
@@ -497,34 +445,69 @@ function buildPopup(pilot) {
   </div>`;
 }
 
-// ── Adicionar/atualizar piloto ────────────────────────────────
+// ── UPSERT PILOT — SEM DUPLICAR MARKERS ───────────────────────
 export function upsertPilot(pilot) {
   if (!_map || !pilot.lat || !pilot.lon) return;
+  if (!pilot.id) return;
 
-  const icon  = pilotIcon(pilot.status || 'online', pilot.isCurrentUser === true);
+  const icon = pilotIcon(pilot.status || 'online', pilot.isCurrentUser === true);
   const popup = buildPopup(pilot);
 
   if (_markers[pilot.id]) {
-    _markers[pilot.id].setLatLng([pilot.lat, pilot.lon]);
-    _markers[pilot.id].setIcon(icon);
-    _markers[pilot.id].setPopupContent(popup);
-    _markers[pilot.id]._pilotData = pilot;
+    const marker = _markers[pilot.id];
+    marker.setLatLng([pilot.lat, pilot.lon]);
+    marker.setIcon(icon);
+    if (marker.getPopup()) {
+      marker.setPopupContent(popup);
+    } else {
+      marker.bindPopup(popup, { className: 'amx-popup', maxWidth: 230, closeButton: false });
+    }
+    marker._pilotData = pilot;
   } else {
-    const m = L.marker([pilot.lat, pilot.lon], { icon })
+    const marker = L.marker([pilot.lat, pilot.lon], { icon })
       .bindPopup(popup, { className: 'amx-popup', maxWidth: 230, closeButton: false })
       .addTo(_map);
-    m._pilotData = pilot;
-    _markers[pilot.id] = m;
+    marker._pilotData = pilot;
+    _markers[pilot.id] = marker;
   }
-  
+
   updateAreaOwner(pilot);
+  _updatePilotCount();
 }
 
 export function removePilot(id) {
-  if (_markers[id]) {
+  if (!_markers[id]) return;
+  try {
     _markers[id].remove();
-    delete _markers[id];
+  } catch (e) {
+    console.warn('Erro removendo marker:', id);
   }
+  delete _markers[id];
+  _updatePilotCount();
+}
+
+// ── CONTAGEM REAL DE PILOTOS ──────────────────────────────────
+function getRealPilotCount() {
+  const uniquePilots = new Set();
+  Object.entries(_markers).forEach(([id, marker]) => {
+    if (!id) return;
+    if (!marker) return;
+    if (!marker._pilotData) return;
+    if (marker._removed || marker._map === null) return;
+    uniquePilots.add(id);
+  });
+  return uniquePilots.size;
+}
+
+function _updatePilotCount() {
+  const totalPilots = getRealPilotCount();
+  const totalAreas = Object.keys(areaBeacons).length;
+
+  const elPilots = document.getElementById('pilotCount');
+  if (elPilots) elPilots.textContent = `${totalPilots} pilotos online`;
+
+  const elAreas = document.getElementById('areaCount');
+  if (elAreas) elAreas.textContent = `${totalAreas} áreas dominadas`;
 }
 
 // ── Listen Pilots (Firestore + bots) ─────────────────────────
@@ -537,7 +520,6 @@ export async function listenPilots(centerLat, centerLon, currentUid) {
 
   spawnBots(centerLat, centerLon, { wind: 10, temp: 25 });
   startBotUpdates();
-  _updatePilotCount();
 
   if (window._firebaseDB) {
     try {
@@ -566,7 +548,6 @@ export async function listenPilots(centerLat, centerLon, currentUid) {
             isCurrentUser: d.uid === currentUid,
           });
         });
-        _updatePilotCount();
       });
     } catch (e) {
       console.log('Modo offline: apenas bots');
@@ -574,31 +555,35 @@ export async function listenPilots(centerLat, centerLon, currentUid) {
   }
 }
 
-// ── Bots — espalha por todo o Brasil, não apenas ao redor do usuário ──
+// ── Bots — espalha por todo o Brasil ─────────────────────────
 export function spawnBots(lat, lon, weather) {
-  const hour     = new Date().getHours();
-  const isDay    = hour >= 5 && hour <= 18;
+  const hour = new Date().getHours();
+  const isDay = hour >= 5 && hour <= 18;
   const goodWind = (weather?.wind || 0) <= 20;
 
-  // Filtra bots ativos conforme horário/vento
+  Object.keys(_markers).forEach(id => {
+    if (!id.startsWith('bot_')) return;
+    const marker = _markers[id];
+    if (!marker || !marker._pilotData) removePilot(id);
+  });
+
   const activeBots = BOTS.filter((_, i) => {
-    if (!isDay)    return i < 3;
+    if (!isDay) return i < 3;
     if (!goodWind) return i < 6;
     return true;
   });
 
   activeBots.forEach((bot) => {
-    // Usa posição base diária (cidade + drift do dia) + micro-ruído de sessão
-    const sessionJitter = 0.02; // ~2km de ruído de sessão
+    const sessionJitter = 0.02;
     const bLat = bot.baseLat + (Math.random() - 0.5) * sessionJitter;
     const bLon = bot.baseLon + (Math.random() - 0.5) * sessionJitter;
+    const isOperating = isDay && goodWind && Math.random() > 0.4;
 
-    const isOp = isDay && goodWind && Math.random() > 0.4;
     upsertPilot({
       ...bot,
       lat: Math.max(-35, Math.min(5, bLat)),
       lon: Math.max(-75, Math.min(-35, bLon)),
-      status: isOp ? 'operating' : 'online',
+      status: isOperating ? 'operating' : 'online',
       isCurrentUser: false,
     });
   });
@@ -606,21 +591,18 @@ export function spawnBots(lat, lon, weather) {
 
 export function startBotUpdates() {
   if (_botInterval) clearInterval(_botInterval);
-  // Micro-movimento a cada 15s (simula voo), mantendo próximo da posição base diária
   _botInterval = setInterval(() => {
-    Object.entries(_markers).forEach(([id, m]) => {
+    Object.entries(_markers).forEach(([id, marker]) => {
       if (!id.startsWith('bot_')) return;
       const bot = BOTS.find(b => b.id === id);
-      if (!bot) return;
-      const p = m.getLatLng();
-      // Deriva suave, máximo 0.5 grau da base diária para não vagar demais
+      if (!bot || !marker) return;
+      const pos = marker.getLatLng();
       const maxDrift = 0.5;
-      const newLat = p.lat + (Math.random() - 0.5) * 0.003;
-      const newLon = p.lng + (Math.random() - 0.5) * 0.003;
-      // Ancora de volta à base se deriva muito
+      const newLat = pos.lat + (Math.random() - 0.5) * 0.003;
+      const newLon = pos.lng + (Math.random() - 0.5) * 0.003;
       const clampedLat = Math.abs(newLat - bot.baseLat) > maxDrift ? bot.baseLat : newLat;
       const clampedLon = Math.abs(newLon - bot.baseLon) > maxDrift ? bot.baseLon : newLon;
-      m.setLatLng([
+      marker.setLatLng([
         Math.max(-35, Math.min(5, clampedLat)),
         Math.max(-75, Math.min(-35, clampedLon)),
       ]);
@@ -635,18 +617,14 @@ export function stopBotUpdates() {
 // ── Localização ───────────────────────────────────────────────
 export function startLocationTracking(uid, onUpdate) {
   let lastLat = null, lastLon = null;
-
   function update() {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(pos => {
       const { latitude: lat, longitude: lon } = pos.coords;
-      const dist = lastLat
-        ? Math.sqrt(Math.pow((lat - lastLat) * 111000, 2) + Math.pow((lon - lastLon) * 111000, 2))
-        : 9999;
+      const dist = lastLat ? Math.sqrt(Math.pow((lat - lastLat) * 111000, 2) + Math.pow((lon - lastLon) * 111000, 2)) : 9999;
       if (dist >= 300 || !lastLat) { lastLat = lat; lastLon = lon; onUpdate(lat, lon); }
     }, null, { enableHighAccuracy: true, timeout: 10000 });
   }
-
   update();
   if (_locationInterval) clearInterval(_locationInterval);
   _locationInterval = setInterval(update, 60000);
@@ -659,9 +637,9 @@ export function stopLocationTracking() {
 // ── Operações ─────────────────────────────────────────────────
 export function startOperation(config, weatherState, lat, lon) {
   _operationActive = true;
-  _operationStart  = Date.now();
+  _operationStart = Date.now();
   _operationConfig = config || {};
-  _operationData   = { startTime: new Date().toISOString(), lat, lon, weather: { ...weatherState }, pauses: 0, lastActivity: Date.now() };
+  _operationData = { startTime: new Date().toISOString(), lat, lon, weather: { ...weatherState }, pauses: 0, lastActivity: Date.now() };
   if (_autoEndTimer) clearTimeout(_autoEndTimer);
   _autoEndTimer = setTimeout(() => {
     if (_operationActive) window.dispatchEvent(new CustomEvent('amx:check-operation'));
@@ -673,10 +651,10 @@ export function endOperation(weatherState) {
   if (!_operationActive) return null;
   _operationActive = false;
   if (_autoEndTimer) clearTimeout(_autoEndTimer);
-  if (_pauseTimer)   clearTimeout(_pauseTimer);
+  if (_pauseTimer) clearTimeout(_pauseTimer);
   const durationMin = Math.round((Date.now() - _operationStart) / 60000);
-  const score       = calcAMXScore(durationMin, weatherState, _operationData, _operationConfig);
-  const estimate    = calcOperationEstimate(durationMin, _operationConfig, _operationData);
+  const score = calcAMXScore(durationMin, weatherState, _operationData, _operationConfig);
+  const estimate = calcOperationEstimate(durationMin, _operationConfig, _operationData);
   return { ..._operationData, endTime: new Date().toISOString(), durationMin, score, estimate, config: _operationConfig };
 }
 
@@ -689,22 +667,22 @@ export function registerActivity() {
 
 export function calcOperationEstimate(durationMin, config, opData) {
   const avgHaPerH = parseFloat(config?.avgHaPerH) || 20;
-  const hoursOp   = Math.max(0, (durationMin - (opData?.pauses || 0) * 5)) / 60;
-  const estHa     = (hoursOp * avgHaPerH).toFixed(1);
-  const vazao     = parseFloat(config?.vazao) || 10;
-  const faixa     = parseFloat(config?.faixa) || 9;
+  const hoursOp = Math.max(0, (durationMin - (opData?.pauses || 0) * 5)) / 60;
+  const estHa = (hoursOp * avgHaPerH).toFixed(1);
+  const vazao = parseFloat(config?.vazao) || 10;
+  const faixa = parseFloat(config?.faixa) || 9;
   let conf = 100;
   if (vazao < 3 || vazao > 50) conf -= 30;
   if (faixa < 4 || faixa > 20) conf -= 20;
-  if (avgHaPerH > 45)           conf -= 25;
-  if (durationMin < 10)         conf -= 40;
+  if (avgHaPerH > 45) conf -= 25;
+  if (durationMin < 10) conf -= 40;
   conf = Math.max(0, conf);
   return { estHa, hoursOp: hoursOp.toFixed(1), confiability: conf, label: conf >= 80 ? 'Alta' : conf >= 50 ? 'Média' : 'Baixa' };
 }
 
 export function calcAMXScore(durationMin, weather, opData, config) {
   let score = 100;
-  const w  = weather || {};
+  const w = weather || {};
   const dt = w.deltaT || 5, wind = w.wind || 0, hum = w.humidity || 70, temp = w.temp || 25;
   if (dt < 2 || dt > 10) score -= 20; else if (dt > 8) score -= 10;
   if (wind > 20) score -= 25; else if (wind > 15) score -= 15; else if (wind > 10) score -= 5;
@@ -714,32 +692,32 @@ export function calcAMXScore(durationMin, weather, opData, config) {
   if (temp < 10) score -= 10;
   if (durationMin < 5) score -= 30; else if (durationMin < 10) score -= 15;
   const hour = new Date().getHours();
-  if (hour >= 0 && hour < 4)  score -= 20;
+  if (hour >= 0 && hour < 4) score -= 20;
   if (hour >= 5 && hour <= 9) score += 5;
   const vazao = parseFloat(config?.vazao) || 10;
-  if (vazao >= 5 && vazao <= 30)    score += 5;
-  if ((opData?.pauses || 0) > 3)    score -= 10;
+  if (vazao >= 5 && vazao <= 30) score += 5;
+  if ((opData?.pauses || 0) > 3) score -= 10;
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
 export function amxLabel(score) {
   if (score >= 90) return { label: 'Excelente', color: '#3da866' };
-  if (score >= 75) return { label: 'Ótimo',     color: '#5ec880' };
-  if (score >= 60) return { label: 'Bom',        color: '#1e88d0' };
-  if (score >= 40) return { label: 'Moderado',   color: '#e07a00' };
+  if (score >= 75) return { label: 'Ótimo', color: '#5ec880' };
+  if (score >= 60) return { label: 'Bom', color: '#1e88d0' };
+  if (score >= 40) return { label: 'Moderado', color: '#e07a00' };
   return { label: 'Risco', color: '#e03535' };
 }
 
 // ── Getters / Helpers ─────────────────────────────────────────
-export function isOperating()  { return _operationActive; }
-export function getMap()       { return _map; }
-export function getMarkers()   { return _markers; }
+export function isOperating() { return _operationActive; }
+export function getMap() { return _map; }
+export function getMarkers() { return _markers; }
 
 export function calcDistance(lat1, lon1, lat2, lon2) {
-  const R  = 6371;
+  const R = 6371;
   const dL = (lat2 - lat1) * Math.PI / 180;
   const dN = (lon2 - lon1) * Math.PI / 180;
-  const a  = Math.sin(dL / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dN / 2) ** 2;
+  const a = Math.sin(dL / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dN / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -754,20 +732,4 @@ export function findNearbyPilots(lat, lon, radiusKm) {
   return nearby;
 }
 
-// ── Contagem separada: pilotos online + áreas dominadas ───────
-function _updatePilotCount() {
-  // _markers = apenas pilotos (bots + reais), sem beacons
-  const totalPilots = Object.keys(_markers).length;
-  const totalAreas  = Object.keys(areaBeacons).length;
-
-  // Elemento principal de pilotos
-  const elPilots = document.getElementById('pilotCount');
-  if (elPilots) elPilots.textContent = `${totalPilots} pilotos online`;
-
-  // Elemento de áreas dominadas (opcional — crie um #areaCount no HTML se quiser)
-  const elAreas = document.getElementById('areaCount');
-  if (elAreas) elAreas.textContent = `${totalAreas} áreas dominadas`;
-}
-
-// Exporta para uso externo se necessário
 export { _updatePilotCount as updatePilotCount };
