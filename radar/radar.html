@@ -1299,21 +1299,168 @@ window.acceptReq=async(uid,name,message)=>{
   const db=window._firebaseDB;
   if(db){
     try{
-      const{collection,query,where,getDocs,updateDoc}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const{collection,query,where,getDocs,updateDoc,addDoc}=
+        await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+      // 1. Marcar pedido como aceito
       const q=query(collection(db,'requests'),where('uid','==',uid),where('status','==','open'));
       const snap=await getDocs(q);
       snap.forEach(d=>{
-        updateDoc(d.ref,{status:'accepted',acceptedBy:R.user?.uid}).catch(()=>{});
+        updateDoc(d.ref,{status:'accepted',acceptedBy:R.user?.uid,acceptedAt:new Date().toISOString()}).catch(()=>{});
         R.hiddenRequests.add(d.id);
       });
       saveHiddenToStorage();
+
+      // 2. Notificar o AUTOR do pedido para abrir o chat (bilateral)
+      const myName=cleanName(R.profile?.nickname||R.profile?.name,R.user);
+      await addDoc(collection(db,'notifications'),{
+        to:uid,                    // quem fez o pedido recebe
+        from:R.user?.uid,          // quem aceitou
+        fromName:myName,
+        accepterName:myName,
+        type:'accept',
+        message:`${myName} aceitou seu chamado!`,
+        read:false,
+        createdAt:new Date().toISOString()
+      });
+
+      // 3. Enviar primeira mensagem automática no chat compartilhado
+      const chatId=[R.user.uid,uid].sort().join('_');
+      await addDoc(collection(db,`chats/${chatId}/messages`),{
+        from:R.user?.uid,
+        fromName:myName,
+        text:`✅ Olá! Aceitei seu chamado: "${message}". Estou a caminho!`,
+        ts:new Date().toISOString(),
+        createdAt:window._fsTimestamp?.()
+      });
+
     }catch(e){console.warn('acceptReq:',e);}
   }
   $('modalChamado').classList.remove('on');
   $('modalChamadoOverlay').style.display='none';
   showToast(`✅ ${name} notificado! Abrindo chat…`);
+  // Abre chat para quem aceitou
   await window.openChatWith(uid,name);
 };
+
+// ── NOTIFICAÇÕES BILATERAIS (escuta para o autor do pedido) ──
+async function listenNotifications(){
+  const db=window._firebaseDB;if(!db||!R.user)return;
+  try{
+    const{collection,query,where,onSnapshot,updateDoc,doc}=
+      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+    const q=query(collection(db,'notifications'),
+      where('to','==',R.user.uid),
+      where('read','==',false)
+    );
+
+    onSnapshot(q,snapshot=>{
+      snapshot.docChanges().forEach(async change=>{
+        if(change.type!=='added')return;
+        const notif={id:change.doc.id,...change.doc.data()};
+
+        // Marcar como lida imediatamente para não reprocessar
+        updateDoc(doc(db,'notifications',notif.id),{read:true}).catch(()=>{});
+
+        if(notif.type==='accept'){
+          // === BILATERAL: autor do pedido recebe e abre o chat automaticamente ===
+          const accepterUid=notif.from;
+          const accepterName=notif.fromName||notif.accepterName||'Piloto';
+
+          // Não reabrir se já está no mesmo chat
+          if(R.chatTarget?.uid===accepterUid&&$('shChat').classList.contains('on'))return;
+
+          // Mostrar toast chamativo
+          showToast(`🎉 ${accepterName} aceitou seu chamado! Abrindo chat…`,5000);
+
+          // Piscar ícone de chat por 3s antes de abrir
+          const chatIconEl=$('chatDot');
+          if(chatIconEl){chatIconEl.classList.add('on');chatIconEl.textContent='!';}
+
+          // Aguardar 1.2s para o toast aparecer e abrir o chat
+          setTimeout(async()=>{
+            await window.openChatWith(accepterUid,accepterName);
+            // Carregar histórico do chat para mostrar a msg automática
+            await loadChatHistory(accepterUid);
+          },1200);
+
+        } else if(notif.type==='new_message'){
+          // Notificação de nova mensagem
+          const senderUid=notif.from;
+          const senderName=notif.fromName||'Piloto';
+          const preview=notif.message||'';
+          const chatAberto=$('shChat').classList.contains('on')&&R.chatTarget?.uid===senderUid;
+          if(!chatAberto){
+            $('chatDot').classList.add('on');
+            showToast(`💬 ${senderName}: ${preview.substring(0,35)}`,3500);
+          }
+        }
+      });
+    });
+  }catch(e){console.warn('listenNotifications:',e);}
+}
+
+// ── CARREGAR HISTÓRICO DO CHAT DO FIRESTORE ──
+async function loadChatHistory(otherUid){
+  const db=window._firebaseDB;if(!db||!R.user)return;
+  try{
+    const{collection,query,orderBy,limit,getDocs}=
+      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const chatId=[R.user.uid,otherUid].sort().join('_');
+    const q=query(collection(db,`chats/${chatId}/messages`),orderBy('createdAt','asc'),limit(50));
+    const snap=await getDocs(q);
+    const el=$('chatMsgs');
+    if(!snap.empty){
+      el.innerHTML='';
+      snap.forEach(d=>{
+        const msg=d.data();
+        const isMine=msg.from===R.user.uid;
+        const ts=msg.ts?new Date(msg.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'';
+        const div=document.createElement('div');
+        div.className=`message ${isMine?'mine':'theirs'}`;
+        div.innerHTML=`<div class="bubble">${msg.text||''}<div class="time">${ts}</div></div>`;
+        el.appendChild(div);
+      });
+      el.scrollTop=el.scrollHeight;
+    }
+    // Escutar novas mensagens em tempo real
+    listenChatMessages(otherUid);
+  }catch(e){console.warn('loadChatHistory:',e);}
+}
+
+// ── ESCUTA EM TEMPO REAL DAS MENSAGENS ──
+let _chatUnsub=null;
+function listenChatMessages(otherUid){
+  if(_chatUnsub){_chatUnsub();_chatUnsub=null;}
+  const db=window._firebaseDB;if(!db||!R.user)return;
+  import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(
+    ({collection,query,orderBy,onSnapshot,limit})=>{
+      const chatId=[R.user.uid,otherUid].sort().join('_');
+      const q=query(collection(db,`chats/${chatId}/messages`),orderBy('createdAt','asc'),limit(80));
+      let firstLoad=true;
+      _chatUnsub=onSnapshot(q,snap=>{
+        if(firstLoad){firstLoad=false;return;} // ignorar carga inicial (loadChatHistory já fez)
+        snap.docChanges().forEach(ch=>{
+          if(ch.type!=='added')return;
+          const msg=ch.doc.data();
+          if(msg.from===R.user.uid)return; // própria mensagem já foi renderizada localmente
+          const el=$('chatMsgs');
+          const ts=msg.ts?new Date(msg.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'';
+          const div=document.createElement('div');
+          div.className='message theirs';
+          div.innerHTML=`<div class="bubble">${msg.text||''}<div class="time">${ts}</div></div>`;
+          el.appendChild(div);el.scrollTop=el.scrollHeight;
+          // Notificar se chat fechado
+          if(!$('shChat').classList.contains('on')){
+            $('chatDot').classList.add('on');
+            showToast(`💬 Nova mensagem de ${msg.fromName||'Piloto'}`,3000);
+          }
+        });
+      });
+    }
+  ).catch(()=>{});
+}
 
 // ── CHAT ──
 window.onChatIconClick=async()=>{
