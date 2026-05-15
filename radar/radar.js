@@ -1,10 +1,11 @@
 // ═══════════════════════════════════════════════════════════════
-//  AgroMetrix Radar — radar.js v5.0 (Correção Definitiva de Nomes)
+//  AgroMetrix Radar — radar.js v5.1
 //  Mapa Leaflet · Pilotos reais · Bots espalhados · SOS · Operações
 // ═══════════════════════════════════════════════════════════════
 
 let _map = null;
-let _markers = {};
+let _markers = {};         // apenas pilotos (bots + reais)
+let _beaconMarkers = {};   // beacons de área (separado dos pilotos)
 let _botInterval = null;
 let _locationInterval = null;
 let _operationActive = false;
@@ -73,6 +74,8 @@ function renderBeacon(key) {
     if (owner.beaconRef) owner.beaconRef.off('click');
     areaBeacons[key].remove();
     delete areaBeacons[key];
+    // remove do índice de beacon markers
+    delete _beaconMarkers[key];
   }
   
   const beaconHtml = `
@@ -103,6 +106,7 @@ function renderBeacon(key) {
   
   marker.addTo(_map);
   areaBeacons[key] = marker;
+  _beaconMarkers[key] = marker; // índice separado para não afetar contagem de pilotos
   owner.beaconRef = marker;
   
   const updateLabelVisibility = () => {
@@ -228,78 +232,109 @@ function updateBeaconVisual(owner) {
 })();
 
 // ═══════════════════════════════════════════════════════════════
-// BOTS COM VALORES REALISTAS (5-100 hectares)
+// BOTS — 30 pilotos, espalhados pelo Brasil, posição diária
 // ═══════════════════════════════════════════════════════════════
 
 const CIDADES_BRASIL = [
-  { name:'Sorriso, MT', lat:-12.5500, lon:-55.7200 },
+  { name:'Sorriso, MT',            lat:-12.5500, lon:-55.7200 },
   { name:'Lucas do Rio Verde, MT', lat:-13.0600, lon:-55.9100 },
-  { name:'Nova Mutum, MT', lat:-13.8300, lon:-56.0800 },
-  { name:'Sinop, MT', lat:-11.8600, lon:-55.5000 },
-  { name:'Rondonópolis, MT', lat:-16.4700, lon:-54.6350 },
+  { name:'Nova Mutum, MT',         lat:-13.8300, lon:-56.0800 },
+  { name:'Sinop, MT',              lat:-11.8600, lon:-55.5000 },
+  { name:'Rondonópolis, MT',       lat:-16.4700, lon:-54.6350 },
   { name:'Primavera do Leste, MT', lat:-15.5500, lon:-54.2900 },
-  { name:'Rio Verde, GO', lat:-17.7981, lon:-50.9278 },
-  { name:'Jataí, GO', lat:-17.8831, lon:-51.7158 },
-  { name:'Campo Grande, MS', lat:-20.4697, lon:-54.6201 },
-  { name:'Dourados, MS', lat:-22.2211, lon:-54.8056 },
-  { name:'Ribeirão Preto, SP', lat:-21.1787, lon:-47.8103 },
-  { name:'Uberlândia, MG', lat:-18.9186, lon:-48.2772 },
-  { name:'Londrina, PR', lat:-23.3107, lon:-51.1628 },
-  { name:'Cascavel, PR', lat:-24.9578, lon:-53.4595 },
-  { name:'Passo Fundo, RS', lat:-28.2620, lon:-52.4063 },
-  { name:'Chapecó, SC', lat:-27.1003, lon:-52.6150 },
-  { name:'Barreiras, BA', lat:-12.1522, lon:-44.9989 },
-  { name:'Palmas, TO', lat:-10.2491, lon:-48.3243 },
+  { name:'Rio Verde, GO',          lat:-17.7981, lon:-50.9278 },
+  { name:'Jataí, GO',              lat:-17.8831, lon:-51.7158 },
+  { name:'Campo Grande, MS',       lat:-20.4697, lon:-54.6201 },
+  { name:'Dourados, MS',           lat:-22.2211, lon:-54.8056 },
+  { name:'Ribeirão Preto, SP',     lat:-21.1787, lon:-47.8103 },
+  { name:'Uberlândia, MG',         lat:-18.9186, lon:-48.2772 },
+  { name:'Londrina, PR',           lat:-23.3107, lon:-51.1628 },
+  { name:'Cascavel, PR',           lat:-24.9578, lon:-53.4595 },
+  { name:'Passo Fundo, RS',        lat:-28.2620, lon:-52.4063 },
+  { name:'Chapecó, SC',            lat:-27.1003, lon:-52.6150 },
+  { name:'Barreiras, BA',          lat:-12.1522, lon:-44.9989 },
+  { name:'Palmas, TO',             lat:-10.2491, lon:-48.3243 },
+  { name:'Imperatriz, MA',         lat: -5.5267, lon:-47.4919 },
+  { name:'Balsas, MA',             lat: -7.5322, lon:-46.0353 },
+  { name:'Luís Eduardo Magalhães, BA', lat:-12.0964, lon:-45.7919 },
+  { name:'Cristalina, GO',         lat:-16.7683, lon:-47.6142 },
+  { name:'Sete Lagoas, MG',        lat:-19.4653, lon:-44.2461 },
+  { name:'Patos de Minas, MG',     lat:-18.5784, lon:-46.5185 },
+  { name:'Unaí, MG',               lat:-16.3594, lon:-46.9032 },
+  { name:'Coxim, MS',              lat:-18.5072, lon:-54.7600 },
+  { name:'Maracaju, MS',           lat:-21.6139, lon:-55.1681 },
+  { name:'Querência, MT',          lat:-12.5950, lon:-52.1878 },
+  { name:'Tangará da Serra, MT',   lat:-14.6233, lon:-57.4950 },
+  { name:'Porto Nacional, TO',     lat:-10.7077, lon:-48.4169 },
 ];
 
-// Gerar bots com valores REALISTAS (máximo 100 hectares)
-function generateRealisticBots(count = 25) {
+// Seed diária: gera offset estável por bot+dia, muda todo dia
+function dailySeed(botId, component) {
+  const dayKey = Math.floor(Date.now() / 86400000); // dia atual em ms
+  let hash = 0;
+  const str = `${botId}_${component}_${dayKey}`;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return (Math.abs(hash) % 1000) / 1000; // 0..1
+}
+
+// Gera bots com 30 pilotos, cada um fixado na sua cidade
+function generateRealisticBots(count = 30) {
   const bots = [];
   const drones = ['DJI Agras T40','DJI Agras T50','XAG P100 Pro','XAG V40','EAVision U10'];
-  const mascNames = ['João Silva','Pedro Oliveira','Lucas Lima','Rafael Alves','Gustavo Pereira','Bruno Ferreira','Rodrigo Gomes','Thiago Monteiro','Felipe Nogueira','Marcelo Batista'];
-  const femNames = ['Maria Santos','Ana Costa','Fernanda Souza','Patrícia Rocha','Carla Mendes'];
-  const photos = ['👨‍✈️','🧑‍✈️','👨‍🚀','👨‍🌾','🧑‍🌾','👩‍✈️','👩‍🚀','👩‍🌾'];
-  
+  const mascNames = ['João Silva','Pedro Oliveira','Lucas Lima','Rafael Alves','Gustavo Pereira','Bruno Ferreira','Rodrigo Gomes','Thiago Monteiro','Felipe Nogueira','Marcelo Batista','André Carvalho','Diego Nascimento','Leandro Ribeiro','Vinicius Castro','Eduardo Martins'];
+  const femNames  = ['Maria Santos','Ana Costa','Fernanda Souza','Patrícia Rocha','Carla Mendes','Juliana Almeida'];
+  const photos    = ['👨‍✈️','🧑‍✈️','👨‍🚀','👨‍🌾','🧑‍🌾','👩‍✈️','👩‍🚀','👩‍🌾'];
+
   for (let i = 0; i < count; i++) {
+    // Cada bot usa sua própria cidade da lista (cycled se count > cidades)
     const cidade = CIDADES_BRASIL[i % CIDADES_BRASIL.length];
-    const isFem = i % 7 === 0;
-    const names = isFem ? femNames : mascNames;
-    
-    // Distribuição realista: 60% até 40ha, 25% até 70ha, 15% até 100ha
-    let hectares;
+    const isFem  = i % 6 === 0;
+    const names  = isFem ? femNames : mascNames;
+    const botId  = `bot_${i}`;
+
+    // Distribuição realista de hectares
     const rand = Math.random();
-    if (rand < 0.6) hectares = 5 + Math.floor(Math.random() * 35);
+    let hectares;
+    if (rand < 0.6)      hectares = 5  + Math.floor(Math.random() * 35);
     else if (rand < 0.85) hectares = 40 + Math.floor(Math.random() * 30);
-    else hectares = 70 + Math.floor(Math.random() * 30);
-    
-    const opsTotal = Math.floor(hectares / 2) + Math.floor(Math.random() * 15);
+    else                  hectares = 70 + Math.floor(Math.random() * 30);
+
+    const opsTotal   = Math.floor(hectares / 2) + Math.floor(Math.random() * 15);
     const hoursTotal = Math.floor(opsTotal * 1.2) + Math.floor(Math.random() * 30);
-    
+
+    // Posição base = cidade + drift diário de até ±0.25 graus (~28 km)
+    // Muda todo dia, mas é estável durante o dia
+    const dailyLatOffset = (dailySeed(botId, 'lat') - 0.5) * 0.5;
+    const dailyLonOffset = (dailySeed(botId, 'lon') - 0.5) * 0.5;
+
     bots.push({
-      id: `bot_${Date.now()}_${i}`,
+      id: botId,
       name: names[i % names.length],
       city: cidade.name,
-      drone: drones[Math.floor(Math.random() * drones.length)],
+      drone: drones[i % drones.length],
       score: 45 + Math.floor(Math.random() * 40),
       amxScore: 45 + Math.floor(Math.random() * 40),
-      photo: photos[Math.floor(Math.random() * photos.length)],
-      hoursTotal: hoursTotal,
-      opsTotal: opsTotal,
-      hectares: hectares,
-      lat: cidade.lat + (Math.random() - 0.5) * 0.15,
-      lon: cidade.lon + (Math.random() - 0.5) * 0.15,
+      photo: photos[i % photos.length],
+      hoursTotal,
+      opsTotal,
+      hectares,
+      // Posição base diária (cidade + drift do dia)
+      baseLat: cidade.lat + dailyLatOffset,
+      baseLon: cidade.lon + dailyLonOffset,
       status: Math.random() > 0.6 ? 'online' : (Math.random() > 0.5 ? 'operating' : 'offline'),
     });
   }
   return bots;
 }
 
-const BOTS = generateRealisticBots(22);
+const BOTS = generateRealisticBots(30);
 
 // ── Função robusta cleanName() ────────────────────────────────
 function cleanName(name, user) {
   let n = String(name || '').trim();
-
   const invalid =
     !n ||
     n.startsWith('http') ||
@@ -307,26 +342,11 @@ function cleanName(name, user) {
     n.includes('lh3.googleusercontent.com') ||
     n.includes('.com/') ||
     n.includes('=s96-c');
-
   if (invalid) {
-    n =
-      user?.displayName ||
-      user?.email?.split('@')[0] ||
-      'Piloto';
+    n = user?.displayName || user?.email?.split('@')[0] || 'Piloto';
   }
-
-  if (
-    !n ||
-    n.startsWith('http') ||
-    n.includes('googleusercontent.com')
-  ) {
-    n = 'Piloto';
-  }
-
-  if (n.length > 25) {
-    n = n.substring(0, 22) + '...';
-  }
-
+  if (!n || n.startsWith('http') || n.includes('googleusercontent.com')) n = 'Piloto';
+  if (n.length > 25) n = n.substring(0, 22) + '...';
   return n;
 }
 
@@ -421,16 +441,14 @@ function buildPopup(pilot) {
         💬 Chat</button>` : '';
 
   let statusText = '🟢 Online';
-  if (pilot.status === 'sos')        statusText = '🚨 SOS';
+  if (pilot.status === 'sos')            statusText = '🚨 SOS';
   else if (pilot.status === 'request')   statusText = '🔧 Pedido';
   else if (pilot.status === 'operating') statusText = '🚁 Operando';
 
   let photoHtml = '👨‍✈️';
   if (pilot.photo && !pilot.photo.startsWith('http') && pilot.photo.length < 10) {
     photoHtml = pilot.photo;
-  } else if (pilot.photo && pilot.photo.startsWith('http') && !pilot.photo.includes('googleusercontent.com')) {
-    photoHtml = `<img src="${pilot.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.outerHTML='👨‍✈️'">`;
-  } else if (pilot.photo && pilot.photo.includes('googleusercontent.com')) {
+  } else if (pilot.photo && pilot.photo.startsWith('http')) {
     photoHtml = `<img src="${pilot.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.outerHTML='👨‍✈️'">`;
   }
 
@@ -530,37 +548,56 @@ export async function listenPilots(centerLat, centerLon, currentUid) {
   }
 }
 
-// ── Bots ──────────────────────────────────────────────────────
+// ── Bots — espalha por todo o Brasil, não apenas ao redor do usuário ──
 export function spawnBots(lat, lon, weather) {
-  const hour    = new Date().getHours();
-  const isDay   = hour >= 5 && hour <= 18;
+  const hour     = new Date().getHours();
+  const isDay    = hour >= 5 && hour <= 18;
   const goodWind = (weather?.wind || 0) <= 20;
 
+  // Filtra bots ativos conforme horário/vento
   const activeBots = BOTS.filter((_, i) => {
-    if (!isDay)    return i < 2;
-    if (!goodWind) return i < 4;
+    if (!isDay)    return i < 3;
+    if (!goodWind) return i < 6;
     return true;
   });
 
-  activeBots.forEach((bot, i) => {
-    const angle  = (i / activeBots.length) * Math.PI * 2 + Math.random() * 0.5;
-    const radius = (5 + Math.random() * 35) / 111;
-    const blat   = lat + Math.cos(angle) * radius;
-    const blon   = lon + Math.sin(angle) * radius / Math.cos(lat * Math.PI / 180);
-    const isOp   = isDay && goodWind && Math.random() > 0.4;
-    upsertPilot({ ...bot, lat: blat, lon: blon, status: isOp ? 'operating' : 'online', isCurrentUser: false });
+  activeBots.forEach((bot) => {
+    // Usa posição base diária (cidade + drift do dia) + micro-ruído de sessão
+    const sessionJitter = 0.02; // ~2km de ruído de sessão
+    const bLat = bot.baseLat + (Math.random() - 0.5) * sessionJitter;
+    const bLon = bot.baseLon + (Math.random() - 0.5) * sessionJitter;
+
+    const isOp = isDay && goodWind && Math.random() > 0.4;
+    upsertPilot({
+      ...bot,
+      lat: Math.max(-35, Math.min(5, bLat)),
+      lon: Math.max(-75, Math.min(-35, bLon)),
+      status: isOp ? 'operating' : 'online',
+      isCurrentUser: false,
+    });
   });
 }
 
 export function startBotUpdates() {
   if (_botInterval) clearInterval(_botInterval);
+  // Micro-movimento a cada 15s (simula voo), mantendo próximo da posição base diária
   _botInterval = setInterval(() => {
     Object.entries(_markers).forEach(([id, m]) => {
       if (!id.startsWith('bot_')) return;
+      const bot = BOTS.find(b => b.id === id);
+      if (!bot) return;
       const p = m.getLatLng();
-      const newLat = Math.max(-35, Math.min(5, p.lat + (Math.random() - 0.5) * 0.003));
-      const newLng = Math.max(-75, Math.min(-35, p.lng + (Math.random() - 0.5) * 0.003));
-      m.setLatLng([newLat, newLng]);
+      // Deriva suave, máximo 0.5 grau da base diária para não vagar demais
+      const maxDrift = 0.5;
+      const newLat = p.lat + (Math.random() - 0.5) * 0.003;
+      const newLon = p.lng + (Math.random() - 0.5) * 0.003;
+      // Ancora de volta à base se deriva muito
+      const clampedLat = Math.abs(newLat - bot.baseLat) > maxDrift ? bot.baseLat : newLat;
+      const clampedLon = Math.abs(newLon - bot.baseLon) > maxDrift ? bot.baseLon : newLon;
+      m.setLatLng([
+        Math.max(-35, Math.min(5, clampedLat)),
+        Math.max(-75, Math.min(-35, clampedLon)),
+      ]);
     });
   }, 15000);
 }
@@ -691,8 +728,20 @@ export function findNearbyPilots(lat, lon, radiusKm) {
   return nearby;
 }
 
+// ── Contagem separada: pilotos online + áreas dominadas ───────
 function _updatePilotCount() {
-  const total = Object.keys(_markers).length;
-  const el    = document.getElementById('pilotCount');
-  if (el) el.textContent = `${total} pilotos`;
+  // _markers = apenas pilotos (bots + reais), sem beacons
+  const totalPilots = Object.keys(_markers).length;
+  const totalAreas  = Object.keys(areaBeacons).length;
+
+  // Elemento principal de pilotos
+  const elPilots = document.getElementById('pilotCount');
+  if (elPilots) elPilots.textContent = `${totalPilots} pilotos online`;
+
+  // Elemento de áreas dominadas (opcional — crie um #areaCount no HTML se quiser)
+  const elAreas = document.getElementById('areaCount');
+  if (elAreas) elAreas.textContent = `${totalAreas} áreas dominadas`;
 }
+
+// Exporta para uso externo se necessário
+export { _updatePilotCount as updatePilotCount };
