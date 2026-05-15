@@ -1,732 +1,819 @@
-// ══════════════════════════════════════════════════════════════════
-// AGROMETRIX RADAR — BOTS AGRÍCOLAS + SISTEMA DE DOMÍNIO DE ÁREA
-// ══════════════════════════════════════════════════════════════════
-//
-// COMO USAR:
-//   1. No index.html, SUBSTITUA o bloco que começa em
-//      "const CIDADES_BRASIL = [" e termina em
-//      "function updateBotCount() {" pelo conteúdo deste arquivo.
-//   2. Mantenha tudo que vem depois de updateBotCount() intacto.
-//   3. Chame initDominioArea(R.map) logo após setupMap() inicializar o mapa.
-//      Exemplo (dentro de setupMap):
-//        R.map = initMap('mapEl', lat, lon);
-//        initDominioArea(R.map);   // ← adicionar esta linha
-//
-// ══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+//  AgroMetrix Radar — radar.js v3.1 (Com Sistema de Chamados)
+//  Mapa Leaflet · Pilotos reais · Bots · SOS · Operações · Chamados
+// ═══════════════════════════════════════════════════════════════
 
+let _map = null;
+let _markers = {};
+let _botInterval = null;
+let _locationInterval = null;
+let _operationActive = false;
+let _operationStart = null;
+let _operationData = {};
+let _operationConfig = {};
+let _pauseTimer = null;
+let _autoEndTimer = null;
+let _currentUid = null;
 
-// ── 1. ARRAY DE 25 BOTS AGRÍCOLAS REALISTAS ──────────────────────
-//
-// Distribuição:
-//   • 20 homens, 5 mulheres
-//   • Regiões: MT, GO, MS, Oeste BA, PR, Interior SP,
-//              Triângulo Mineiro, TO, MATOPIBA, Manaus
-//   • Ha entre 10–100 (maioria 10–60)
-//   • Posições fixas em zonas agrícolas, sem litoral/oceano
+// ── SISTEMA DE CHAMADOS (Máx 1 ativo) ─────────────────────────
+const activeCallsMap = new Map(); // { callId: { uid, timestamp, location, type, accepted } }
+let currentCallId = null;
+let _callTimerInterval = null;
 
+// ── Bots simulados (pilotos realistas) ───────────────────────
 const BOTS = [
-  // ── Mato Grosso (5 pilotos) ──────────────────────────────────
-  {
-    id: 'bot_001',
-    name: 'Renato Borges',
-    city: 'Sorriso, MT',
-    drone: 'DJI Agras T50',
-    photo: '👨‍✈️',
-    score: 82,
-    hoursTotal: 1840,
-    opsTotal: 312,
-    haTotal: 48,
-    lat: -12.548, lon: -55.721,
-    status: 'operating',
-    isCurrentUser: false,
-  },
-  {
-    id: 'bot_002',
-    name: 'Cleiton Figueiredo',
-    city: 'Lucas do Rio Verde, MT',
-    drone: 'XAG P100 Pro',
-    photo: '👨‍✈️',
-    score: 76,
-    hoursTotal: 1320,
-    opsTotal: 241,
-    haTotal: 62,
-    lat: -13.056, lon: -55.913,
-    status: 'online',
-    isCurrentUser: false,
-  },
-  {
-    id: 'bot_003',
-    name: 'Deivid Machado',
-    city: 'Sinop, MT',
-    drone: 'DJI Agras T40',
-    photo: '👨‍✈️',
-    score: 69,
-    hoursTotal: 980,
-    opsTotal: 178,
-    haTotal: 35,
-    lat: -11.862, lon: -55.504,
-    status: 'online',
-    isCurrentUser: false,
-  },
-  {
-    id: 'bot_004',
-    name: 'Adriana Queiroz',
-    city: 'Campos de Júlio, MT',
-    drone: 'XAG V40',
-    photo: '👩‍✈️',
-    score: 88,
-    hoursTotal: 2100,
-    opsTotal: 390,
-    haTotal: 57,
-    lat: -13.518, lon: -59.268,
-    status: 'operating',
-    isCurrentUser: false,
-  },
-  {
-    id: 'bot_005',
-    name: 'Márcio Cavalcante',
-    city: 'Primavera do Leste, MT',
-    drone: 'DJI Agras T50',
-    photo: '👨‍✈️',
-    score: 91,
-    hoursTotal: 2650,
-    opsTotal: 510,
-    haTotal: 73,
-    lat: -15.559, lon: -54.284,
-    status: 'operating',
-    isCurrentUser: false,
-  },
-
-  // ── Goiás (3 pilotos) ────────────────────────────────────────
-  {
-    id: 'bot_006',
-    name: 'Fábio Rezende',
-    city: 'Rio Verde, GO',
-    drone: 'XAG P100 Pro',
-    photo: '👨‍✈️',
-    score: 78,
-    hoursTotal: 1540,
-    opsTotal: 288,
-    haTotal: 41,
-    lat: -17.793, lon: -50.928,
-    status: 'online',
-    isCurrentUser: false,
-  },
-  {
-    id: 'bot_007',
-    name: 'Tatiane Moreira',
-    city: 'Jataí, GO',
-    drone: 'DJI Agras T40',
-    photo: '👩‍✈️',
-    score: 84,
-    hoursTotal: 1760,
-    opsTotal: 320,
-    haTotal: 53,
-    lat: -17.881, lon: -51.713,
-    status: 'operating',
-    isCurrentUser: false,
-  },
-  {
-    id: 'bot_008',
-    name: 'Wendel Carneiro',
-    city: 'Mineiros, GO',
-    drone: 'EAVision U10',
-    photo: '👨‍✈️',
-    score: 65,
-    hoursTotal: 730,
-    opsTotal: 140,
-    haTotal: 22,
-    lat: -17.567, lon: -52.552,
-    status: 'online',
-    isCurrentUser: false,
-  },
-
-  // ── Mato Grosso do Sul (2 pilotos) ───────────────────────────
-  {
-    id: 'bot_009',
-    name: 'Leandro Pavan',
-    city: 'Dourados, MS',
-    drone: 'DJI Agras T50',
-    photo: '👨‍✈️',
-    score: 87,
-    hoursTotal: 2010,
-    opsTotal: 367,
-    haTotal: 66,
-    lat: -22.223, lon: -54.805,
-    status: 'operating',
-    isCurrentUser: false,
-  },
-  {
-    id: 'bot_010',
-    name: 'Robson Menezes',
-    city: 'Maracaju, MS',
-    drone: 'XAG V40',
-    photo: '👨‍✈️',
-    score: 72,
-    hoursTotal: 1100,
-    opsTotal: 198,
-    haTotal: 38,
-    lat: -21.630, lon: -55.168,
-    status: 'online',
-    isCurrentUser: false,
-  },
-
-  // ── Oeste da Bahia (2 pilotos) ───────────────────────────────
-  {
-    id: 'bot_011',
-    name: 'Gilson Patriota',
-    city: 'Luís Eduardo Magalhães, BA',
-    drone: 'DJI Agras T40',
-    photo: '👨‍✈️',
-    score: 79,
-    hoursTotal: 1420,
-    opsTotal: 260,
-    haTotal: 44,
-    lat: -12.096, lon: -45.789,
-    status: 'operating',
-    isCurrentUser: false,
-  },
-  {
-    id: 'bot_012',
-    name: 'Simone Barros',
-    city: 'Barreiras, BA',
-    drone: 'XAG P100 Pro',
-    photo: '👩‍✈️',
-    score: 81,
-    hoursTotal: 1680,
-    opsTotal: 305,
-    haTotal: 59,
-    lat: -12.152, lon: -44.987,
-    status: 'online',
-    isCurrentUser: false,
-  },
-
-  // ── Paraná (3 pilotos) ───────────────────────────────────────
-  {
-    id: 'bot_013',
-    name: 'Emerson Krauss',
-    city: 'Cascavel, PR',
-    drone: 'DJI Agras T25',
-    photo: '👨‍✈️',
-    score: 74,
-    hoursTotal: 1180,
-    opsTotal: 212,
-    haTotal: 31,
-    lat: -24.957, lon: -53.456,
-    status: 'online',
-    isCurrentUser: false,
-  },
-  {
-    id: 'bot_014',
-    name: 'Alex Witkoski',
-    city: 'Toledo, PR',
-    drone: 'XAG V40',
-    photo: '👨‍✈️',
-    score: 86,
-    hoursTotal: 1900,
-    opsTotal: 348,
-    haTotal: 55,
-    lat: -24.724, lon: -53.742,
-    status: 'operating',
-    isCurrentUser: false,
-  },
-  {
-    id: 'bot_015',
-    name: 'Cristiane Luz',
-    city: 'Palotina, PR',
-    drone: 'DJI Agras T40',
-    photo: '👩‍✈️',
-    score: 70,
-    hoursTotal: 960,
-    opsTotal: 172,
-    haTotal: 28,
-    lat: -24.284, lon: -53.843,
-    status: 'online',
-    isCurrentUser: false,
-  },
-
-  // ── Interior de SP (2 pilotos) ───────────────────────────────
-  {
-    id: 'bot_016',
-    name: 'Vinicius Salles',
-    city: 'Ribeirão Preto, SP',
-    drone: 'DJI Agras T50',
-    photo: '👨‍✈️',
-    score: 93,
-    hoursTotal: 2800,
-    opsTotal: 535,
-    haTotal: 85,
-    lat: -21.025, lon: -47.724,
-    status: 'operating',
-    isCurrentUser: false,
-  },
-  {
-    id: 'bot_017',
-    name: 'Hélio Junqueira',
-    city: 'Barretos, SP',
-    drone: 'XAG P100 Pro',
-    photo: '👨‍✈️',
-    score: 77,
-    hoursTotal: 1350,
-    opsTotal: 247,
-    haTotal: 43,
-    lat: -20.558, lon: -48.567,
-    status: 'online',
-    isCurrentUser: false,
-  },
-
-  // ── Triângulo Mineiro (2 pilotos) ────────────────────────────
-  {
-    id: 'bot_018',
-    name: 'Augusto Braga',
-    city: 'Uberaba, MG',
-    drone: 'DJI Agras T40',
-    photo: '👨‍✈️',
-    score: 80,
-    hoursTotal: 1610,
-    opsTotal: 294,
-    haTotal: 49,
-    lat: -19.747, lon: -47.931,
-    status: 'online',
-    isCurrentUser: false,
-  },
-  {
-    id: 'bot_019',
-    name: 'Nilton Saraiva',
-    city: 'Patos de Minas, MG',
-    drone: 'EAVision U10',
-    photo: '👨‍✈️',
-    score: 67,
-    hoursTotal: 820,
-    opsTotal: 151,
-    haTotal: 27,
-    lat: -18.579, lon: -46.517,
-    status: 'online',
-    isCurrentUser: false,
-  },
-
-  // ── Tocantins (2 pilotos) ────────────────────────────────────
-  {
-    id: 'bot_020',
-    name: 'Dorneles Aguiar',
-    city: 'Pedro Afonso, TO',
-    drone: 'XAG P100 Pro',
-    photo: '👨‍✈️',
-    score: 75,
-    hoursTotal: 1290,
-    opsTotal: 233,
-    haTotal: 40,
-    lat: -8.969, lon: -48.174,
-    status: 'operating',
-    isCurrentUser: false,
-  },
-  {
-    id: 'bot_021',
-    name: 'Edmar Fontes',
-    city: 'Gurupi, TO',
-    drone: 'DJI Agras T25',
-    photo: '👨‍✈️',
-    score: 63,
-    hoursTotal: 690,
-    opsTotal: 128,
-    haTotal: 19,
-    lat: -11.729, lon: -49.065,
-    status: 'online',
-    isCurrentUser: false,
-  },
-
-  // ── MATOPIBA — MA/PI (2 pilotos) ─────────────────────────────
-  {
-    id: 'bot_022',
-    name: 'Tarcísio Leal',
-    city: 'Balsas, MA',
-    drone: 'DJI Agras T40',
-    photo: '👨‍✈️',
-    score: 71,
-    hoursTotal: 1040,
-    opsTotal: 186,
-    haTotal: 34,
-    lat: -7.531, lon: -46.037,
-    status: 'online',
-    isCurrentUser: false,
-  },
-  {
-    id: 'bot_023',
-    name: 'Wenderson Pires',
-    city: 'Uruçuí, PI',
-    drone: 'XAG V40',
-    photo: '👨‍✈️',
-    score: 73,
-    hoursTotal: 1130,
-    opsTotal: 204,
-    haTotal: 37,
-    lat: -7.228, lon: -44.555,
-    status: 'operating',
-    isCurrentUser: false,
-  },
-
-  // ── Manaus — AM (1 piloto) ───────────────────────────────────
-  {
-    id: 'bot_024',
-    name: 'Kelven Andrade',
-    city: 'Manaus, AM',
-    drone: 'DJI Agras T25',
-    photo: '👨‍✈️',
-    score: 61,
-    hoursTotal: 640,
-    opsTotal: 117,
-    haTotal: 16,
-    lat: -3.119, lon: -60.022,
-    status: 'online',
-    isCurrentUser: false,
-  },
-
-  // ── Interior SP extra (1 piloto) ─────────────────────────────
-  {
-    id: 'bot_025',
-    name: 'Patricia Vidal',
-    city: 'Araçatuba, SP',
-    drone: 'DJI Agras T50',
-    photo: '👩‍✈️',
-    score: 89,
-    hoursTotal: 2230,
-    opsTotal: 412,
-    haTotal: 78,
-    lat: -21.209, lon: -50.426,
-    status: 'operating',
-    isCurrentUser: false,
-  },
+  { id: 'bot_001', name: 'Carlos Mendonça',   city: 'Sorriso, MT',      drone: 'DJI Agras T40',  score: 87, photo: '👨‍✈️', hoursTotal: 1240, opsTotal: 312 },
+  { id: 'bot_002', name: 'Rafael Bueno',      city: 'Rondonópolis, MT', drone: 'XAG P100 Pro',   score: 92, photo: '🧑‍✈️', hoursTotal: 890,  opsTotal: 198 },
+  { id: 'bot_003', name: 'Marcos Figueiredo', city: 'Lucas do Rio Verde', drone: 'DJI Agras T30', score: 74, photo: '👨‍✈️', hoursTotal: 560,  opsTotal: 143 },
+  { id: 'bot_004', name: 'Thiago Cavalcante', city: 'Primavera do Leste', drone: 'XAG V40',      score: 95, photo: '🧑‍✈️', hoursTotal: 2100, opsTotal: 487 },
+  { id: 'bot_005', name: 'Diego Almeida',     city: 'Campo Verde, MT',   drone: 'DJI Agras T50', score: 81, photo: '👨‍✈️', hoursTotal: 720,  opsTotal: 201 },
+  { id: 'bot_006', name: 'Leandro Souza',     city: 'Nova Mutum, MT',    drone: 'Pegasus Agri 10', score: 68, photo: '🧑‍✈️', hoursTotal: 430,  opsTotal: 98 },
+  { id: 'bot_007', name: 'Fabio Martins',     city: 'Sapezal, MT',       drone: 'DJI Agras T40', score: 89, photo: '👨‍✈️', hoursTotal: 1560, opsTotal: 389 },
+  { id: 'bot_008', name: 'Anderson Lima',     city: 'Sinop, MT',         drone: 'XAG P100 Pro',  score: 77, photo: '🧑‍✈️', hoursTotal: 680,  opsTotal: 167 },
 ];
 
+// ── Inicializar mapa ──────────────────────────────────────────
+export function initMap(containerId, lat, lon) {
+  if (_map) { _map.remove(); _map = null; }
 
-// ── 2. LÓGICA DE MOVIMENTO DOS BOTS ─────────────────────────────
-//
-// Cada bot tem uma posição-base fixa (lat/lon originais).
-// A cada intervalo, drifta ±0.025° (~2.7 km) — simula voo em fazendas
-// próximas. Nunca atravessa estado.
+  _map = L.map(containerId, {
+    zoomControl: false,
+    attributionControl: false,
+  }).setView([lat || -15.7801, lon || -47.9292], 10);
 
-let activeBots = [...BOTS];
-let botMovementInterval = null;
+  const osmTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap',
+  });
+  osmTile.addTo(_map);
 
-/** Spawn inicial: upserta todos os bots, ajustando status pelo horário */
-function _spawnBotsAgro() {
-  const hour = new Date().getHours();
-  const isDay = hour >= 5 && hour <= 18;
+  L.control.zoom({ position: 'bottomright' }).addTo(_map);
+  L.control.attribution({ position: 'bottomleft' }).addTo(_map);
 
-  activeBots.forEach(bot => {
-    const statusAjustado = !isDay
-      ? (Math.random() > 0.7 ? 'online' : 'offline')
-      : bot.status;
-    upsertPilot({ ...bot, status: statusAjustado });
+  return _map;
+}
+
+// ── Ícone de piloto ───────────────────────────────────────────
+function pilotIcon(status, isUser = false) {
+  const isSOS = status === 'sos';
+  const isOperating = status === 'operating';
+  const isRequest = status === 'request';
+
+  let color = '#1e88d0';
+  if (isOperating) color = '#3da866';
+  if (isSOS) color = '#e03535';
+  if (isRequest) color = '#f5a623';
+
+  const size = isUser ? 48 : 40;
+
+  let svg = `<svg width="${size}" height="${size}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">`;
+  
+  if (isSOS) {
+    svg += `<circle cx="20" cy="20" r="15" fill="none" stroke="#e03535" stroke-width="2.5">
+      <animate attributeName="r" from="14" to="28" dur="1s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;0" dur="1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="20" cy="20" r="15" fill="none" stroke="#e03535" stroke-width="1.5">
+      <animate attributeName="r" from="14" to="38" dur="1s" begin="0.35s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0" dur="1s" begin="0.35s" repeatCount="indefinite"/>
+    </circle>`;
+  }
+  
+  if (isRequest) {
+    svg += `<circle cx="20" cy="20" r="15" fill="none" stroke="#f5a623" stroke-width="2">
+      <animate attributeName="r" from="14" to="26" dur="1.4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;0" dur="1.4s" repeatCount="indefinite"/>
+    </circle>`;
+  }
+  
+  if (isOperating) {
+    svg += `<circle cx="20" cy="20" r="15" fill="none" stroke="${color}" stroke-width="1.5">
+      <animate attributeName="r" from="13" to="22" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0" dur="1.8s" repeatCount="indefinite"/>
+    </circle>`;
+  }
+  
+  svg += `<circle cx="20" cy="20" r="14" fill="${color}" opacity="0.15"/>
+    <circle cx="20" cy="20" r="10" fill="${color}" opacity="0.95"/>`;
+  
+  if (isUser) {
+    svg += `<circle cx="20" cy="20" r="5" fill="white" opacity="0.95"/>`;
+  }
+  
+  if (isSOS) {
+    svg += `<text x="20" y="25" text-anchor="middle" font-size="13" fill="white">🚨</text>`;
+  } else if (isRequest) {
+    svg += `<text x="20" y="25" text-anchor="middle" font-size="13" fill="white">🔧</text>`;
+  } else if (isOperating) {
+    svg += `<text x="20" y="25" text-anchor="middle" font-size="13" fill="white">🚁</text>`;
+  }
+  
+  svg += `</svg>`;
+
+  return L.divIcon({
+    html: svg,
+    className: '',
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
   });
 }
 
-/** Movimento orgânico: drift leve na posição-base */
-function _startBotMovementAgro() {
-  if (botMovementInterval) clearInterval(botMovementInterval);
-  botMovementInterval = setInterval(() => {
-    const hour = new Date().getHours();
-    const isDay = hour >= 5 && hour <= 18;
+// ── Popup com botões (integrado com chamados) ─────────────────
+function buildPopup(pilot) {
+  const reqBtn = (pilot.status === 'request' && !pilot.isCurrentUser) ?
+    `<button onclick="window.acceptCallFromPopup('${pilot.id}', '${(pilot.requestMsg || '').replace(/'/g, "\\'")}', '${pilot.name.replace(/'/g, "\\'")}')"
+      style="margin-top:8px;width:100%;padding:7px;border-radius:8px;border:none;background:#f5a623;color:#0d1a0f;font-weight:700;font-size:12px;cursor:pointer">
+      ✅ Aceitar chamado</button>` : '';
 
-    activeBots.forEach(bot => {
-      // Drift pequeno, máximo ~3 km
-      const dlat = (Math.random() - 0.5) * 0.025;
-      const dlon = (Math.random() - 0.5) * 0.025;
-      bot.lat += dlat;
-      bot.lon += dlon;
+  const sosBtn = (pilot.status === 'sos' && !pilot.isCurrentUser) ?
+    `<button onclick="window.respondToSOS('${pilot.id}', '${pilot.name.replace(/'/g, "\\'")}')"
+      style="margin-top:8px;width:100%;padding:7px;border-radius:8px;border:none;background:#e03535;color:white;font-weight:700;font-size:12px;cursor:pointer">
+      🚨 Responder SOS</button>` : '';
 
-      // Evolução diária de ha (+10–20 ha por dia, acumulado por hora ≈ +0.5–0.8 ha)
-      bot.haTotal = Math.min(100, bot.haTotal + (Math.random() * 0.8 + 0.4));
+  let statusText = '🟢 Online';
+  if (pilot.status === 'sos') statusText = '🚨 SOS';
+  else if (pilot.status === 'request') statusText = '🔧 Pedido';
+  else if (pilot.status === 'operating') statusText = '🚁 Operando';
 
-      const novoStatus = !isDay
-        ? (Math.random() > 0.8 ? 'online' : 'offline')
-        : (Math.random() > 0.45 ? 'operating' : 'online');
-
-      upsertPilot({ ...bot, status: novoStatus });
-    });
-
-    // Atualiza domínio de área após movimento
-    _renderDominioBeacons();
-    updatePilotCount();
-  }, 15000); // a cada 15s (mesmo intervalo do startBotUpdates original)
+  return `<div style="font-family:'Syne',sans-serif;min-width:190px;padding:4px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div style="font-size:24px">${pilot.photo || '👨‍✈️'}</div>
+      <div>
+        <div style="font-weight:700;font-size:14px;color:#e8f5eb">${pilot.name || 'Piloto'}</div>
+        <div style="font-size:10px;color:#5a8a65">${pilot.city || ''}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
+      <span style="background:#1f5534;color:#5ec880;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700">AMX ${pilot.score || 0}</span>
+      <span style="background:#111d14;color:#9ac8a6;padding:2px 8px;border-radius:6px;font-size:10px">${statusText}</span>
+    </div>
+    ${pilot.requestMsg ? `<div style="font-size:11px;color:#f5a623;margin-bottom:4px">📢 ${pilot.requestMsg}</div>` : ''}
+    <div style="font-size:10px;color:#5a8a65">🚁 ${pilot.drone || 'Drone agrícola'}</div>
+    <div style="font-size:10px;color:#5a8a65;margin-top:2px">⏱ ${pilot.hoursTotal || 0}h · ${pilot.opsTotal || 0} ops</div>
+    ${reqBtn}${sosBtn}
+  </div>`;
 }
 
-function _updateBotCountAgro() {
-  // Mantém compatibilidade com chamadas existentes em setInterval
-  updatePilotCount();
-}
+// ── Funções do Sistema de Chamados ────────────────────────────
 
-
-// ── 3. SISTEMA DE DOMÍNIO DE ÁREA ───────────────────────────────
-//
-// Grid de 0.5° (~55 km). O piloto (bot ou real) com mais haTotal
-// naquele grid é o "dominante". Exibido como beacon pulse verde
-// discreto no mapa. Nome só aparece no hover/click.
-
-const GRID_SIZE = 0.5; // graus
-let _dominioLayer = null;
-let _dominioMap   = null;
-let _dominioMarkers = {}; // chave: "gridLat_gridLon"
-
-/** Inicializa o sistema no mapa Leaflet */
-function initDominioArea(map) {
-  _dominioMap = map;
-  _dominioLayer = L.layerGroup().addTo(map);
-  _renderDominioBeacons();
-}
-
-/** Calcula qual piloto domina cada grid e renderiza beacons */
-function _renderDominioBeacons() {
-  if (!_dominioMap) return;
-
-  // Coletar todos os pilotos visíveis (bots + user)
-  const todos = [];
-
-  // Bots
-  activeBots.forEach(b => {
-    if (b.status !== 'offline') {
-      todos.push({ id: b.id, name: b.name, city: b.city, drone: b.drone,
-                   ha: b.haTotal, lat: b.lat, lon: b.lon, photo: b.photo });
+// Criar novo chamado (máximo 1 ativo)
+export async function createCall(type, description) {
+  // Verificar se já existe chamado ativo
+  if (currentCallId) {
+    const existing = activeCallsMap.get(currentCallId);
+    if (existing && !existing.accepted && Date.now() - existing.timestamp < 30000) {
+      showToastMessage('⚠️ Já existe um chamado ativo. Aguarde resolução.', 'warning');
+      return null;
     }
-  });
-
-  // Piloto real (se existir)
-  const R = window.AgroRadar;
-  if (R?.profile && R?.lat && R?.lon) {
-    todos.push({
-      id: R.user?.uid || 'user',
-      name: R.profile.nickname || R.profile.name || 'Você',
-      city: R.profile.city || '',
-      drone: R.profile.drone || '',
-      ha: R.profile.haTotal || 0,
-      lat: R.lat, lon: R.lon,
-      photo: R.profile.photo || '👨‍✈️',
-    });
   }
 
-  // Agrupar por grid
-  const gridMap = {};
-  todos.forEach(p => {
-    const gLat = Math.floor(p.lat / GRID_SIZE) * GRID_SIZE;
-    const gLon = Math.floor(p.lon / GRID_SIZE) * GRID_SIZE;
-    const key = `${gLat}_${gLon}`;
-    if (!gridMap[key] || p.ha > gridMap[key].ha) {
-      gridMap[key] = { ...p, gLat, gLon };
-    }
+  // Parar sons de loop anteriores
+  stopLoopSound();
+
+  const callId = 'call_' + Date.now();
+  currentCallId = callId;
+
+  const userData = window.R || { user: null, profile: null, lat: -15.7801, lon: -47.9292 };
+  
+  activeCallsMap.set(callId, {
+    id: callId,
+    uid: userData.user?.uid || 'unknown',
+    name: userData.profile?.nickname || userData.profile?.name || 'Piloto',
+    type: type,
+    description: description,
+    location: { lat: userData.lat || -15.7801, lon: userData.lon || -47.9292 },
+    timestamp: Date.now(),
+    accepted: false
   });
 
-  // Remover beacons antigos que já não têm dominante
-  Object.keys(_dominioMarkers).forEach(key => {
-    if (!gridMap[key]) {
-      _dominioLayer.removeLayer(_dominioMarkers[key]);
-      delete _dominioMarkers[key];
+  // Auto-reject após 30s se ninguém aceitar
+  setTimeout(() => {
+    const call = activeCallsMap.get(callId);
+    if (call && !call.accepted) {
+      activeCallsMap.delete(callId);
+      if (currentCallId === callId) {
+        currentCallId = null;
+        stopLoopSound();
+      }
+      showToastMessage('⏱️ Ninguém aceitou seu chamado. Tente novamente.', 'info');
     }
-  });
+  }, 30000);
 
-  // Criar/atualizar beacons
-  Object.entries(gridMap).forEach(([key, dominante]) => {
-    const centerLat = dominante.gLat + GRID_SIZE / 2;
-    const centerLon = dominante.gLon + GRID_SIZE / 2;
-
-    if (_dominioMarkers[key]) {
-      // Apenas atualiza dados do popup sem recriar o marker
-      _dominioMarkers[key]._dominioData = dominante;
-      return;
-    }
-
-    const icon = _criarBeaconIcon();
-    const marker = L.marker([centerLat, centerLon], {
-      icon,
-      zIndexOffset: -100, // fica abaixo dos pilotos
-      interactive: true,
-    });
-
-    marker._dominioData = dominante;
-
-    marker.on('click', () => _abrirPainelDominio(marker._dominioData));
-
-    // Zoom-based visibility: só mostra label no zoom ≥ 9
-    _dominioMap.on('zoomend', () => {
-      const zoom = _dominioMap.getZoom();
-      const el = marker.getElement();
-      if (!el) return;
-      el.querySelector('.beacon-label').style.display = zoom >= 9 ? 'block' : 'none';
-    });
-
-    _dominioLayer.addLayer(marker);
-    _dominioMarkers[key] = marker;
-  });
-
-  // Atualiza contador de áreas dominadas
-  _atualizarContadorDominio(Object.keys(gridMap).length);
+  // Notificar pilotos próximos (todos visíveis)
+  notifyNearbyPilots(callId, type, description);
+  
+  showToastMessage(`📢 Chamado de ${type} enviado para pilotos próximos!`, 'success');
+  playSoundEffect('sos');
+  
+  return callId;
 }
 
-/** Cria o ícone HTML do beacon pulse */
-function _criarBeaconIcon() {
-  return L.divIcon({
-    className: '',
-    html: `
-      <div class="beacon-wrapper" title="Área dominada">
-        <div class="beacon-pulse"></div>
-        <div class="beacon-core"></div>
-        <div class="beacon-label" style="display:none"></div>
-      </div>`,
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
-    popupAnchor: [0, -16],
+// Notificar pilotos próximos (raio 100km)
+function notifyNearbyPilots(callId, type, description) {
+  const call = activeCallsMap.get(callId);
+  if (!call) return;
+  
+  // Percorrer todos os marcadores (pilotos reais e bots)
+  Object.values(_markers).forEach(marker => {
+    const pilot = marker._pilotData;
+    if (!pilot || pilot.isCurrentUser) return;
+    
+    // Calcular distância
+    const distance = calculateDistance(
+      call.location.lat, call.location.lon,
+      pilot.lat, pilot.lon
+    );
+    
+    // Se estiver dentro de 100km, mostrar notificação
+    if (distance <= 100) {
+      showCallModal(callId, type, description, pilot);
+    }
   });
 }
 
-/** Abre painel premium ao clicar no beacon */
-function _abrirPainelDominio(d) {
-  if (!d) return;
-  const desde = _calcularDesde();
-  const fotoHtml = d.photo && !d.photo.startsWith('http')
-    ? `<span style="font-size:32px">${d.photo}</span>`
-    : `<img src="${d.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.outerHTML='👨‍✈️'">`;
+// Calcular distância entre dois pontos (km)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Raio da Terra em km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
 
-  // Reutiliza o sistema de toast + sheet existente via popup Leaflet temporário
-  // Para não criar novo HTML global, injetamos num popup centralizado
-  const html = `
-    <div style="min-width:190px;font-family:'Syne',sans-serif">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <div style="width:44px;height:44px;border-radius:50%;background:#1f5534;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;border:1.5px solid rgba(61,168,102,.4)">
-          ${fotoHtml}
+// Mostrar modal de chamado para o piloto
+function showCallModal(callId, type, description, pilot) {
+  const call = activeCallsMap.get(callId);
+  if (!call || call.accepted) return;
+  
+  const icons = {
+    'tow': '🚜',
+    'maintenance': '🔧',
+    'sos': '🚨',
+    'fuel': '⛽',
+    'weather': '🌦️'
+  };
+  
+  // Criar modal se não existir
+  let modal = document.getElementById('callModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'callModal';
+    modal.innerHTML = `
+      <div id="callModalOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:10001;display:none"></div>
+      <div id="callModalContent" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0d1a0f;border-radius:16px;padding:24px;width:320px;z-index:10002;display:none;border:1px solid #3da866;box-shadow:0 8px 32px rgba(0,0,0,0.4)">
+        <div style="text-align:center;font-size:48px;margin-bottom:12px" id="callModalIcon">🚨</div>
+        <h3 style="color:#e8f5eb;margin:0 0 8px 0;text-align:center" id="callModalTitle">Chamado de Emergência</h3>
+        <p style="color:#9ac8a6;margin:0 0 16px 0;text-align:center;font-size:14px" id="callModalMsg">Mensagem</p>
+        <div style="text-align:center;margin-bottom:20px">
+          <span style="background:#1f5534;color:#5ec880;padding:4px 12px;border-radius:20px;font-size:12px" id="callModalTimer">Expira em 30s</span>
         </div>
-        <div>
-          <div style="font-size:14px;font-weight:800;color:#e8f5eb">${d.name}</div>
-          <div style="font-size:10px;color:#5a8a65;margin-top:1px">📍 ${d.city}</div>
+        <div style="display:flex;gap:12px">
+          <button id="callModalAccept" style="flex:1;padding:12px;background:#3da866;border:none;border-radius:8px;color:white;font-weight:700;cursor:pointer">✅ Aceitar</button>
+          <button id="callModalIgnore" style="flex:1;padding:12px;background:#e03535;border:none;border-radius:8px;color:white;font-weight:700;cursor:pointer">❌ Ignorar</button>
         </div>
       </div>
-      <div style="background:rgba(61,168,102,.08);border:1px solid rgba(61,168,102,.2);border-radius:10px;padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <div style="text-align:center">
-          <div style="font-size:20px;font-weight:700;color:#3da866">${d.ha.toFixed(0)} ha</div>
-          <div style="font-size:9px;color:#5a8a65;text-transform:uppercase;letter-spacing:.07em">Hectares</div>
-        </div>
-        <div style="text-align:center">
-          <div style="font-size:13px;font-weight:700;color:#9ac8a6">${d.drone || '—'}</div>
-          <div style="font-size:9px;color:#5a8a65;text-transform:uppercase;letter-spacing:.07em">Drone</div>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:rgba(61,168,102,.06);border-radius:8px;border:1px solid rgba(61,168,102,.15)">
-        <span style="font-size:14px">🏆</span>
-        <div style="font-size:11px;color:#9ac8a6">Domina esta área <strong style="color:#3da866">há ${desde}</strong></div>
-      </div>
-    </div>`;
-
-  // Abre popup Leaflet no centro do grid
-  L.popup({ className: 'dominio-popup', closeButton: true, maxWidth: 240 })
-    .setLatLng([
-      Math.floor(d.lat / GRID_SIZE) * GRID_SIZE + GRID_SIZE / 2,
-      Math.floor(d.lon / GRID_SIZE) * GRID_SIZE + GRID_SIZE / 2,
-    ])
-    .setContent(html)
-    .openOn(_dominioMap);
+    `;
+    document.body.appendChild(modal);
+  }
+  
+  const overlay = document.getElementById('callModalOverlay');
+  const content = document.getElementById('callModalContent');
+  const iconEl = document.getElementById('callModalIcon');
+  const titleEl = document.getElementById('callModalTitle');
+  const msgEl = document.getElementById('callModalMsg');
+  const timerEl = document.getElementById('callModalTimer');
+  
+  iconEl.textContent = icons[type] || '🔧';
+  titleEl.textContent = `Chamado de ${call.name || 'Piloto'}`;
+  msgEl.textContent = description;
+  
+  overlay.style.display = 'block';
+  content.style.display = 'block';
+  
+  // Timer visual
+  let secs = 30;
+  if (_callTimerInterval) clearInterval(_callTimerInterval);
+  _callTimerInterval = setInterval(() => {
+    secs--;
+    timerEl.textContent = `Expira em ${secs}s`;
+    if (secs <= 0) {
+      clearInterval(_callTimerInterval);
+      closeCallModal();
+    }
+  }, 1000);
+  
+  // Sons de alerta
+  playLoopSound('alert', 30000);
+  
+  // Handlers dos botões
+  const acceptBtn = document.getElementById('callModalAccept');
+  const ignoreBtn = document.getElementById('callModalIgnore');
+  
+  const newAcceptBtn = acceptBtn.cloneNode(true);
+  const newIgnoreBtn = ignoreBtn.cloneNode(true);
+  acceptBtn.parentNode.replaceChild(newAcceptBtn, acceptBtn);
+  ignoreBtn.parentNode.replaceChild(newIgnoreBtn, ignoreBtn);
+  
+  newAcceptBtn.onclick = () => {
+    acceptCall(callId, pilot);
+    closeCallModal();
+  };
+  
+  newIgnoreBtn.onclick = () => {
+    closeCallModal();
+  };
 }
 
-/** Simula "desde quando domina" — aleatório entre 3 e 45 dias */
-function _calcularDesde() {
-  const dias = Math.floor(Math.random() * 42) + 3;
-  return dias === 1 ? '1 dia' : `${dias} dias`;
+function closeCallModal() {
+  const overlay = document.getElementById('callModalOverlay');
+  const content = document.getElementById('callModalContent');
+  if (overlay) overlay.style.display = 'none';
+  if (content) content.style.display = 'none';
+  if (_callTimerInterval) clearInterval(_callTimerInterval);
+  stopLoopSound();
 }
 
-/** Atualiza o badge de contagem no header */
-function _atualizarContadorDominio(qtd) {
-  // Tenta atualizar o pilotCount com formato separado
-  const el = document.getElementById('pilotCount');
-  if (!el) return;
-  const pilotos = document.querySelectorAll('.leaflet-marker-icon').length;
-  el.textContent = `${Math.max(pilotos, 8)} pilotos · ${qtd} áreas`;
+// Aceitar chamado
+export function acceptCall(callId, pilot) {
+  const call = activeCallsMap.get(callId);
+  if (!call || call.accepted) return;
+  
+  call.accepted = true;
+  
+  // Parar sons
+  stopLoopSound();
+  playSoundEffect('accept');
+  
+  // Notificar quem fez o chamado via evento
+  window.dispatchEvent(new CustomEvent('amx:call-accepted', {
+    detail: {
+      callId: callId,
+      fromUid: call.uid,
+      fromName: call.name,
+      acceptedBy: pilot.id,
+      acceptedByName: pilot.name,
+      message: call.description
+    }
+  }));
+  
+  // Abrir chat com quem fez o chamado
+  if (window.openChat) {
+    window.openChat(call.uid);
+  }
+  
+  showToastMessage(`✅ Você aceitou o chamado de ${call.name}! Chat aberto.`, 'success');
+  
+  // Remover chamado
+  activeCallsMap.delete(callId);
+  if (currentCallId === callId) currentCallId = null;
 }
 
+// Função global para aceitar do popup
+window.acceptCallFromPopup = function(pilotId, message, pilotName) {
+  // Encontrar o chamado ativo mais recente
+  const calls = Array.from(activeCallsMap.values());
+  const activeCall = calls.find(c => !c.accepted && Date.now() - c.timestamp < 30000);
+  
+  if (activeCall) {
+    const pilot = _markers[pilotId]?._pilotData;
+    if (pilot) {
+      acceptCall(activeCall.id, pilot);
+    }
+  } else {
+    showToastMessage('❌ Nenhum chamado ativo encontrado.', 'error');
+  }
+};
 
-// ── 4. CSS DO BEACON — injetar no <head> ──────────────────────────
-//
-// Cole este bloco dentro da tag <style> existente no HTML,
-// ou deixe o script injetá-lo automaticamente:
+// Responder SOS
+window.respondToSOS = function(pilotId, pilotName) {
+  showToastMessage(`🚨 Respondendo SOS de ${pilotName}...`, 'warning');
+  playSoundEffect('sos');
+  
+  window.dispatchEvent(new CustomEvent('amx:respond-sos', {
+    detail: { pilotId: pilotId, name: pilotName }
+  }));
+  
+  // Abrir chat com o piloto em SOS
+  if (window.openChat) {
+    window.openChat(pilotId);
+  }
+};
 
-(function _injetarCSSBeacon() {
-  if (document.getElementById('beaconCSS')) return;
-  const style = document.createElement('style');
-  style.id = 'beaconCSS';
-  style.textContent = `
-    /* ── Beacon de Domínio de Área ── */
-    .beacon-wrapper {
-      position: relative;
-      width: 28px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
+// ── Filtro de Conversas Reais ─────────────────────────────────
+export function loadRealChatsOnly(chats) {
+  if (!Array.isArray(chats)) return [];
+  
+  return chats.filter(chat => {
+    // Descartar IDs que contêm 'demo', 'test', 'fake'
+    if (chat.uid?.includes('demo') || chat.id?.includes('demo')) return false;
+    if (chat.fake === true) return false;
+    
+    // Manter apenas chats com usuários reais
+    return chat.uid && chat.uid.length > 5;
+  });
+}
+
+// ── Pilotos Próximos Helper ───────────────────────────────────
+export function findNearbyPilots(lat, lon, radiusKm) {
+  const nearby = [];
+  
+  Object.values(_markers).forEach(marker => {
+    const pilot = marker._pilotData;
+    if (!pilot || pilot.isCurrentUser) return;
+    
+    const distance = calculateDistance(lat, lon, pilot.lat, pilot.lon);
+    if (distance <= radiusKm) {
+      nearby.push(pilot);
     }
-    .beacon-core {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #3da866;
-      box-shadow: 0 0 6px #3da866, 0 0 12px rgba(61,168,102,.5);
-      position: relative;
-      z-index: 2;
-      flex-shrink: 0;
-    }
-    .beacon-pulse {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: rgba(61, 168, 102, 0.15);
-      border: 1px solid rgba(61, 168, 102, 0.35);
-      animation: beaconPulse 2.4s ease-out infinite;
-      z-index: 1;
-    }
-    @keyframes beaconPulse {
-      0%   { transform: translate(-50%,-50%) scale(0.6); opacity: 0.8; }
-      70%  { transform: translate(-50%,-50%) scale(1.9); opacity: 0; }
-      100% { transform: translate(-50%,-50%) scale(0.6); opacity: 0; }
-    }
-    .beacon-label {
-      position: absolute;
-      bottom: -18px;
-      left: 50%;
-      transform: translateX(-50%);
-      white-space: nowrap;
-      font-family: 'Syne', sans-serif;
-      font-size: 9px;
-      font-weight: 700;
-      color: #3da866;
-      text-shadow: 0 1px 3px rgba(0,0,0,.8);
+  });
+  
+  return nearby;
+}
+
+// ── Adicionar/atualizar piloto ────────────────────────────────
+export function upsertPilot(pilot) {
+  if (!_map || !pilot.lat || !pilot.lon) return;
+
+  const icon = pilotIcon(pilot.status || 'online', pilot.isCurrentUser === true);
+  const popup = buildPopup(pilot);
+
+  if (_markers[pilot.id]) {
+    _markers[pilot.id].setLatLng([pilot.lat, pilot.lon]);
+    _markers[pilot.id].setIcon(icon);
+    _markers[pilot.id].setPopupContent(popup);
+    _markers[pilot.id]._pilotData = pilot;
+  } else {
+    const m = L.marker([pilot.lat, pilot.lon], { icon })
+      .bindPopup(popup, { className: 'amx-popup', maxWidth: 230, closeButton: false })
+      .addTo(_map);
+    m._pilotData = pilot;
+    _markers[pilot.id] = m;
+  }
+}
+
+export function removePilot(id) {
+  if (_markers[id]) {
+    _markers[id].remove();
+    delete _markers[id];
+  }
+}
+
+// ── Utilitários de UI ─────────────────────────────────────────
+function showToastMessage(message, type = 'info') {
+  let toast = document.getElementById('amx-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'amx-toast';
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background: #1f5534;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 10000;
+      opacity: 0;
+      transition: opacity 0.3s;
       pointer-events: none;
-      z-index: 3;
-      letter-spacing: .03em;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      font-family: 'Syne', sans-serif;
+    `;
+    document.body.appendChild(toast);
+  }
+  
+  toast.textContent = message;
+  toast.style.opacity = '1';
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+  }, 3000);
+}
+
+function playSoundEffect(type) {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    if (type === 'sos') {
+      oscillator.frequency.value = 880;
+      gainNode.gain.value = 0.3;
+      oscillator.start();
+      setTimeout(() => oscillator.stop(), 500);
+    } else if (type === 'accept') {
+      oscillator.frequency.value = 523.25;
+      gainNode.gain.value = 0.2;
+      oscillator.start();
+      setTimeout(() => oscillator.stop(), 300);
     }
-    /* Popup do domínio */
-    .dominio-popup .leaflet-popup-content-wrapper {
-      background: rgba(8, 16, 10, 0.97) !important;
-      border: 1px solid rgba(61,168,102,.3) !important;
-      border-radius: 16px !important;
-      box-shadow: 0 12px 40px rgba(0,0,0,.8), 0 0 0 1px rgba(61,168,102,.1) !important;
-      backdrop-filter: blur(16px);
+  } catch(e) { console.log('Sound not supported'); }
+}
+
+let _loopSoundInterval = null;
+function playLoopSound(type, duration) {
+  stopLoopSound();
+  _loopSoundInterval = setInterval(() => {
+    playSoundEffect(type);
+  }, 2000);
+  
+  setTimeout(() => {
+    stopLoopSound();
+  }, duration);
+}
+
+function stopLoopSound() {
+  if (_loopSoundInterval) {
+    clearInterval(_loopSoundInterval);
+    _loopSoundInterval = null;
+  }
+}
+
+// ── Listen Pilots (compatível) ────────────────────────────────
+export async function listenPilots(centerLat, centerLon, currentUid) {
+  _currentUid = currentUid;
+  
+  Object.keys(_markers).forEach(id => {
+    if (!id.startsWith('user_')) removePilot(id);
+  });
+  
+  spawnBots(centerLat, centerLon, { wind: 10, temp: 25 });
+  startBotUpdates();
+  updatePilotCount();
+  
+  if (window._firebaseDB && typeof firebase !== 'undefined') {
+    try {
+      const { collection, onSnapshot, query, where } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const q = query(collection(window._firebaseDB, 'pilots'), where('visibility', '!=', 'invisible'));
+      
+      if (window._firestoreUnsub) window._firestoreUnsub();
+      window._firestoreUnsub = onSnapshot(q, (snapshot) => {
+        snapshot.docChanges().forEach(change => {
+          const d = change.doc.data();
+          if (change.type === 'removed' || d.visibility === 'invisible') {
+            removePilot(d.uid);
+            return;
+          }
+          if (!d.lat || !d.lon) return;
+          
+          upsertPilot({
+            id: d.uid,
+            name: d.nickname || d.name || 'Piloto',
+            photo: d.photo || '👨‍✈️',
+            city: d.city || '',
+            drone: d.drone || '',
+            score: d.amxScore || 0,
+            hoursTotal: d.hoursTotal || 0,
+            opsTotal: d.opsTotal || 0,
+            lat: d.lat,
+            lon: d.lon,
+            status: d.status || 'online',
+            requestMsg: d.requestMsg || null,
+            isCurrentUser: d.uid === currentUid,
+          });
+        });
+        updatePilotCount();
+      });
+      return true;
+    } catch (e) {
+      console.log('Modo offline: apenas bots');
     }
-    .dominio-popup .leaflet-popup-tip {
-      background: rgba(8, 16, 10, 0.97) !important;
+  }
+  return false;
+}
+
+function updatePilotCount() {
+  const total = Object.keys(_markers).length;
+  const el = document.getElementById('pilotCount');
+  if (el) el.textContent = `${total} pilotos`;
+}
+
+// ── Bots ──────────────────────────────────────────────────────
+export function spawnBots(lat, lon, weather) {
+  const hour = new Date().getHours();
+  const isDay = hour >= 5 && hour <= 18;
+  const goodWind = (weather?.wind || 0) <= 20;
+
+  const activeBots = BOTS.filter((_, i) => {
+    if (!isDay) return i < 2;
+    if (!goodWind) return i < 4;
+    return true;
+  });
+
+  activeBots.forEach((bot, i) => {
+    const angle = (i / activeBots.length) * Math.PI * 2 + Math.random() * 0.5;
+    const radius = (5 + Math.random() * 35) / 111;
+    const blat = lat + Math.cos(angle) * radius;
+    const blon = lon + Math.sin(angle) * radius / Math.cos(lat * Math.PI / 180);
+    const isOperating = isDay && goodWind && Math.random() > 0.4;
+
+    upsertPilot({
+      ...bot,
+      lat: blat,
+      lon: blon,
+      status: isOperating ? 'operating' : 'online',
+      isCurrentUser: false,
+    });
+  });
+}
+
+export function startBotUpdates() {
+  if (_botInterval) clearInterval(_botInterval);
+  _botInterval = setInterval(() => {
+    Object.entries(_markers).forEach(([id, m]) => {
+      if (!id.startsWith('bot_')) return;
+      const p = m.getLatLng();
+      m.setLatLng([p.lat + (Math.random() - 0.5) * 0.003, p.lng + (Math.random() - 0.5) * 0.003]);
+    });
+  }, 15000);
+}
+
+export function stopBotUpdates() {
+  if (_botInterval) clearInterval(_botInterval);
+}
+
+// ── Localização (60s em vez de 30s) ───────────────────────────
+export function startLocationTracking(uid, onUpdate) {
+  let lastLat = null, lastLon = null;
+
+  function update() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(pos => {
+      const { latitude: lat, longitude: lon } = pos.coords;
+      const dist = lastLat ? Math.sqrt(Math.pow((lat - lastLat) * 111000, 2) + Math.pow((lon - lastLon) * 111000, 2)) : 9999;
+
+      if (dist >= 300 || !lastLat) {
+        lastLat = lat; lastLon = lon;
+        onUpdate(lat, lon);
+      }
+    }, null, { enableHighAccuracy: true, timeout: 10000 });
+  }
+
+  update();
+  if (_locationInterval) clearInterval(_locationInterval);
+  _locationInterval = setInterval(update, 60000); // 60 segundos!
+}
+
+export function stopLocationTracking() {
+  if (_locationInterval) clearInterval(_locationInterval);
+}
+
+// ── Operações ─────────────────────────────────────────────────
+export function startOperation(config, weatherState, lat, lon) {
+  _operationActive = true;
+  _operationStart = Date.now();
+  _operationConfig = config || {};
+  _operationData = {
+    startTime: new Date().toISOString(),
+    lat, lon,
+    weather: { ...weatherState },
+    pauses: 0,
+    lastActivity: Date.now(),
+  };
+
+  if (_autoEndTimer) clearTimeout(_autoEndTimer);
+  _autoEndTimer = setTimeout(() => {
+    if (_operationActive) window.dispatchEvent(new CustomEvent('amx:check-operation'));
+  }, 4 * 3600 * 1000);
+
+  return _operationData;
+}
+
+export function endOperation(weatherState) {
+  if (!_operationActive) return null;
+  _operationActive = false;
+
+  if (_autoEndTimer) clearTimeout(_autoEndTimer);
+  if (_pauseTimer) clearTimeout(_pauseTimer);
+
+  const durationMin = Math.round((Date.now() - _operationStart) / 60000);
+  const score = calcAMXScore(durationMin, weatherState, _operationData, _operationConfig);
+  const estimate = calcOperationEstimate(durationMin, _operationConfig, _operationData);
+
+  return {
+    ..._operationData,
+    endTime: new Date().toISOString(),
+    durationMin,
+    score,
+    estimate,
+    config: _operationConfig,
+  };
+}
+
+export function registerActivity() {
+  if (!_operationActive) return;
+  _operationData.lastActivity = Date.now();
+  if (_pauseTimer) {
+    clearTimeout(_pauseTimer);
+    _pauseTimer = null;
+  }
+  _pauseTimer = setTimeout(() => {
+    if (_operationActive) {
+      _operationData.pauses++;
     }
-  `;
-  document.head.appendChild(style);
-})();
+  }, 5 * 60 * 1000);
+}
 
+export function calcOperationEstimate(durationMin, config, opData) {
+  const avgHaPerH = parseFloat(config?.avgHaPerH) || 20;
+  const hoursOp = Math.max(0, (durationMin - (opData?.pauses || 0) * 5)) / 60;
+  const estHa = (hoursOp * avgHaPerH).toFixed(1);
+  const vazao = parseFloat(config?.vazao) || 10;
+  const faixa = parseFloat(config?.faixa) || 9;
 
-// ── 5. EXPOSIÇÃO GLOBAL ──────────────────────────────────────────
-//
-// Necessário para que setupMap() possa chamar estas funções:
+  let conf = 100;
+  if (vazao < 3 || vazao > 50) conf -= 30;
+  if (faixa < 4 || faixa > 20) conf -= 20;
+  if (avgHaPerH > 45) conf -= 25;
+  if (durationMin < 10) conf -= 40;
+  conf = Math.max(0, conf);
 
-window.initDominioArea  = initDominioArea;
-window.spawnBotsAgro    = _spawnBotsAgro;
-window.startBotMovement = _startBotMovementAgro;
-window.updateBotCount   = _updateBotCountAgro;
-window.activeBots       = activeBots; // para o ranking funcionar
+  return { estHa, hoursOp: hoursOp.toFixed(1), confiability: conf, label: conf >= 80 ? 'Alta' : conf >= 50 ? 'Média' : 'Baixa' };
+}
 
-// ── FIM DO ARQUIVO ───────────────────────────────────────────────
+export function calcAMXScore(durationMin, weather, opData, config) {
+  let score = 100;
+  const w = weather || {};
+  const dt = w.deltaT || 5, wind = w.wind || 0, hum = w.humidity || 70, temp = w.temp || 25;
+
+  if (dt < 2 || dt > 10) score -= 20;
+  else if (dt > 8) score -= 10;
+  if (wind > 20) score -= 25;
+  else if (wind > 15) score -= 15;
+  else if (wind > 10) score -= 5;
+  if (hum > 90) score -= 10;
+  if (hum < 40) score -= 10;
+  if (temp > 35) score -= 15;
+  if (temp < 10) score -= 10;
+  if (durationMin < 5) score -= 30;
+  else if (durationMin < 10) score -= 15;
+
+  const hour = new Date().getHours();
+  if (hour >= 0 && hour < 4) score -= 20;
+  if (hour >= 5 && hour <= 9) score += 5;
+
+  const vazao = parseFloat(config?.vazao) || 10;
+  if (vazao >= 5 && vazao <= 30) score += 5;
+  if ((opData?.pauses || 0) > 3) score -= 10;
+
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+export function amxLabel(score) {
+  if (score >= 90) return { label: 'Excelente', color: '#3da866' };
+  if (score >= 75) return { label: 'Ótimo', color: '#5ec880' };
+  if (score >= 60) return { label: 'Bom', color: '#1e88d0' };
+  if (score >= 40) return { label: 'Moderado', color: '#e07a00' };
+  return { label: 'Risco', color: '#e03535' };
+}
+
+// ── Getters ────────────────────────────────────────────────────
+export function isOperating() { return _operationActive; }
+export function getMap() { return _map; }
+export function getMarkers() { return _markers; }
+export function getActiveCall() { return currentCallId ? activeCallsMap.get(currentCallId) : null; }
+
+// ── Funções para testes com bots ──────────────────────────────
+export function addBotRequest(botId, message) {
+  const bot = _markers[botId];
+  if (bot && bot._pilotData && bot._pilotData.id?.startsWith('bot_')) {
+    bot._pilotData.status = 'request';
+    bot._pilotData.requestMsg = message;
+    upsertPilot(bot._pilotData);
+  }
+}
+
+export function addBotSOS(botId) {
+  const bot = _markers[botId];
+  if (bot && bot._pilotData && bot._pilotData.id?.startsWith('bot_')) {
+    bot._pilotData.status = 'sos';
+    upsertPilot(bot._pilotData);
+  }
+}
+
+export function clearBotStatus(botId) {
+  const bot = _markers[botId];
+  if (bot && bot._pilotData && bot._pilotData.id?.startsWith('bot_')) {
+    bot._pilotData.status = 'online';
+    bot._pilotData.requestMsg = null;
+    upsertPilot(bot._pilotData);
+  }
+}
+
+// ── Exportar funções globais para compatibilidade ─────────────
+if (typeof window !== 'undefined') {
+  window.createCall = createCall;
+  window.acceptCall = acceptCall;
+  window.findNearbyPilots = findNearbyPilots;
+  window.loadRealChatsOnly = loadRealChatsOnly;
+  window.acceptCallFromPopup = window.acceptCallFromPopup;
+  window.respondToSOS = window.respondToSOS;
+}
