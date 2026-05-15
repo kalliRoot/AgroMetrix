@@ -15,6 +15,203 @@ let _pauseTimer = null;
 let _autoEndTimer = null;
 let _currentUid = null;
 
+// ═══════════════════════════════════════════════════════════════
+// PATCH 01 — SISTEMA "DONO DA ÁREA" NO MAPA (ADICIONADO)
+// ═══════════════════════════════════════════════════════════════
+
+const areaOwners = {};
+const areaMarkers = {};
+const GRID_SIZE = 1.0;
+
+function getGridKey(lat, lon) {
+  return `${Math.floor(lat / GRID_SIZE)}_${Math.floor(lon / GRID_SIZE)}`;
+}
+
+function updateAreaOwner(pilot) {
+  if (!_map) return;
+  const lat = pilot.lat, lon = pilot.lon;
+  if (!lat || !lon) return;
+  const key = getGridKey(lat, lon);
+  const ha = Number(pilot.hectares || pilot.opsTotal * 15 || 0);
+  const current = areaOwners[key];
+
+  if (current && current.pilotId !== pilot.id && ha <= current.hectares) return;
+
+  const since = current?.pilotId === pilot.id ? current.since : new Date().toLocaleDateString('pt-BR');
+  areaOwners[key] = {
+    pilotId: pilot.id,
+    name: pilot.name || pilot.nickname || 'Piloto',
+    photo: pilot.photo || '👨‍✈️',
+    city: pilot.city || '',
+    hectares: ha,
+    since,
+    lat, lon,
+  };
+  renderAreaOwnerMarker(key);
+}
+
+function renderAreaOwnerMarker(key) {
+  if (!_map) return;
+  const owner = areaOwners[key];
+  if (!owner || owner.hectares < 20) return;
+
+  if (areaMarkers[key]) {
+    areaMarkers[key].remove();
+    delete areaMarkers[key];
+  }
+
+  const isPhoto = owner.photo && !['👨‍✈️','🧑‍✈️','👨‍🚀','👨‍🌾','👩‍✈️','👩‍🚀','👩‍🌾'].includes(owner.photo);
+  const avatarHtml = isPhoto
+    ? `<img src="${owner.photo}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #3da866" onerror="this.outerHTML='<span style=font-size:20px>👨‍✈️</span>'">`
+    : `<span style="font-size:20px">${owner.photo}</span>`;
+
+  const html = `
+    <div style="
+      background:rgba(6,14,8,.96);
+      border:1.5px solid #3da866;
+      border-radius:14px;
+      padding:8px 10px 6px;
+      min-width:140px;
+      max-width:170px;
+      box-shadow:0 0 18px rgba(61,168,102,.35),0 4px 24px rgba(0,0,0,.7);
+      font-family:'Syne',sans-serif;
+      position:relative;
+      animation:ownerFloat 3s ease-in-out infinite;
+    ">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+        <div style="
+          width:34px;height:34px;border-radius:50%;
+          background:#163d26;
+          display:flex;align-items:center;justify-content:center;
+          border:2px solid #3da866;
+          overflow:hidden;flex-shrink:0;
+        ">${avatarHtml}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;font-weight:800;color:#e8f5eb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${owner.name}</div>
+          <div style="font-size:9px;color:#5ec880;margin-top:1px">🏆 Dono da Área</div>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(61,168,102,.2);padding-top:5px;display:grid;grid-template-columns:1fr 1fr;gap:3px">
+        <div style="text-align:center">
+          <div style="font-size:13px;font-weight:800;color:#3da866;font-family:'JetBrains Mono',monospace">${owner.hectares}ha</div>
+          <div style="font-size:8px;color:#5a8a65;text-transform:uppercase;letter-spacing:.05em">Pulv.</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:9px;color:#9ac8a6">${owner.city.split(',')[0] || '—'}</div>
+          <div style="font-size:8px;color:#5a8a65">desde ${owner.since}</div>
+        </div>
+      </div>
+      <div style="
+        position:absolute;top:-20px;left:50%;transform:translateX(-50%);
+        width:3px;height:20px;
+        background:linear-gradient(to top,#3da866,transparent);
+      "></div>
+      <div style="
+        position:absolute;top:-26px;left:50%;transform:translateX(-50%);
+        width:8px;height:8px;border-radius:50%;
+        background:#5ec880;
+        box-shadow:0 0 8px #3da866,0 0 16px rgba(61,168,102,.5);
+        animation:ownerPulse 1.8s ease-in-out infinite;
+      "></div>
+    </div>
+  `;
+
+  const icon = L.divIcon({
+    html,
+    className: 'area-owner-marker',
+    iconAnchor: [85, 80],
+    iconSize: [170, 80],
+    popupAnchor: [0, -80],
+  });
+
+  const marker = L.marker([owner.lat, owner.lon], { icon, zIndexOffset: -100, interactive: false });
+  marker.addTo(_map);
+  areaMarkers[key] = marker;
+}
+
+(function injectAreaOwnerStyles() {
+  if (document.getElementById('area-owner-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'area-owner-styles';
+  style.textContent = `
+    @keyframes ownerFloat {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    @keyframes ownerPulse {
+      0%,100% { box-shadow: 0 0 8px #3da866, 0 0 16px rgba(61,168,102,.5); }
+      50% { box-shadow: 0 0 14px #3da866, 0 0 28px rgba(61,168,102,.8); }
+    }
+    .area-owner-marker { background: transparent !important; border: none !important; }
+  `;
+  document.head.appendChild(style);
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// PATCH 02 — BOTS MELHORADOS (SUBSTITUI APENAS OS DADOS)
+// Mantém as mesmas funções mas com dados realistas
+// ═══════════════════════════════════════════════════════════════
+
+const CIDADES_BRASIL = [
+  { name:'Sorriso, MT', lat:-12.5500, lon:-55.7200 },
+  { name:'Lucas do Rio Verde, MT', lat:-13.0600, lon:-55.9100 },
+  { name:'Nova Mutum, MT', lat:-13.8300, lon:-56.0800 },
+  { name:'Sinop, MT', lat:-11.8600, lon:-55.5000 },
+  { name:'Rondonópolis, MT', lat:-16.4700, lon:-54.6350 },
+  { name:'Primavera do Leste, MT', lat:-15.5500, lon:-54.2900 },
+  { name:'Rio Verde, GO', lat:-17.7981, lon:-50.9278 },
+  { name:'Jataí, GO', lat:-17.8831, lon:-51.7158 },
+  { name:'Campo Grande, MS', lat:-20.4697, lon:-54.6201 },
+  { name:'Dourados, MS', lat:-22.2211, lon:-54.8056 },
+  { name:'Ribeirão Preto, SP', lat:-21.1787, lon:-47.8103 },
+  { name:'Uberlândia, MG', lat:-18.9186, lon:-48.2772 },
+  { name:'Londrina, PR', lat:-23.3107, lon:-51.1628 },
+  { name:'Cascavel, PR', lat:-24.9578, lon:-53.4595 },
+  { name:'Passo Fundo, RS', lat:-28.2620, lon:-52.4063 },
+  { name:'Chapecó, SC', lat:-27.1003, lon:-52.6150 },
+  { name:'Barreiras, BA', lat:-12.1522, lon:-44.9989 },
+  { name:'Palmas, TO', lat:-10.2491, lon:-48.3243 },
+];
+
+// Gerar bots realistas (mantém compatibilidade)
+function generateRealisticBots(count = 20) {
+  const bots = [];
+  const drones = ['DJI Agras T40','DJI Agras T50','XAG P100 Pro','XAG V40','EAVision U10'];
+  const mascNames = ['João Silva','Pedro Oliveira','Lucas Lima','Rafael Alves','Gustavo Pereira','Bruno Ferreira','Rodrigo Gomes','Thiago Monteiro'];
+  const femNames = ['Maria Santos','Ana Costa','Fernanda Souza','Patrícia Rocha'];
+  const photosMasc = ['👨‍✈️','🧑‍✈️','👨‍🚀','👨‍🌾'];
+  const photosFem = ['👩‍✈️','👩‍🚀','👩‍🌾'];
+  
+  for (let i = 0; i < Math.min(count, CIDADES_BRASIL.length); i++) {
+    const cidade = CIDADES_BRASIL[i % CIDADES_BRASIL.length];
+    const isFem = i % 5 === 0;
+    const names = isFem ? femNames : mascNames;
+    const photos = isFem ? photosFem : photosMasc;
+    
+    const hectaresBase = Math.random() < 0.15 ? 150 + Math.random() * 350 : 30 + Math.random() * 120;
+    
+    bots.push({
+      id: `bot_${Date.now()}_${i}`,
+      name: names[i % names.length],
+      city: cidade.name,
+      drone: drones[Math.floor(Math.random() * drones.length)],
+      score: 45 + Math.floor(Math.random() * 55),
+      amxScore: 45 + Math.floor(Math.random() * 55),
+      photo: photos[Math.floor(Math.random() * photos.length)],
+      hoursTotal: 10 + Math.floor(Math.random() * 600),
+      opsTotal: 5 + Math.floor(Math.random() * 150),
+      hectares: Math.floor(hectaresBase),
+      lat: cidade.lat + (Math.random() - 0.5) * 0.15,
+      lon: cidade.lon + (Math.random() - 0.5) * 0.15,
+      status: Math.random() > 0.7 ? 'operating' : (Math.random() > 0.2 ? 'online' : 'offline'),
+    });
+  }
+  return bots;
+}
+
+// BOTS array substituído pelos realistas (mantém compatibilidade)
+const BOTS = generateRealisticBots(18);
+
 // ── Função robusta cleanName() ────────────────────────────────
 function cleanName(name, user) {
   let n = String(name || '').trim();
@@ -48,18 +245,6 @@ function cleanName(name, user) {
 
   return n;
 }
-
-// ── Bots fixos (usados pelo spawnBots legado) ─────────────────
-const BOTS = [
-  { id: 'bot_001', name: 'Carlos Mendonça',   city: 'Sorriso, MT',       drone: 'DJI Agras T40',   score: 87, photo: '👨‍✈️', hoursTotal: 1240, opsTotal: 312 },
-  { id: 'bot_002', name: 'Rafael Bueno',      city: 'Rondonópolis, MT',  drone: 'XAG P100 Pro',    score: 92, photo: '🧑‍✈️', hoursTotal: 890,  opsTotal: 198 },
-  { id: 'bot_003', name: 'Marcos Figueiredo', city: 'Lucas do Rio Verde', drone: 'DJI Agras T30',  score: 74, photo: '👨‍✈️', hoursTotal: 560,  opsTotal: 143 },
-  { id: 'bot_004', name: 'Thiago Cavalcante', city: 'Primavera do Leste', drone: 'XAG V40',        score: 95, photo: '🧑‍✈️', hoursTotal: 2100, opsTotal: 487 },
-  { id: 'bot_005', name: 'Diego Almeida',     city: 'Campo Verde, MT',   drone: 'DJI Agras T50',   score: 81, photo: '👨‍✈️', hoursTotal: 720,  opsTotal: 201 },
-  { id: 'bot_006', name: 'Leandro Souza',     city: 'Nova Mutum, MT',    drone: 'Pegasus Agri 10', score: 68, photo: '🧑‍✈️', hoursTotal: 430,  opsTotal: 98  },
-  { id: 'bot_007', name: 'Fabio Martins',     city: 'Sapezal, MT',       drone: 'DJI Agras T40',   score: 89, photo: '👨‍✈️', hoursTotal: 1560, opsTotal: 389 },
-  { id: 'bot_008', name: 'Anderson Lima',     city: 'Sinop, MT',         drone: 'XAG P100 Pro',    score: 77, photo: '🧑‍✈️', hoursTotal: 680,  opsTotal: 167 },
-];
 
 // ── Inicializar mapa ──────────────────────────────────────────
 export function initMap(containerId, lat, lon) {
@@ -132,7 +317,6 @@ function pilotIcon(status, isUser = false) {
 
 // ── Popup do piloto ───────────────────────────────────────────
 function buildPopup(pilot) {
-  // Sanitização definitiva do nome
   const safeName = cleanName(pilot.nickname || pilot.name, window.AgroRadar?.user);
   const safeNameEscaped = safeName.replace(/'/g, "\\'");
   const safeMsg  = (pilot.requestMsg || '').replace(/'/g, "\\'");
@@ -157,14 +341,12 @@ function buildPopup(pilot) {
   else if (pilot.status === 'request')   statusText = '🔧 Pedido';
   else if (pilot.status === 'operating') statusText = '🚁 Operando';
 
-  // Sanitização da foto (se for URL gigante ou inválida, usa emoji)
   let photoHtml = '👨‍✈️';
   if (pilot.photo && !pilot.photo.startsWith('http') && pilot.photo.length < 10) {
     photoHtml = pilot.photo;
   } else if (pilot.photo && pilot.photo.startsWith('http') && !pilot.photo.includes('googleusercontent.com')) {
     photoHtml = `<img src="${pilot.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.outerHTML='👨‍✈️'">`;
   } else if (pilot.photo && pilot.photo.includes('googleusercontent.com')) {
-    // Se for Google, tenta usar a URL mas com fallback
     photoHtml = `<img src="${pilot.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.outerHTML='👨‍✈️'">`;
   }
 
@@ -187,7 +369,7 @@ function buildPopup(pilot) {
   </div>`;
 }
 
-// ── Adicionar/atualizar piloto ────────────────────────────────
+// ── Adicionar/atualizar piloto (MODIFICADO: add updateAreaOwner) ──
 export function upsertPilot(pilot) {
   if (!_map || !pilot.lat || !pilot.lon) return;
 
@@ -206,6 +388,11 @@ export function upsertPilot(pilot) {
     m._pilotData = pilot;
     _markers[pilot.id] = m;
   }
+  
+  // ═══════════════════════════════════════════════════════════
+  // PATCH 01: Atualiza Dono da Área (APENAS ADICIONADO)
+  // ═══════════════════════════════════════════════════════════
+  updateAreaOwner(pilot);
 }
 
 export function removePilot(id) {
@@ -249,6 +436,7 @@ export async function listenPilots(centerLat, centerLon, currentUid) {
             score: d.amxScore || 0,
             hoursTotal: d.hoursTotal || 0,
             opsTotal: d.opsTotal || 0,
+            hectares: d.hectares || 0,
             lat: d.lat, lon: d.lon,
             status: d.status || 'online',
             requestMsg: d.requestMsg || null,
@@ -263,12 +451,13 @@ export async function listenPilots(centerLat, centerLon, currentUid) {
   }
 }
 
-// ── Bots (spawn em torno do usuário) ─────────────────────────
+// ── Bots (spawn em torno do usuário) MODIFICADO ───────────────
 export function spawnBots(lat, lon, weather) {
   const hour    = new Date().getHours();
   const isDay   = hour >= 5 && hour <= 18;
   const goodWind = (weather?.wind || 0) <= 20;
 
+  // Usa os bots realistas gerados
   const activeBots = BOTS.filter((_, i) => {
     if (!isDay)    return i < 2;
     if (!goodWind) return i < 4;
@@ -291,7 +480,10 @@ export function startBotUpdates() {
     Object.entries(_markers).forEach(([id, m]) => {
       if (!id.startsWith('bot_')) return;
       const p = m.getLatLng();
-      m.setLatLng([p.lat + (Math.random() - 0.5) * 0.003, p.lng + (Math.random() - 0.5) * 0.003]);
+      // Movimento limitado para não sair do mapa agrícola
+      const newLat = Math.max(-35, Math.min(5, p.lat + (Math.random() - 0.5) * 0.003));
+      const newLng = Math.max(-75, Math.min(-35, p.lng + (Math.random() - 0.5) * 0.003));
+      m.setLatLng([newLat, newLng]);
     });
   }, 15000);
 }
