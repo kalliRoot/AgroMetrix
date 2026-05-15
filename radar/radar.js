@@ -409,7 +409,7 @@ let activeBots = [...BOTS];
 let botMovementInterval = null;
 
 /** Spawn inicial: upserta todos os bots, ajustando status pelo horário */
-function spawnBotsAgro() {
+function _spawnBotsAgro() {
   const hour = new Date().getHours();
   const isDay = hour >= 5 && hour <= 18;
 
@@ -422,7 +422,7 @@ function spawnBotsAgro() {
 }
 
 /** Movimento orgânico: drift leve na posição-base */
-function startBotMovement() {
+function _startBotMovementAgro() {
   if (botMovementInterval) clearInterval(botMovementInterval);
   botMovementInterval = setInterval(() => {
     const hour = new Date().getHours();
@@ -451,7 +451,7 @@ function startBotMovement() {
   }, 15000); // a cada 15s (mesmo intervalo do startBotUpdates original)
 }
 
-function updateBotCount() {
+function _updateBotCountAgro() {
   // Mantém compatibilidade com chamadas existentes em setInterval
   updatePilotCount();
 }
@@ -724,9 +724,9 @@ function _atualizarContadorDominio(qtd) {
 // Necessário para que setupMap() possa chamar estas funções:
 
 window.initDominioArea  = initDominioArea;
-window.spawnBotsAgro    = spawnBotsAgro;
-window.startBotMovement = startBotMovement;
-window.updateBotCount   = updateBotCount;
+window.spawnBotsAgro    = _spawnBotsAgro;
+window.startBotMovement = _startBotMovementAgro;
+window.updateBotCount   = _updateBotCountAgro;
 window.activeBots       = activeBots; // para o ranking funcionar
 
 // ── FIM DO ARQUIVO ───────────────────────────────────────────────
