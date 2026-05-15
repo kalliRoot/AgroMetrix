@@ -16,140 +16,219 @@ let _autoEndTimer = null;
 let _currentUid = null;
 
 // ═══════════════════════════════════════════════════════════════
-// PATCH 01 — SISTEMA "DONO DA ÁREA" NO MAPA (ADICIONADO)
+// SISTEMA "DONO DA ÁREA" v2 - VISUAL FUTURISTA LIMPO
 // ═══════════════════════════════════════════════════════════════
 
 const areaOwners = {};
-const areaMarkers = {};
-const GRID_SIZE = 1.0;
+const areaBeacons = {};
+const GRID_SIZE = 0.5;
 
 function getGridKey(lat, lon) {
   return `${Math.floor(lat / GRID_SIZE)}_${Math.floor(lon / GRID_SIZE)}`;
 }
 
 function updateAreaOwner(pilot) {
-  if (!_map) return;
-  const lat = pilot.lat, lon = pilot.lon;
-  if (!lat || !lon) return;
-  const key = getGridKey(lat, lon);
-  const ha = Number(pilot.hectares || pilot.opsTotal * 15 || 0);
+  if (!_map || !pilot.lat || !pilot.lon) return;
+  
+  const key = getGridKey(pilot.lat, pilot.lon);
+  const hectares = Math.min(
+    Number(pilot.hectares || pilot.opsTotal * 2.5 || 0),
+    500
+  );
+  
   const current = areaOwners[key];
-
-  if (current && current.pilotId !== pilot.id && ha <= current.hectares) return;
-
-  const since = current?.pilotId === pilot.id ? current.since : new Date().toLocaleDateString('pt-BR');
-  areaOwners[key] = {
-    pilotId: pilot.id,
-    name: pilot.name || pilot.nickname || 'Piloto',
-    photo: pilot.photo || '👨‍✈️',
-    city: pilot.city || '',
-    hectares: ha,
-    since,
-    lat, lon,
-  };
-  renderAreaOwnerMarker(key);
+  
+  if (current && current.pilotId === pilot.id) {
+    current.hectares = hectares;
+    current.lastUpdate = Date.now();
+    if (current.beaconRef) updateBeaconVisual(current);
+    return;
+  }
+  
+  if (!current || hectares > current.hectares) {
+    areaOwners[key] = {
+      pilotId: pilot.id,
+      name: (pilot.name || pilot.nickname || 'Piloto').substring(0, 20),
+      photo: pilot.photo || '👨‍✈️',
+      city: (pilot.city || '').split(',')[0],
+      drone: pilot.drone || 'Drone Agrícola',
+      hectares: hectares,
+      since: new Date().toLocaleDateString('pt-BR'),
+      lastUpdate: Date.now(),
+      lat: pilot.lat,
+      lon: pilot.lon,
+      beaconRef: null
+    };
+    renderBeacon(key);
+  }
 }
 
-function renderAreaOwnerMarker(key) {
+function renderBeacon(key) {
   if (!_map) return;
+  
   const owner = areaOwners[key];
-  if (!owner || owner.hectares < 20) return;
-
-  if (areaMarkers[key]) {
-    areaMarkers[key].remove();
-    delete areaMarkers[key];
+  if (!owner || owner.hectares < 10) return;
+  
+  if (areaBeacons[key]) {
+    if (owner.beaconRef) owner.beaconRef.off('click');
+    areaBeacons[key].remove();
+    delete areaBeacons[key];
   }
-
-  const isPhoto = owner.photo && !['👨‍✈️','🧑‍✈️','👨‍🚀','👨‍🌾','👩‍✈️','👩‍🚀','👩‍🌾'].includes(owner.photo);
-  const avatarHtml = isPhoto
-    ? `<img src="${owner.photo}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #3da866" onerror="this.outerHTML='<span style=font-size:20px>👨‍✈️</span>'">`
-    : `<span style="font-size:20px">${owner.photo}</span>`;
-
-  const html = `
-    <div style="
-      background:rgba(6,14,8,.96);
-      border:1.5px solid #3da866;
-      border-radius:14px;
-      padding:8px 10px 6px;
-      min-width:140px;
-      max-width:170px;
-      box-shadow:0 0 18px rgba(61,168,102,.35),0 4px 24px rgba(0,0,0,.7);
-      font-family:'Syne',sans-serif;
-      position:relative;
-      animation:ownerFloat 3s ease-in-out infinite;
-    ">
-      <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
-        <div style="
-          width:34px;height:34px;border-radius:50%;
-          background:#163d26;
-          display:flex;align-items:center;justify-content:center;
-          border:2px solid #3da866;
-          overflow:hidden;flex-shrink:0;
-        ">${avatarHtml}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:11px;font-weight:800;color:#e8f5eb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${owner.name}</div>
-          <div style="font-size:9px;color:#5ec880;margin-top:1px">🏆 Dono da Área</div>
-        </div>
+  
+  const beaconHtml = `
+    <div class="agro-beacon" data-key="${key}" style="position: relative; width: 24px; height: 24px; cursor: pointer;">
+      <div style="position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; background: #3da866; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 8px #3da866, 0 0 16px rgba(61,168,102,0.6); animation: beaconPulse 2s ease-in-out infinite;"></div>
+      <div style="position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; border: 1.5px solid rgba(61,168,102,0.6); border-radius: 50%; transform: translate(-50%, -50%); animation: beaconRing 2s ease-in-out infinite;"></div>
+      <div style="position: absolute; top: 50%; left: 50%; width: 32px; height: 32px; transform: translate(-50%, -50%);">
+        <div style="position: absolute; top: 0; left: 50%; width: 2px; height: 16px; background: linear-gradient(180deg, #3da866 0%, transparent 100%); transform-origin: 50% 100%; animation: beaconScan 3s linear infinite;"></div>
       </div>
-      <div style="border-top:1px solid rgba(61,168,102,.2);padding-top:5px;display:grid;grid-template-columns:1fr 1fr;gap:3px">
-        <div style="text-align:center">
-          <div style="font-size:13px;font-weight:800;color:#3da866;font-family:'JetBrains Mono',monospace">${owner.hectares}ha</div>
-          <div style="font-size:8px;color:#5a8a65;text-transform:uppercase;letter-spacing:.05em">Pulv.</div>
-        </div>
-        <div style="text-align:center">
-          <div style="font-size:9px;color:#9ac8a6">${owner.city.split(',')[0] || '—'}</div>
-          <div style="font-size:8px;color:#5a8a65">desde ${owner.since}</div>
-        </div>
-      </div>
-      <div style="
-        position:absolute;top:-20px;left:50%;transform:translateX(-50%);
-        width:3px;height:20px;
-        background:linear-gradient(to top,#3da866,transparent);
-      "></div>
-      <div style="
-        position:absolute;top:-26px;left:50%;transform:translateX(-50%);
-        width:8px;height:8px;border-radius:50%;
-        background:#5ec880;
-        box-shadow:0 0 8px #3da866,0 0 16px rgba(61,168,102,.5);
-        animation:ownerPulse 1.8s ease-in-out infinite;
-      "></div>
+      <div class="beacon-label" style="position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); background: rgba(6,14,8,0.85); backdrop-filter: blur(4px); padding: 2px 6px; border-radius: 12px; font-size: 9px; font-weight: 600; color: #5ec880; white-space: nowrap; font-family: 'Syne', monospace; letter-spacing: 0.5px; border: 0.5px solid rgba(61,168,102,0.3); opacity: 0; transition: opacity 0.2s ease; pointer-events: none;">${owner.name}</div>
     </div>
   `;
-
+  
   const icon = L.divIcon({
-    html,
-    className: 'area-owner-marker',
-    iconAnchor: [85, 80],
-    iconSize: [170, 80],
-    popupAnchor: [0, -80],
+    html: beaconHtml,
+    className: 'agro-beacon-marker',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -20]
   });
-
-  const marker = L.marker([owner.lat, owner.lon], { icon, zIndexOffset: -100, interactive: false });
+  
+  const marker = L.marker([owner.lat, owner.lon], { icon, zIndexOffset: 200, interactive: true });
+  
+  marker.on('click', (e) => {
+    e.originalEvent.stopPropagation();
+    openOwnerPanel(key, owner, marker.getLatLng());
+  });
+  
   marker.addTo(_map);
-  areaMarkers[key] = marker;
+  areaBeacons[key] = marker;
+  owner.beaconRef = marker;
+  
+  const updateLabelVisibility = () => {
+    const zoom = _map.getZoom();
+    const el = marker.getElement();
+    const label = el?.querySelector('.beacon-label');
+    if (label) label.style.opacity = zoom >= 8 ? '1' : '0';
+  };
+  
+  marker.on('add', updateLabelVisibility);
+  _map.on('zoomend', updateLabelVisibility);
+  updateLabelVisibility();
 }
 
-(function injectAreaOwnerStyles() {
-  if (document.getElementById('area-owner-styles')) return;
+let activePanel = null;
+let panelCloseHandler = null;
+
+function openOwnerPanel(key, owner, latLng) {
+  if (activePanel) {
+    activePanel.remove();
+    activePanel = null;
+    if (panelCloseHandler) {
+      document.removeEventListener('click', panelCloseHandler);
+      panelCloseHandler = null;
+    }
+  }
+  
+  const isEmoji = owner.photo && owner.photo.length <= 2 && !owner.photo.includes('http');
+  const avatarHtml = isEmoji 
+    ? `<div style="font-size: 32px; line-height: 1;">${owner.photo}</div>`
+    : `<img src="${owner.photo}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='<div style=font-size:32px>👨‍✈️</div>'">`;
+  
+  const panelHtml = `
+    <div class="agro-owner-panel" style="position: absolute; background: rgba(6, 14, 8, 0.95); backdrop-filter: blur(16px); border-radius: 20px; border: 1px solid rgba(61, 168, 102, 0.3); padding: 16px; min-width: 220px; max-width: 280px; box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(61,168,102,0.1); font-family: 'Syne', sans-serif; z-index: 1000; animation: panelSlideIn 0.2s ease-out;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #163d26, #0a1f12); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #3da866; box-shadow: 0 0 12px rgba(61,168,102,0.3);">${avatarHtml}</div>
+        <div style="flex: 1;">
+          <div style="font-weight: 700; font-size: 16px; color: #e8f5eb; letter-spacing: -0.3px;">${owner.name}</div>
+          <div style="font-size: 11px; color: #5ec880; margin-top: 2px;">🏆 Domina a área</div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; padding: 8px 0; border-top: 1px solid rgba(61,168,102,0.15); border-bottom: 1px solid rgba(61,168,102,0.15);">
+        <div>
+          <div style="font-size: 9px; color: #5a8a65; text-transform: uppercase; letter-spacing: 0.5px;">Cidade</div>
+          <div style="font-size: 12px; font-weight: 500; color: #9ac8a6;">${owner.city || '—'}</div>
+        </div>
+        <div>
+          <div style="font-size: 9px; color: #5a8a65; text-transform: uppercase; letter-spacing: 0.5px;">Drone</div>
+          <div style="font-size: 11px; font-weight: 500; color: #9ac8a6;">${owner.drone.split(' ')[0] || 'Drone'}</div>
+        </div>
+        <div>
+          <div style="font-size: 9px; color: #5a8a65; text-transform: uppercase; letter-spacing: 0.5px;">Hectares</div>
+          <div style="font-size: 20px; font-weight: 800; color: #3da866; font-family: 'JetBrains Mono';">${owner.hectares}</div>
+          <div style="font-size: 8px; color: #5a8a65;">pulverizados</div>
+        </div>
+        <div>
+          <div style="font-size: 9px; color: #5a8a65; text-transform: uppercase; letter-spacing: 0.5px;">Desde</div>
+          <div style="font-size: 12px; font-weight: 500; color: #9ac8a6;">${owner.since}</div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  const panel = document.createElement('div');
+  panel.innerHTML = panelHtml;
+  panel.className = 'agro-owner-panel-container';
+  document.body.appendChild(panel);
+  activePanel = panel;
+  
+  const point = _map.latLngToContainerPoint(latLng);
+  const mapContainer = _map.getContainer();
+  const mapRect = mapContainer.getBoundingClientRect();
+  
+  panel.style.left = `${mapRect.left + point.x + 15}px`;
+  panel.style.top = `${mapRect.top + point.y - 80}px`;
+  
+  setTimeout(() => {
+    const rect = panel.getBoundingClientRect();
+    if (rect.right > window.innerWidth) {
+      panel.style.left = `${mapRect.left + point.x - rect.width - 15}px`;
+    }
+    if (rect.top < 0) {
+      panel.style.top = `${mapRect.top + point.y + 20}px`;
+    }
+  }, 10);
+  
+  panelCloseHandler = (e) => {
+    if (!panel.contains(e.target)) {
+      panel.remove();
+      activePanel = null;
+      document.removeEventListener('click', panelCloseHandler);
+      panelCloseHandler = null;
+    }
+  };
+  setTimeout(() => document.addEventListener('click', panelCloseHandler), 100);
+}
+
+function updateBeaconVisual(owner) {
+  const marker = owner.beaconRef;
+  if (!marker || !_map) return;
+  const intensity = Math.min(0.5 + (owner.hectares / 500), 1.5);
+  const element = marker.getElement();
+  if (element) {
+    const core = element.querySelector('div:first-child');
+    if (core) core.style.boxShadow = `0 0 ${8 * intensity}px #3da866, 0 0 ${16 * intensity}px rgba(61,168,102,${0.4 * intensity})`;
+  }
+}
+
+(function injectBeaconStyles() {
+  if (document.getElementById('agro-beacon-styles')) return;
   const style = document.createElement('style');
-  style.id = 'area-owner-styles';
+  style.id = 'agro-beacon-styles';
   style.textContent = `
-    @keyframes ownerFloat {
-      0%,100% { transform: translateY(0); }
-      50% { transform: translateY(-5px); }
-    }
-    @keyframes ownerPulse {
-      0%,100% { box-shadow: 0 0 8px #3da866, 0 0 16px rgba(61,168,102,.5); }
-      50% { box-shadow: 0 0 14px #3da866, 0 0 28px rgba(61,168,102,.8); }
-    }
-    .area-owner-marker { background: transparent !important; border: none !important; }
+    @keyframes beaconPulse { 0%,100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.2); } }
+    @keyframes beaconRing { 0%,100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.2; transform: translate(-50%, -50%) scale(1.5); } }
+    @keyframes beaconScan { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes panelSlideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .agro-beacon-marker { background: transparent !important; border: none !important; }
+    .agro-beacon-marker:hover .beacon-label { opacity: 1 !important; }
+    .agro-owner-panel-container { position: fixed; z-index: 10000; animation: panelSlideIn 0.2s ease-out; }
   `;
   document.head.appendChild(style);
 })();
 
 // ═══════════════════════════════════════════════════════════════
-// PATCH 02 — BOTS MELHORADOS (SUBSTITUI APENAS OS DADOS)
-// Mantém as mesmas funções mas com dados realistas
+// BOTS COM VALORES REALISTAS (5-100 hectares)
 // ═══════════════════════════════════════════════════════════════
 
 const CIDADES_BRASIL = [
@@ -173,44 +252,49 @@ const CIDADES_BRASIL = [
   { name:'Palmas, TO', lat:-10.2491, lon:-48.3243 },
 ];
 
-// Gerar bots realistas (mantém compatibilidade)
-function generateRealisticBots(count = 20) {
+// Gerar bots com valores REALISTAS (máximo 100 hectares)
+function generateRealisticBots(count = 25) {
   const bots = [];
   const drones = ['DJI Agras T40','DJI Agras T50','XAG P100 Pro','XAG V40','EAVision U10'];
-  const mascNames = ['João Silva','Pedro Oliveira','Lucas Lima','Rafael Alves','Gustavo Pereira','Bruno Ferreira','Rodrigo Gomes','Thiago Monteiro'];
-  const femNames = ['Maria Santos','Ana Costa','Fernanda Souza','Patrícia Rocha'];
-  const photosMasc = ['👨‍✈️','🧑‍✈️','👨‍🚀','👨‍🌾'];
-  const photosFem = ['👩‍✈️','👩‍🚀','👩‍🌾'];
+  const mascNames = ['João Silva','Pedro Oliveira','Lucas Lima','Rafael Alves','Gustavo Pereira','Bruno Ferreira','Rodrigo Gomes','Thiago Monteiro','Felipe Nogueira','Marcelo Batista'];
+  const femNames = ['Maria Santos','Ana Costa','Fernanda Souza','Patrícia Rocha','Carla Mendes'];
+  const photos = ['👨‍✈️','🧑‍✈️','👨‍🚀','👨‍🌾','🧑‍🌾','👩‍✈️','👩‍🚀','👩‍🌾'];
   
-  for (let i = 0; i < Math.min(count, CIDADES_BRASIL.length); i++) {
+  for (let i = 0; i < count; i++) {
     const cidade = CIDADES_BRASIL[i % CIDADES_BRASIL.length];
-    const isFem = i % 5 === 0;
+    const isFem = i % 7 === 0;
     const names = isFem ? femNames : mascNames;
-    const photos = isFem ? photosFem : photosMasc;
     
-    const hectaresBase = Math.random() < 0.15 ? 150 + Math.random() * 350 : 30 + Math.random() * 120;
+    // Distribuição realista: 60% até 40ha, 25% até 70ha, 15% até 100ha
+    let hectares;
+    const rand = Math.random();
+    if (rand < 0.6) hectares = 5 + Math.floor(Math.random() * 35);
+    else if (rand < 0.85) hectares = 40 + Math.floor(Math.random() * 30);
+    else hectares = 70 + Math.floor(Math.random() * 30);
+    
+    const opsTotal = Math.floor(hectares / 2) + Math.floor(Math.random() * 15);
+    const hoursTotal = Math.floor(opsTotal * 1.2) + Math.floor(Math.random() * 30);
     
     bots.push({
       id: `bot_${Date.now()}_${i}`,
       name: names[i % names.length],
       city: cidade.name,
       drone: drones[Math.floor(Math.random() * drones.length)],
-      score: 45 + Math.floor(Math.random() * 55),
-      amxScore: 45 + Math.floor(Math.random() * 55),
+      score: 45 + Math.floor(Math.random() * 40),
+      amxScore: 45 + Math.floor(Math.random() * 40),
       photo: photos[Math.floor(Math.random() * photos.length)],
-      hoursTotal: 10 + Math.floor(Math.random() * 600),
-      opsTotal: 5 + Math.floor(Math.random() * 150),
-      hectares: Math.floor(hectaresBase),
+      hoursTotal: hoursTotal,
+      opsTotal: opsTotal,
+      hectares: hectares,
       lat: cidade.lat + (Math.random() - 0.5) * 0.15,
       lon: cidade.lon + (Math.random() - 0.5) * 0.15,
-      status: Math.random() > 0.7 ? 'operating' : (Math.random() > 0.2 ? 'online' : 'offline'),
+      status: Math.random() > 0.6 ? 'online' : (Math.random() > 0.5 ? 'operating' : 'offline'),
     });
   }
   return bots;
 }
 
-// BOTS array substituído pelos realistas (mantém compatibilidade)
-const BOTS = generateRealisticBots(18);
+const BOTS = generateRealisticBots(22);
 
 // ── Função robusta cleanName() ────────────────────────────────
 function cleanName(name, user) {
@@ -369,7 +453,7 @@ function buildPopup(pilot) {
   </div>`;
 }
 
-// ── Adicionar/atualizar piloto (MODIFICADO: add updateAreaOwner) ──
+// ── Adicionar/atualizar piloto ────────────────────────────────
 export function upsertPilot(pilot) {
   if (!_map || !pilot.lat || !pilot.lon) return;
 
@@ -389,9 +473,6 @@ export function upsertPilot(pilot) {
     _markers[pilot.id] = m;
   }
   
-  // ═══════════════════════════════════════════════════════════
-  // PATCH 01: Atualiza Dono da Área (APENAS ADICIONADO)
-  // ═══════════════════════════════════════════════════════════
   updateAreaOwner(pilot);
 }
 
@@ -406,7 +487,6 @@ export function removePilot(id) {
 export async function listenPilots(centerLat, centerLon, currentUid) {
   _currentUid = currentUid;
 
-  // Limpar marcadores antigos exceto o do usuário atual
   Object.keys(_markers).forEach(id => {
     if (id !== currentUid) removePilot(id);
   });
@@ -415,7 +495,6 @@ export async function listenPilots(centerLat, centerLon, currentUid) {
   startBotUpdates();
   _updatePilotCount();
 
-  // Tentar Firestore se disponível
   if (window._firebaseDB) {
     try {
       const { collection, onSnapshot, query, where } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
@@ -451,13 +530,12 @@ export async function listenPilots(centerLat, centerLon, currentUid) {
   }
 }
 
-// ── Bots (spawn em torno do usuário) MODIFICADO ───────────────
+// ── Bots ──────────────────────────────────────────────────────
 export function spawnBots(lat, lon, weather) {
   const hour    = new Date().getHours();
   const isDay   = hour >= 5 && hour <= 18;
   const goodWind = (weather?.wind || 0) <= 20;
 
-  // Usa os bots realistas gerados
   const activeBots = BOTS.filter((_, i) => {
     if (!isDay)    return i < 2;
     if (!goodWind) return i < 4;
@@ -480,7 +558,6 @@ export function startBotUpdates() {
     Object.entries(_markers).forEach(([id, m]) => {
       if (!id.startsWith('bot_')) return;
       const p = m.getLatLng();
-      // Movimento limitado para não sair do mapa agrícola
       const newLat = Math.max(-35, Math.min(5, p.lat + (Math.random() - 0.5) * 0.003));
       const newLng = Math.max(-75, Math.min(-35, p.lng + (Math.random() - 0.5) * 0.003));
       m.setLatLng([newLat, newLng]);
