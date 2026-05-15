@@ -1,658 +1,732 @@
-// ═══════════════════════════════════════════════════════════════
-//  AgroMetrix Radar — radar.js v5.2
-//  Mapa Leaflet · Pilotos reais · Bots espalhados · SOS · Operações
-//  SISTEMA DONO DA ÁREA: APENAS BEACONS (sem texto fixo)
-// ═══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════
+// AGROMETRIX RADAR — BOTS AGRÍCOLAS + SISTEMA DE DOMÍNIO DE ÁREA
+// ══════════════════════════════════════════════════════════════════
+//
+// COMO USAR:
+//   1. No index.html, SUBSTITUA o bloco que começa em
+//      "const CIDADES_BRASIL = [" e termina em
+//      "function updateBotCount() {" pelo conteúdo deste arquivo.
+//   2. Mantenha tudo que vem depois de updateBotCount() intacto.
+//   3. Chame initDominioArea(R.map) logo após setupMap() inicializar o mapa.
+//      Exemplo (dentro de setupMap):
+//        R.map = initMap('mapEl', lat, lon);
+//        initDominioArea(R.map);   // ← adicionar esta linha
+//
+// ══════════════════════════════════════════════════════════════════
 
-let _map = null;
-let _markers = {};         // apenas pilotos (bots + reais)
-let _beaconMarkers = {};   // beacons de área (separado dos pilotos)
-let _botInterval = null;
-let _locationInterval = null;
-let _operationActive = false;
-let _operationStart = null;
-let _operationData = {};
-let _operationConfig = {};
-let _pauseTimer = null;
-let _autoEndTimer = null;
-let _currentUid = null;
 
-// ═══════════════════════════════════════════════════════════════
-// SISTEMA "DONO DA ÁREA" v2 - SOMENTE BEACONS (SEM TEXTO FIXO)
-// ═══════════════════════════════════════════════════════════════
+// ── 1. ARRAY DE 25 BOTS AGRÍCOLAS REALISTAS ──────────────────────
+//
+// Distribuição:
+//   • 20 homens, 5 mulheres
+//   • Regiões: MT, GO, MS, Oeste BA, PR, Interior SP,
+//              Triângulo Mineiro, TO, MATOPIBA, Manaus
+//   • Ha entre 10–100 (maioria 10–60)
+//   • Posições fixas em zonas agrícolas, sem litoral/oceano
 
-const areaOwners = {};
-const areaBeacons = {};
-const GRID_SIZE = 0.5;
+const BOTS = [
+  // ── Mato Grosso (5 pilotos) ──────────────────────────────────
+  {
+    id: 'bot_001',
+    name: 'Renato Borges',
+    city: 'Sorriso, MT',
+    drone: 'DJI Agras T50',
+    photo: '👨‍✈️',
+    score: 82,
+    hoursTotal: 1840,
+    opsTotal: 312,
+    haTotal: 48,
+    lat: -12.548, lon: -55.721,
+    status: 'operating',
+    isCurrentUser: false,
+  },
+  {
+    id: 'bot_002',
+    name: 'Cleiton Figueiredo',
+    city: 'Lucas do Rio Verde, MT',
+    drone: 'XAG P100 Pro',
+    photo: '👨‍✈️',
+    score: 76,
+    hoursTotal: 1320,
+    opsTotal: 241,
+    haTotal: 62,
+    lat: -13.056, lon: -55.913,
+    status: 'online',
+    isCurrentUser: false,
+  },
+  {
+    id: 'bot_003',
+    name: 'Deivid Machado',
+    city: 'Sinop, MT',
+    drone: 'DJI Agras T40',
+    photo: '👨‍✈️',
+    score: 69,
+    hoursTotal: 980,
+    opsTotal: 178,
+    haTotal: 35,
+    lat: -11.862, lon: -55.504,
+    status: 'online',
+    isCurrentUser: false,
+  },
+  {
+    id: 'bot_004',
+    name: 'Adriana Queiroz',
+    city: 'Campos de Júlio, MT',
+    drone: 'XAG V40',
+    photo: '👩‍✈️',
+    score: 88,
+    hoursTotal: 2100,
+    opsTotal: 390,
+    haTotal: 57,
+    lat: -13.518, lon: -59.268,
+    status: 'operating',
+    isCurrentUser: false,
+  },
+  {
+    id: 'bot_005',
+    name: 'Márcio Cavalcante',
+    city: 'Primavera do Leste, MT',
+    drone: 'DJI Agras T50',
+    photo: '👨‍✈️',
+    score: 91,
+    hoursTotal: 2650,
+    opsTotal: 510,
+    haTotal: 73,
+    lat: -15.559, lon: -54.284,
+    status: 'operating',
+    isCurrentUser: false,
+  },
 
-function getGridKey(lat, lon) {
-  return `${Math.floor(lat / GRID_SIZE)}_${Math.floor(lon / GRID_SIZE)}`;
-}
+  // ── Goiás (3 pilotos) ────────────────────────────────────────
+  {
+    id: 'bot_006',
+    name: 'Fábio Rezende',
+    city: 'Rio Verde, GO',
+    drone: 'XAG P100 Pro',
+    photo: '👨‍✈️',
+    score: 78,
+    hoursTotal: 1540,
+    opsTotal: 288,
+    haTotal: 41,
+    lat: -17.793, lon: -50.928,
+    status: 'online',
+    isCurrentUser: false,
+  },
+  {
+    id: 'bot_007',
+    name: 'Tatiane Moreira',
+    city: 'Jataí, GO',
+    drone: 'DJI Agras T40',
+    photo: '👩‍✈️',
+    score: 84,
+    hoursTotal: 1760,
+    opsTotal: 320,
+    haTotal: 53,
+    lat: -17.881, lon: -51.713,
+    status: 'operating',
+    isCurrentUser: false,
+  },
+  {
+    id: 'bot_008',
+    name: 'Wendel Carneiro',
+    city: 'Mineiros, GO',
+    drone: 'EAVision U10',
+    photo: '👨‍✈️',
+    score: 65,
+    hoursTotal: 730,
+    opsTotal: 140,
+    haTotal: 22,
+    lat: -17.567, lon: -52.552,
+    status: 'online',
+    isCurrentUser: false,
+  },
 
-function updateAreaOwner(pilot) {
-  if (!_map || !pilot.lat || !pilot.lon) return;
-  
-  const key = getGridKey(pilot.lat, pilot.lon);
-  const hectares = Math.min(
-    Number(pilot.hectares || pilot.opsTotal * 2.5 || 0),
-    500
-  );
-  
-  const current = areaOwners[key];
-  
-  if (current && current.pilotId === pilot.id) {
-    current.hectares = hectares;
-    current.lastUpdate = Date.now();
-    if (current.beaconRef) updateBeaconVisual(current);
-    return;
-  }
-  
-  if (!current || hectares > current.hectares) {
-    areaOwners[key] = {
-      pilotId: pilot.id,
-      name: (pilot.name || pilot.nickname || 'Piloto').substring(0, 20),
-      photo: pilot.photo || '👨‍✈️',
-      city: (pilot.city || '').split(',')[0],
-      drone: pilot.drone || 'Drone Agrícola',
-      hectares: hectares,
-      since: new Date().toLocaleDateString('pt-BR'),
-      lastUpdate: Date.now(),
-      lat: pilot.lat,
-      lon: pilot.lon,
-      beaconRef: null
-    };
-    renderBeacon(key);
-  }
-}
+  // ── Mato Grosso do Sul (2 pilotos) ───────────────────────────
+  {
+    id: 'bot_009',
+    name: 'Leandro Pavan',
+    city: 'Dourados, MS',
+    drone: 'DJI Agras T50',
+    photo: '👨‍✈️',
+    score: 87,
+    hoursTotal: 2010,
+    opsTotal: 367,
+    haTotal: 66,
+    lat: -22.223, lon: -54.805,
+    status: 'operating',
+    isCurrentUser: false,
+  },
+  {
+    id: 'bot_010',
+    name: 'Robson Menezes',
+    city: 'Maracaju, MS',
+    drone: 'XAG V40',
+    photo: '👨‍✈️',
+    score: 72,
+    hoursTotal: 1100,
+    opsTotal: 198,
+    haTotal: 38,
+    lat: -21.630, lon: -55.168,
+    status: 'online',
+    isCurrentUser: false,
+  },
 
-// ──────────────────────────────────────────────────────────────
-// RENDER BEACON — SOMENTE O FEIXE DE LUZ (SEM TEXTO)
-// ──────────────────────────────────────────────────────────────
-function renderBeacon(key) {
-  if (!_map) return;
-  
-  const owner = areaOwners[key];
-  if (!owner || owner.hectares < 10) return;
-  
-  // Remove beacon antigo se existir
-  if (areaBeacons[key]) {
-    if (owner.beaconRef) owner.beaconRef.off('click');
-    areaBeacons[key].remove();
-    delete areaBeacons[key];
-    delete _beaconMarkers[key];
-  }
-  
-  // APENAS O FEIXE DE LUZ — sem label, sem texto fixo
-  const beaconHtml = `
-    <div class="agro-beacon" data-key="${key}" style="position: relative; width: 24px; height: 24px; cursor: pointer;">
-      <!-- Núcleo pulsante -->
-      <div style="position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; background: #3da866; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 8px #3da866, 0 0 16px rgba(61,168,102,0.6); animation: beaconPulse 2s ease-in-out infinite;"></div>
-      <!-- Anel expansivo -->
-      <div style="position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; border: 1.5px solid rgba(61,168,102,0.6); border-radius: 50%; transform: translate(-50%, -50%); animation: beaconRing 2s ease-in-out infinite;"></div>
-      <!-- Scanner giratório -->
-      <div style="position: absolute; top: 50%; left: 50%; width: 32px; height: 32px; transform: translate(-50%, -50%);">
-        <div style="position: absolute; top: 0; left: 50%; width: 2px; height: 16px; background: linear-gradient(180deg, #3da866 0%, transparent 100%); transform-origin: 50% 100%; animation: beaconScan 3s linear infinite;"></div>
-      </div>
-    </div>
-  `;
-  
-  const icon = L.divIcon({
-    html: beaconHtml,
-    className: 'agro-beacon-marker',
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
-    popupAnchor: [0, -20]
+  // ── Oeste da Bahia (2 pilotos) ───────────────────────────────
+  {
+    id: 'bot_011',
+    name: 'Gilson Patriota',
+    city: 'Luís Eduardo Magalhães, BA',
+    drone: 'DJI Agras T40',
+    photo: '👨‍✈️',
+    score: 79,
+    hoursTotal: 1420,
+    opsTotal: 260,
+    haTotal: 44,
+    lat: -12.096, lon: -45.789,
+    status: 'operating',
+    isCurrentUser: false,
+  },
+  {
+    id: 'bot_012',
+    name: 'Simone Barros',
+    city: 'Barreiras, BA',
+    drone: 'XAG P100 Pro',
+    photo: '👩‍✈️',
+    score: 81,
+    hoursTotal: 1680,
+    opsTotal: 305,
+    haTotal: 59,
+    lat: -12.152, lon: -44.987,
+    status: 'online',
+    isCurrentUser: false,
+  },
+
+  // ── Paraná (3 pilotos) ───────────────────────────────────────
+  {
+    id: 'bot_013',
+    name: 'Emerson Krauss',
+    city: 'Cascavel, PR',
+    drone: 'DJI Agras T25',
+    photo: '👨‍✈️',
+    score: 74,
+    hoursTotal: 1180,
+    opsTotal: 212,
+    haTotal: 31,
+    lat: -24.957, lon: -53.456,
+    status: 'online',
+    isCurrentUser: false,
+  },
+  {
+    id: 'bot_014',
+    name: 'Alex Witkoski',
+    city: 'Toledo, PR',
+    drone: 'XAG V40',
+    photo: '👨‍✈️',
+    score: 86,
+    hoursTotal: 1900,
+    opsTotal: 348,
+    haTotal: 55,
+    lat: -24.724, lon: -53.742,
+    status: 'operating',
+    isCurrentUser: false,
+  },
+  {
+    id: 'bot_015',
+    name: 'Cristiane Luz',
+    city: 'Palotina, PR',
+    drone: 'DJI Agras T40',
+    photo: '👩‍✈️',
+    score: 70,
+    hoursTotal: 960,
+    opsTotal: 172,
+    haTotal: 28,
+    lat: -24.284, lon: -53.843,
+    status: 'online',
+    isCurrentUser: false,
+  },
+
+  // ── Interior de SP (2 pilotos) ───────────────────────────────
+  {
+    id: 'bot_016',
+    name: 'Vinicius Salles',
+    city: 'Ribeirão Preto, SP',
+    drone: 'DJI Agras T50',
+    photo: '👨‍✈️',
+    score: 93,
+    hoursTotal: 2800,
+    opsTotal: 535,
+    haTotal: 85,
+    lat: -21.025, lon: -47.724,
+    status: 'operating',
+    isCurrentUser: false,
+  },
+  {
+    id: 'bot_017',
+    name: 'Hélio Junqueira',
+    city: 'Barretos, SP',
+    drone: 'XAG P100 Pro',
+    photo: '👨‍✈️',
+    score: 77,
+    hoursTotal: 1350,
+    opsTotal: 247,
+    haTotal: 43,
+    lat: -20.558, lon: -48.567,
+    status: 'online',
+    isCurrentUser: false,
+  },
+
+  // ── Triângulo Mineiro (2 pilotos) ────────────────────────────
+  {
+    id: 'bot_018',
+    name: 'Augusto Braga',
+    city: 'Uberaba, MG',
+    drone: 'DJI Agras T40',
+    photo: '👨‍✈️',
+    score: 80,
+    hoursTotal: 1610,
+    opsTotal: 294,
+    haTotal: 49,
+    lat: -19.747, lon: -47.931,
+    status: 'online',
+    isCurrentUser: false,
+  },
+  {
+    id: 'bot_019',
+    name: 'Nilton Saraiva',
+    city: 'Patos de Minas, MG',
+    drone: 'EAVision U10',
+    photo: '👨‍✈️',
+    score: 67,
+    hoursTotal: 820,
+    opsTotal: 151,
+    haTotal: 27,
+    lat: -18.579, lon: -46.517,
+    status: 'online',
+    isCurrentUser: false,
+  },
+
+  // ── Tocantins (2 pilotos) ────────────────────────────────────
+  {
+    id: 'bot_020',
+    name: 'Dorneles Aguiar',
+    city: 'Pedro Afonso, TO',
+    drone: 'XAG P100 Pro',
+    photo: '👨‍✈️',
+    score: 75,
+    hoursTotal: 1290,
+    opsTotal: 233,
+    haTotal: 40,
+    lat: -8.969, lon: -48.174,
+    status: 'operating',
+    isCurrentUser: false,
+  },
+  {
+    id: 'bot_021',
+    name: 'Edmar Fontes',
+    city: 'Gurupi, TO',
+    drone: 'DJI Agras T25',
+    photo: '👨‍✈️',
+    score: 63,
+    hoursTotal: 690,
+    opsTotal: 128,
+    haTotal: 19,
+    lat: -11.729, lon: -49.065,
+    status: 'online',
+    isCurrentUser: false,
+  },
+
+  // ── MATOPIBA — MA/PI (2 pilotos) ─────────────────────────────
+  {
+    id: 'bot_022',
+    name: 'Tarcísio Leal',
+    city: 'Balsas, MA',
+    drone: 'DJI Agras T40',
+    photo: '👨‍✈️',
+    score: 71,
+    hoursTotal: 1040,
+    opsTotal: 186,
+    haTotal: 34,
+    lat: -7.531, lon: -46.037,
+    status: 'online',
+    isCurrentUser: false,
+  },
+  {
+    id: 'bot_023',
+    name: 'Wenderson Pires',
+    city: 'Uruçuí, PI',
+    drone: 'XAG V40',
+    photo: '👨‍✈️',
+    score: 73,
+    hoursTotal: 1130,
+    opsTotal: 204,
+    haTotal: 37,
+    lat: -7.228, lon: -44.555,
+    status: 'operating',
+    isCurrentUser: false,
+  },
+
+  // ── Manaus — AM (1 piloto) ───────────────────────────────────
+  {
+    id: 'bot_024',
+    name: 'Kelven Andrade',
+    city: 'Manaus, AM',
+    drone: 'DJI Agras T25',
+    photo: '👨‍✈️',
+    score: 61,
+    hoursTotal: 640,
+    opsTotal: 117,
+    haTotal: 16,
+    lat: -3.119, lon: -60.022,
+    status: 'online',
+    isCurrentUser: false,
+  },
+
+  // ── Interior SP extra (1 piloto) ─────────────────────────────
+  {
+    id: 'bot_025',
+    name: 'Patricia Vidal',
+    city: 'Araçatuba, SP',
+    drone: 'DJI Agras T50',
+    photo: '👩‍✈️',
+    score: 89,
+    hoursTotal: 2230,
+    opsTotal: 412,
+    haTotal: 78,
+    lat: -21.209, lon: -50.426,
+    status: 'operating',
+    isCurrentUser: false,
+  },
+];
+
+
+// ── 2. LÓGICA DE MOVIMENTO DOS BOTS ─────────────────────────────
+//
+// Cada bot tem uma posição-base fixa (lat/lon originais).
+// A cada intervalo, drifta ±0.025° (~2.7 km) — simula voo em fazendas
+// próximas. Nunca atravessa estado.
+
+let activeBots = [...BOTS];
+let botMovementInterval = null;
+
+/** Spawn inicial: upserta todos os bots, ajustando status pelo horário */
+function spawnBotsAgro() {
+  const hour = new Date().getHours();
+  const isDay = hour >= 5 && hour <= 18;
+
+  activeBots.forEach(bot => {
+    const statusAjustado = !isDay
+      ? (Math.random() > 0.7 ? 'online' : 'offline')
+      : bot.status;
+    upsertPilot({ ...bot, status: statusAjustado });
   });
-  
-  const marker = L.marker([owner.lat, owner.lon], { icon, zIndexOffset: 200, interactive: true });
-  
-  // Clique abre o painel (sem card fixo)
-  marker.on('click', (e) => {
-    e.originalEvent.stopPropagation();
-    openOwnerPanel(key, owner, marker.getLatLng());
+}
+
+/** Movimento orgânico: drift leve na posição-base */
+function startBotMovement() {
+  if (botMovementInterval) clearInterval(botMovementInterval);
+  botMovementInterval = setInterval(() => {
+    const hour = new Date().getHours();
+    const isDay = hour >= 5 && hour <= 18;
+
+    activeBots.forEach(bot => {
+      // Drift pequeno, máximo ~3 km
+      const dlat = (Math.random() - 0.5) * 0.025;
+      const dlon = (Math.random() - 0.5) * 0.025;
+      bot.lat += dlat;
+      bot.lon += dlon;
+
+      // Evolução diária de ha (+10–20 ha por dia, acumulado por hora ≈ +0.5–0.8 ha)
+      bot.haTotal = Math.min(100, bot.haTotal + (Math.random() * 0.8 + 0.4));
+
+      const novoStatus = !isDay
+        ? (Math.random() > 0.8 ? 'online' : 'offline')
+        : (Math.random() > 0.45 ? 'operating' : 'online');
+
+      upsertPilot({ ...bot, status: novoStatus });
+    });
+
+    // Atualiza domínio de área após movimento
+    _renderDominioBeacons();
+    updatePilotCount();
+  }, 15000); // a cada 15s (mesmo intervalo do startBotUpdates original)
+}
+
+function updateBotCount() {
+  // Mantém compatibilidade com chamadas existentes em setInterval
+  updatePilotCount();
+}
+
+
+// ── 3. SISTEMA DE DOMÍNIO DE ÁREA ───────────────────────────────
+//
+// Grid de 0.5° (~55 km). O piloto (bot ou real) com mais haTotal
+// naquele grid é o "dominante". Exibido como beacon pulse verde
+// discreto no mapa. Nome só aparece no hover/click.
+
+const GRID_SIZE = 0.5; // graus
+let _dominioLayer = null;
+let _dominioMap   = null;
+let _dominioMarkers = {}; // chave: "gridLat_gridLon"
+
+/** Inicializa o sistema no mapa Leaflet */
+function initDominioArea(map) {
+  _dominioMap = map;
+  _dominioLayer = L.layerGroup().addTo(map);
+  _renderDominioBeacons();
+}
+
+/** Calcula qual piloto domina cada grid e renderiza beacons */
+function _renderDominioBeacons() {
+  if (!_dominioMap) return;
+
+  // Coletar todos os pilotos visíveis (bots + user)
+  const todos = [];
+
+  // Bots
+  activeBots.forEach(b => {
+    if (b.status !== 'offline') {
+      todos.push({ id: b.id, name: b.name, city: b.city, drone: b.drone,
+                   ha: b.haTotal, lat: b.lat, lon: b.lon, photo: b.photo });
+    }
   });
-  
-  marker.addTo(_map);
-  areaBeacons[key] = marker;
-  _beaconMarkers[key] = marker;
-  owner.beaconRef = marker;
+
+  // Piloto real (se existir)
+  const R = window.AgroRadar;
+  if (R?.profile && R?.lat && R?.lon) {
+    todos.push({
+      id: R.user?.uid || 'user',
+      name: R.profile.nickname || R.profile.name || 'Você',
+      city: R.profile.city || '',
+      drone: R.profile.drone || '',
+      ha: R.profile.haTotal || 0,
+      lat: R.lat, lon: R.lon,
+      photo: R.profile.photo || '👨‍✈️',
+    });
+  }
+
+  // Agrupar por grid
+  const gridMap = {};
+  todos.forEach(p => {
+    const gLat = Math.floor(p.lat / GRID_SIZE) * GRID_SIZE;
+    const gLon = Math.floor(p.lon / GRID_SIZE) * GRID_SIZE;
+    const key = `${gLat}_${gLon}`;
+    if (!gridMap[key] || p.ha > gridMap[key].ha) {
+      gridMap[key] = { ...p, gLat, gLon };
+    }
+  });
+
+  // Remover beacons antigos que já não têm dominante
+  Object.keys(_dominioMarkers).forEach(key => {
+    if (!gridMap[key]) {
+      _dominioLayer.removeLayer(_dominioMarkers[key]);
+      delete _dominioMarkers[key];
+    }
+  });
+
+  // Criar/atualizar beacons
+  Object.entries(gridMap).forEach(([key, dominante]) => {
+    const centerLat = dominante.gLat + GRID_SIZE / 2;
+    const centerLon = dominante.gLon + GRID_SIZE / 2;
+
+    if (_dominioMarkers[key]) {
+      // Apenas atualiza dados do popup sem recriar o marker
+      _dominioMarkers[key]._dominioData = dominante;
+      return;
+    }
+
+    const icon = _criarBeaconIcon();
+    const marker = L.marker([centerLat, centerLon], {
+      icon,
+      zIndexOffset: -100, // fica abaixo dos pilotos
+      interactive: true,
+    });
+
+    marker._dominioData = dominante;
+
+    marker.on('click', () => _abrirPainelDominio(marker._dominioData));
+
+    // Zoom-based visibility: só mostra label no zoom ≥ 9
+    _dominioMap.on('zoomend', () => {
+      const zoom = _dominioMap.getZoom();
+      const el = marker.getElement();
+      if (!el) return;
+      el.querySelector('.beacon-label').style.display = zoom >= 9 ? 'block' : 'none';
+    });
+
+    _dominioLayer.addLayer(marker);
+    _dominioMarkers[key] = marker;
+  });
+
+  // Atualiza contador de áreas dominadas
+  _atualizarContadorDominio(Object.keys(gridMap).length);
 }
 
-// ──────────────────────────────────────────────────────────────
-// PAINEL QUE ABRE AO CLICAR NO BEACON (SOMENTE NESTE MOMENTO)
-// ──────────────────────────────────────────────────────────────
-let activePanel = null;
-let panelCloseHandler = null;
+/** Cria o ícone HTML do beacon pulse */
+function _criarBeaconIcon() {
+  return L.divIcon({
+    className: '',
+    html: `
+      <div class="beacon-wrapper" title="Área dominada">
+        <div class="beacon-pulse"></div>
+        <div class="beacon-core"></div>
+        <div class="beacon-label" style="display:none"></div>
+      </div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -16],
+  });
+}
 
-function openOwnerPanel(key, owner, latLng) {
-  if (activePanel) {
-    activePanel.remove();
-    activePanel = null;
-    if (panelCloseHandler) {
-      document.removeEventListener('click', panelCloseHandler);
-      panelCloseHandler = null;
-    }
-  }
-  
-  const isEmoji = owner.photo && owner.photo.length <= 2 && !owner.photo.includes('http');
-  const avatarHtml = isEmoji 
-    ? `<div style="font-size: 32px; line-height: 1;">${owner.photo}</div>`
-    : `<img src="${owner.photo}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='<div style=font-size:32px>👨‍✈️</div>'">`;
-  
-  const panelHtml = `
-    <div class="agro-owner-panel" style="position: absolute; background: rgba(6, 14, 8, 0.95); backdrop-filter: blur(16px); border-radius: 20px; border: 1px solid rgba(61, 168, 102, 0.3); padding: 16px; min-width: 220px; max-width: 280px; box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(61,168,102,0.1); font-family: 'Syne', sans-serif; z-index: 1000; animation: panelSlideIn 0.2s ease-out;">
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-        <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #163d26, #0a1f12); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #3da866; box-shadow: 0 0 12px rgba(61,168,102,0.3);">${avatarHtml}</div>
-        <div style="flex: 1;">
-          <div style="font-weight: 700; font-size: 16px; color: #e8f5eb; letter-spacing: -0.3px;">${owner.name}</div>
-          <div style="font-size: 11px; color: #5ec880; margin-top: 2px;">🏆 Domina a área</div>
+/** Abre painel premium ao clicar no beacon */
+function _abrirPainelDominio(d) {
+  if (!d) return;
+  const desde = _calcularDesde();
+  const fotoHtml = d.photo && !d.photo.startsWith('http')
+    ? `<span style="font-size:32px">${d.photo}</span>`
+    : `<img src="${d.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.outerHTML='👨‍✈️'">`;
+
+  // Reutiliza o sistema de toast + sheet existente via popup Leaflet temporário
+  // Para não criar novo HTML global, injetamos num popup centralizado
+  const html = `
+    <div style="min-width:190px;font-family:'Syne',sans-serif">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:44px;height:44px;border-radius:50%;background:#1f5534;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;border:1.5px solid rgba(61,168,102,.4)">
+          ${fotoHtml}
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:800;color:#e8f5eb">${d.name}</div>
+          <div style="font-size:10px;color:#5a8a65;margin-top:1px">📍 ${d.city}</div>
         </div>
       </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; padding: 8px 0; border-top: 1px solid rgba(61,168,102,0.15); border-bottom: 1px solid rgba(61,168,102,0.15);">
-        <div>
-          <div style="font-size: 9px; color: #5a8a65; text-transform: uppercase; letter-spacing: 0.5px;">Cidade</div>
-          <div style="font-size: 12px; font-weight: 500; color: #9ac8a6;">${owner.city || '—'}</div>
+      <div style="background:rgba(61,168,102,.08);border:1px solid rgba(61,168,102,.2);border-radius:10px;padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div style="text-align:center">
+          <div style="font-size:20px;font-weight:700;color:#3da866">${d.ha.toFixed(0)} ha</div>
+          <div style="font-size:9px;color:#5a8a65;text-transform:uppercase;letter-spacing:.07em">Hectares</div>
         </div>
-        <div>
-          <div style="font-size: 9px; color: #5a8a65; text-transform: uppercase; letter-spacing: 0.5px;">Drone</div>
-          <div style="font-size: 11px; font-weight: 500; color: #9ac8a6;">${owner.drone.split(' ')[0] || 'Drone'}</div>
-        </div>
-        <div>
-          <div style="font-size: 9px; color: #5a8a65; text-transform: uppercase; letter-spacing: 0.5px;">Hectares</div>
-          <div style="font-size: 20px; font-weight: 800; color: #3da866; font-family: 'JetBrains Mono';">${owner.hectares}</div>
-          <div style="font-size: 8px; color: #5a8a65;">pulverizados</div>
-        </div>
-        <div>
-          <div style="font-size: 9px; color: #5a8a65; text-transform: uppercase; letter-spacing: 0.5px;">Desde</div>
-          <div style="font-size: 12px; font-weight: 500; color: #9ac8a6;">${owner.since}</div>
+        <div style="text-align:center">
+          <div style="font-size:13px;font-weight:700;color:#9ac8a6">${d.drone || '—'}</div>
+          <div style="font-size:9px;color:#5a8a65;text-transform:uppercase;letter-spacing:.07em">Drone</div>
         </div>
       </div>
-    </div>
-  `;
-  
-  const panel = document.createElement('div');
-  panel.innerHTML = panelHtml;
-  panel.className = 'agro-owner-panel-container';
-  document.body.appendChild(panel);
-  activePanel = panel;
-  
-  const point = _map.latLngToContainerPoint(latLng);
-  const mapContainer = _map.getContainer();
-  const mapRect = mapContainer.getBoundingClientRect();
-  
-  panel.style.left = `${mapRect.left + point.x + 15}px`;
-  panel.style.top = `${mapRect.top + point.y - 80}px`;
-  
-  setTimeout(() => {
-    const rect = panel.getBoundingClientRect();
-    if (rect.right > window.innerWidth) {
-      panel.style.left = `${mapRect.left + point.x - rect.width - 15}px`;
-    }
-    if (rect.top < 0) {
-      panel.style.top = `${mapRect.top + point.y + 20}px`;
-    }
-  }, 10);
-  
-  panelCloseHandler = (e) => {
-    if (!panel.contains(e.target)) {
-      panel.remove();
-      activePanel = null;
-      document.removeEventListener('click', panelCloseHandler);
-      panelCloseHandler = null;
-    }
-  };
-  setTimeout(() => document.addEventListener('click', panelCloseHandler), 100);
+      <div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:rgba(61,168,102,.06);border-radius:8px;border:1px solid rgba(61,168,102,.15)">
+        <span style="font-size:14px">🏆</span>
+        <div style="font-size:11px;color:#9ac8a6">Domina esta área <strong style="color:#3da866">há ${desde}</strong></div>
+      </div>
+    </div>`;
+
+  // Abre popup Leaflet no centro do grid
+  L.popup({ className: 'dominio-popup', closeButton: true, maxWidth: 240 })
+    .setLatLng([
+      Math.floor(d.lat / GRID_SIZE) * GRID_SIZE + GRID_SIZE / 2,
+      Math.floor(d.lon / GRID_SIZE) * GRID_SIZE + GRID_SIZE / 2,
+    ])
+    .setContent(html)
+    .openOn(_dominioMap);
 }
 
-function updateBeaconVisual(owner) {
-  const marker = owner.beaconRef;
-  if (!marker || !_map) return;
-  const intensity = Math.min(0.5 + (owner.hectares / 500), 1.5);
-  const element = marker.getElement();
-  if (element) {
-    const core = element.querySelector('div:first-child');
-    if (core) core.style.boxShadow = `0 0 ${8 * intensity}px #3da866, 0 0 ${16 * intensity}px rgba(61,168,102,${0.4 * intensity})`;
-  }
+/** Simula "desde quando domina" — aleatório entre 3 e 45 dias */
+function _calcularDesde() {
+  const dias = Math.floor(Math.random() * 42) + 3;
+  return dias === 1 ? '1 dia' : `${dias} dias`;
 }
 
-(function injectBeaconStyles() {
-  if (document.getElementById('agro-beacon-styles')) return;
+/** Atualiza o badge de contagem no header */
+function _atualizarContadorDominio(qtd) {
+  // Tenta atualizar o pilotCount com formato separado
+  const el = document.getElementById('pilotCount');
+  if (!el) return;
+  const pilotos = document.querySelectorAll('.leaflet-marker-icon').length;
+  el.textContent = `${Math.max(pilotos, 8)} pilotos · ${qtd} áreas`;
+}
+
+
+// ── 4. CSS DO BEACON — injetar no <head> ──────────────────────────
+//
+// Cole este bloco dentro da tag <style> existente no HTML,
+// ou deixe o script injetá-lo automaticamente:
+
+(function _injetarCSSBeacon() {
+  if (document.getElementById('beaconCSS')) return;
   const style = document.createElement('style');
-  style.id = 'agro-beacon-styles';
+  style.id = 'beaconCSS';
   style.textContent = `
-    @keyframes beaconPulse { 0%,100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.2); } }
-    @keyframes beaconRing { 0%,100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.2; transform: translate(-50%, -50%) scale(1.5); } }
-    @keyframes beaconScan { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @keyframes panelSlideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .agro-beacon-marker { background: transparent !important; border: none !important; }
-    .agro-owner-panel-container { position: fixed; z-index: 10000; animation: panelSlideIn 0.2s ease-out; }
+    /* ── Beacon de Domínio de Área ── */
+    .beacon-wrapper {
+      position: relative;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .beacon-core {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #3da866;
+      box-shadow: 0 0 6px #3da866, 0 0 12px rgba(61,168,102,.5);
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+    .beacon-pulse {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(61, 168, 102, 0.15);
+      border: 1px solid rgba(61, 168, 102, 0.35);
+      animation: beaconPulse 2.4s ease-out infinite;
+      z-index: 1;
+    }
+    @keyframes beaconPulse {
+      0%   { transform: translate(-50%,-50%) scale(0.6); opacity: 0.8; }
+      70%  { transform: translate(-50%,-50%) scale(1.9); opacity: 0; }
+      100% { transform: translate(-50%,-50%) scale(0.6); opacity: 0; }
+    }
+    .beacon-label {
+      position: absolute;
+      bottom: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      font-family: 'Syne', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      color: #3da866;
+      text-shadow: 0 1px 3px rgba(0,0,0,.8);
+      pointer-events: none;
+      z-index: 3;
+      letter-spacing: .03em;
+    }
+    /* Popup do domínio */
+    .dominio-popup .leaflet-popup-content-wrapper {
+      background: rgba(8, 16, 10, 0.97) !important;
+      border: 1px solid rgba(61,168,102,.3) !important;
+      border-radius: 16px !important;
+      box-shadow: 0 12px 40px rgba(0,0,0,.8), 0 0 0 1px rgba(61,168,102,.1) !important;
+      backdrop-filter: blur(16px);
+    }
+    .dominio-popup .leaflet-popup-tip {
+      background: rgba(8, 16, 10, 0.97) !important;
+    }
   `;
   document.head.appendChild(style);
 })();
 
-// ═══════════════════════════════════════════════════════════════
-// BOTS — 30 pilotos, espalhados pelo Brasil, posição diária
-// ═══════════════════════════════════════════════════════════════
 
-const CIDADES_BRASIL = [
-  { name:'Sorriso, MT', lat:-12.5500, lon:-55.7200, peso:10 },
-  { name:'Lucas do Rio Verde, MT', lat:-13.0600, lon:-55.9100, peso:10 },
-  { name:'Nova Mutum, MT', lat:-13.8300, lon:-56.0800, peso:9 },
-  { name:'Sinop, MT', lat:-11.8600, lon:-55.5000, peso:8 },
-  { name:'Rondonópolis, MT', lat:-16.4700, lon:-54.6350, peso:7 },
-  { name:'Primavera do Leste, MT', lat:-15.5500, lon:-54.2900, peso:8 },
-  { name:'Rio Verde, GO', lat:-17.7981, lon:-50.9278, peso:9 },
-  { name:'Jataí, GO', lat:-17.8831, lon:-51.7158, peso:8 },
-  { name:'Campo Grande, MS', lat:-20.4697, lon:-54.6201, peso:5 },
-  { name:'Dourados, MS', lat:-22.2211, lon:-54.8056, peso:8 },
-  { name:'Ribeirão Preto, SP', lat:-21.1787, lon:-47.8103, peso:8 },
-  { name:'Uberlândia, MG', lat:-18.9186, lon:-48.2772, peso:7 },
-  { name:'Londrina, PR', lat:-23.3107, lon:-51.1628, peso:6 },
-  { name:'Cascavel, PR', lat:-24.9578, lon:-53.4595, peso:7 },
-  { name:'Chapecó, SC', lat:-27.1003, lon:-52.6150, peso:5 },
-  { name:'Passo Fundo, RS', lat:-28.2620, lon:-52.4063, peso:4 },
-  { name:'Barreiras, BA', lat:-12.1522, lon:-44.9989, peso:7 },
-  { name:'Luís Eduardo Magalhães, BA', lat:-12.0964, lon:-45.7919, peso:9 },
-  { name:'Palmas, TO', lat:-10.2491, lon:-48.3243, peso:5 },
-  { name:'Balsas, MA', lat:-7.5322, lon:-46.0353, peso:6 },
-];
+// ── 5. EXPOSIÇÃO GLOBAL ──────────────────────────────────────────
+//
+// Necessário para que setupMap() possa chamar estas funções:
 
-function dailySeed(botId, component) {
-  const dayKey = Math.floor(Date.now() / 86400000);
-  let hash = 0;
-  const str = `${botId}_${component}_${dayKey}`;
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i);
-    hash |= 0;
-  }
-  return (Math.abs(hash) % 1000) / 1000;
-}
+window.initDominioArea  = initDominioArea;
+window.spawnBotsAgro    = spawnBotsAgro;
+window.startBotMovement = startBotMovement;
+window.updateBotCount   = updateBotCount;
+window.activeBots       = activeBots; // para o ranking funcionar
 
-function generateRealisticBots(count = 30) {
-  const bots = [];
-  const drones = ['DJI Agras T40','DJI Agras T50','XAG P100 Pro','XAG V40','EAVision U10'];
-  const mascNames = ['João Silva','Pedro Oliveira','Lucas Lima','Rafael Alves','Gustavo Pereira','Bruno Ferreira','Rodrigo Gomes','Thiago Monteiro','Felipe Nogueira','Marcelo Batista'];
-  const femNames = ['Maria Santos','Ana Costa','Fernanda Souza','Patrícia Rocha','Carla Mendes'];
-  const photos = ['👨‍✈️','🧑‍✈️','👨‍🚀','👨‍🌾','🧑‍🌾','👩‍✈️','👩‍🚀','👩‍🌾'];
-
-  for (let i = 0; i < count; i++) {
-    const cidade = CIDADES_BRASIL[i % CIDADES_BRASIL.length];
-    const isFem = i % 6 === 0;
-    const names = isFem ? femNames : mascNames;
-    const botId = `bot_${i}`;
-
-    const rand = Math.random();
-    let hectares;
-    if (rand < 0.6) hectares = 5 + Math.floor(Math.random() * 35);
-    else if (rand < 0.85) hectares = 40 + Math.floor(Math.random() * 30);
-    else hectares = 70 + Math.floor(Math.random() * 30);
-
-    const opsTotal = Math.floor(hectares / 2) + Math.floor(Math.random() * 15);
-    const hoursTotal = Math.floor(opsTotal * 1.2) + Math.floor(Math.random() * 30);
-
-    const dailyLatOffset = (dailySeed(botId, 'lat') - 0.5) * 0.5;
-    const dailyLonOffset = (dailySeed(botId, 'lon') - 0.5) * 0.5;
-
-    bots.push({
-      id: botId,
-      name: names[i % names.length],
-      city: cidade.name,
-      drone: drones[i % drones.length],
-      score: 45 + Math.floor(Math.random() * 40),
-      amxScore: 45 + Math.floor(Math.random() * 40),
-      photo: photos[i % photos.length],
-      hoursTotal,
-      opsTotal,
-      hectares,
-      baseLat: cidade.lat + dailyLatOffset,
-      baseLon: cidade.lon + dailyLonOffset,
-      status: Math.random() > 0.6 ? 'online' : (Math.random() > 0.5 ? 'operating' : 'offline'),
-    });
-  }
-  return bots;
-}
-
-const BOTS = generateRealisticBots(30);
-
-// ── Função robusta cleanName() ────────────────────────────────
-function cleanName(name, user) {
-  let n = String(name || '').trim();
-  const invalid = !n || n.startsWith('http') || n.includes('googleusercontent.com') || n.includes('lh3.googleusercontent.com') || n.includes('.com/') || n.includes('=s96-c');
-  if (invalid) n = user?.displayName || user?.email?.split('@')[0] || 'Piloto';
-  if (!n || n.startsWith('http') || n.includes('googleusercontent.com')) n = 'Piloto';
-  if (n.length > 25) n = n.substring(0, 22) + '...';
-  return n;
-}
-
-// ── Inicializar mapa ──────────────────────────────────────────
-export function initMap(containerId, lat, lon) {
-  if (_map) { _map.remove(); _map = null; }
-
-  _map = L.map(containerId, {
-    zoomControl: false,
-    attributionControl: false,
-  }).setView([lat || -15.7801, lon || -47.9292], 10);
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap',
-  }).addTo(_map);
-
-  L.control.zoom({ position: 'bottomright' }).addTo(_map);
-  L.control.attribution({ position: 'bottomleft' }).addTo(_map);
-
-  return _map;
-}
-
-// ── Ícone de piloto ───────────────────────────────────────────
-function pilotIcon(status, isUser = false) {
-  const isSOS = status === 'sos';
-  const isOp = status === 'operating';
-  const isRequest = status === 'request';
-
-  let color = '#1e88d0';
-  if (isOp) color = '#3da866';
-  if (isSOS) color = '#e03535';
-  if (isRequest) color = '#f5a623';
-
-  const size = isUser ? 48 : 40;
-  let svg = `<svg width="${size}" height="${size}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">`;
-
-  if (isSOS) {
-    svg += `<circle cx="20" cy="20" r="15" fill="none" stroke="#e03535" stroke-width="2.5">
-      <animate attributeName="r" from="14" to="28" dur="1s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.8;0" dur="1s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="20" cy="20" r="15" fill="none" stroke="#e03535" stroke-width="1.5">
-      <animate attributeName="r" from="14" to="38" dur="1s" begin="0.35s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.5;0" dur="1s" begin="0.35s" repeatCount="indefinite"/>
-    </circle>`;
-  }
-  if (isRequest) {
-    svg += `<circle cx="20" cy="20" r="15" fill="none" stroke="#f5a623" stroke-width="2">
-      <animate attributeName="r" from="14" to="26" dur="1.4s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.6;0" dur="1.4s" repeatCount="indefinite"/>
-    </circle>`;
-  }
-  if (isOp) {
-    svg += `<circle cx="20" cy="20" r="15" fill="none" stroke="${color}" stroke-width="1.5">
-      <animate attributeName="r" from="13" to="22" dur="1.8s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.5;0" dur="1.8s" repeatCount="indefinite"/>
-    </circle>`;
-  }
-
-  svg += `<circle cx="20" cy="20" r="14" fill="${color}" opacity="0.15"/>
-    <circle cx="20" cy="20" r="10" fill="${color}" opacity="0.95"/>`;
-
-  if (isUser) svg += `<circle cx="20" cy="20" r="5" fill="white" opacity="0.95"/>`;
-  if (isSOS) svg += `<text x="20" y="25" text-anchor="middle" font-size="13" fill="white">🚨</text>`;
-  else if (isRequest) svg += `<text x="20" y="25" text-anchor="middle" font-size="13" fill="white">🔧</text>`;
-  else if (isOp) svg += `<text x="20" y="25" text-anchor="middle" font-size="13" fill="white">🚁</text>`;
-
-  svg += `</svg>`;
-  return L.divIcon({ html: svg, className: '', iconSize: [size, size], iconAnchor: [size / 2, size / 2] });
-}
-
-// ── Popup do piloto ───────────────────────────────────────────
-function buildPopup(pilot) {
-  const safeName = cleanName(pilot.nickname || pilot.name, window.AgroRadar?.user);
-  const safeNameEscaped = safeName.replace(/'/g, "\\'");
-  const safeMsg = (pilot.requestMsg || '').replace(/'/g, "\\'");
-
-  const reqBtn = (pilot.status === 'request' && !pilot.isCurrentUser)
-    ? `<button onclick="window.acceptReq('${pilot.id}','${safeNameEscaped}','${safeMsg}')"
-        style="margin-top:8px;width:100%;padding:7px;border-radius:8px;border:none;background:#f5a623;color:#0d1a0f;font-weight:700;font-size:12px;cursor:pointer">
-        ✅ Aceitar chamado</button>` : '';
-
-  const sosBtn = (pilot.status === 'sos' && !pilot.isCurrentUser)
-    ? `<button onclick="window.acceptReq('${pilot.id}','${safeNameEscaped}','🚨 SOS — Preciso de ajuda!')"
-        style="margin-top:8px;width:100%;padding:7px;border-radius:8px;border:none;background:#e03535;color:white;font-weight:700;font-size:12px;cursor:pointer">
-        🚨 Responder SOS</button>` : '';
-
-  const chatBtn = (!pilot.isCurrentUser)
-    ? `<button onclick="window.openChatWith('${pilot.id}')"
-        style="margin-top:6px;width:100%;padding:6px;border-radius:8px;border:1px solid rgba(61,168,102,.4);background:transparent;color:#5ec880;font-size:12px;cursor:pointer">
-        💬 Chat</button>` : '';
-
-  let statusText = '🟢 Online';
-  if (pilot.status === 'sos') statusText = '🚨 SOS';
-  else if (pilot.status === 'request') statusText = '🔧 Pedido';
-  else if (pilot.status === 'operating') statusText = '🚁 Operando';
-
-  let photoHtml = '👨‍✈️';
-  if (pilot.photo && !pilot.photo.startsWith('http') && pilot.photo.length < 10) {
-    photoHtml = pilot.photo;
-  } else if (pilot.photo && pilot.photo.startsWith('http')) {
-    photoHtml = `<img src="${pilot.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.outerHTML='👨‍✈️'">`;
-  }
-
-  return `<div style="font-family:'Syne',sans-serif;min-width:190px;padding:4px">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <div style="font-size:24px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:50%;background:rgba(61,168,102,.1)">${photoHtml}</div>
-      <div>
-        <div class="p-card-name" style="font-weight:700;font-size:14px;color:#e8f5eb;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${safeName}</div>
-        <div style="font-size:10px;color:#5a8a65">${pilot.city || ''}</div>
-      </div>
-    </div>
-    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
-      <span style="background:#1f5534;color:#5ec880;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700">AMX ${pilot.score || 0}</span>
-      <span style="background:#111d14;color:#9ac8a6;padding:2px 8px;border-radius:6px;font-size:10px">${statusText}</span>
-    </div>
-    ${pilot.requestMsg ? `<div style="font-size:11px;color:#f5a623;margin-bottom:4px">📢 ${pilot.requestMsg}</div>` : ''}
-    <div style="font-size:10px;color:#5a8a65">🚁 ${pilot.drone || 'Drone agrícola'}</div>
-    <div style="font-size:10px;color:#5a8a65;margin-top:2px">⏱ ${pilot.hoursTotal || 0}h · ${pilot.opsTotal || 0} ops</div>
-    ${reqBtn}${sosBtn}${chatBtn}
-  </div>`;
-}
-
-// ── UPSERT PILOT — SEM DUPLICAR MARKERS ───────────────────────
-export function upsertPilot(pilot) {
-  if (!_map || !pilot.lat || !pilot.lon) return;
-  if (!pilot.id) return;
-
-  const icon = pilotIcon(pilot.status || 'online', pilot.isCurrentUser === true);
-  const popup = buildPopup(pilot);
-
-  if (_markers[pilot.id]) {
-    const marker = _markers[pilot.id];
-    marker.setLatLng([pilot.lat, pilot.lon]);
-    marker.setIcon(icon);
-    if (marker.getPopup()) {
-      marker.setPopupContent(popup);
-    } else {
-      marker.bindPopup(popup, { className: 'amx-popup', maxWidth: 230, closeButton: false });
-    }
-    marker._pilotData = pilot;
-  } else {
-    const marker = L.marker([pilot.lat, pilot.lon], { icon })
-      .bindPopup(popup, { className: 'amx-popup', maxWidth: 230, closeButton: false })
-      .addTo(_map);
-    marker._pilotData = pilot;
-    _markers[pilot.id] = marker;
-  }
-
-  updateAreaOwner(pilot);
-  _updatePilotCount();
-}
-
-export function removePilot(id) {
-  if (!_markers[id]) return;
-  try {
-    _markers[id].remove();
-  } catch (e) {
-    console.warn('Erro removendo marker:', id);
-  }
-  delete _markers[id];
-  _updatePilotCount();
-}
-
-// ── CONTAGEM REAL DE PILOTOS ──────────────────────────────────
-function getRealPilotCount() {
-  const uniquePilots = new Set();
-  Object.entries(_markers).forEach(([id, marker]) => {
-    if (!id) return;
-    if (!marker) return;
-    if (!marker._pilotData) return;
-    if (marker._removed || marker._map === null) return;
-    uniquePilots.add(id);
-  });
-  return uniquePilots.size;
-}
-
-function _updatePilotCount() {
-  const totalPilots = getRealPilotCount();
-  const totalAreas = Object.keys(areaBeacons).length;
-
-  const elPilots = document.getElementById('pilotCount');
-  if (elPilots) elPilots.textContent = `${totalPilots} pilotos online`;
-
-  const elAreas = document.getElementById('areaCount');
-  if (elAreas) elAreas.textContent = `${totalAreas} áreas dominadas`;
-}
-
-// ── Listen Pilots (Firestore + bots) ─────────────────────────
-export async function listenPilots(centerLat, centerLon, currentUid) {
-  _currentUid = currentUid;
-
-  Object.keys(_markers).forEach(id => {
-    if (id !== currentUid) removePilot(id);
-  });
-
-  spawnBots(centerLat, centerLon, { wind: 10, temp: 25 });
-  startBotUpdates();
-
-  if (window._firebaseDB) {
-    try {
-      const { collection, onSnapshot, query, where } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const q = query(collection(window._firebaseDB, 'pilots'), where('visibility', '!=', 'invisible'));
-
-      if (window._firestoreUnsub) window._firestoreUnsub();
-      window._firestoreUnsub = onSnapshot(q, snapshot => {
-        snapshot.docChanges().forEach(change => {
-          const d = change.doc.data();
-          if (change.type === 'removed' || d.visibility === 'invisible') { removePilot(d.uid); return; }
-          if (!d.lat || !d.lon) return;
-          upsertPilot({
-            id: d.uid,
-            name: d.nickname || d.name || 'Piloto',
-            photo: d.photo || '👨‍✈️',
-            city: d.city || '',
-            drone: d.drone || '',
-            score: d.amxScore || 0,
-            hoursTotal: d.hoursTotal || 0,
-            opsTotal: d.opsTotal || 0,
-            hectares: d.hectares || 0,
-            lat: d.lat, lon: d.lon,
-            status: d.status || 'online',
-            requestMsg: d.requestMsg || null,
-            isCurrentUser: d.uid === currentUid,
-          });
-        });
-      });
-    } catch (e) {
-      console.log('Modo offline: apenas bots');
-    }
-  }
-}
-
-// ── Bots — espalha por todo o Brasil ─────────────────────────
-export function spawnBots(lat, lon, weather) {
-  const hour = new Date().getHours();
-  const isDay = hour >= 5 && hour <= 18;
-  const goodWind = (weather?.wind || 0) <= 20;
-
-  Object.keys(_markers).forEach(id => {
-    if (!id.startsWith('bot_')) return;
-    const marker = _markers[id];
-    if (!marker || !marker._pilotData) removePilot(id);
-  });
-
-  const activeBots = BOTS.filter((_, i) => {
-    if (!isDay) return i < 3;
-    if (!goodWind) return i < 6;
-    return true;
-  });
-
-  activeBots.forEach((bot) => {
-    const sessionJitter = 0.02;
-    const bLat = bot.baseLat + (Math.random() - 0.5) * sessionJitter;
-    const bLon = bot.baseLon + (Math.random() - 0.5) * sessionJitter;
-    const isOperating = isDay && goodWind && Math.random() > 0.4;
-
-    upsertPilot({
-      ...bot,
-      lat: Math.max(-35, Math.min(5, bLat)),
-      lon: Math.max(-75, Math.min(-35, bLon)),
-      status: isOperating ? 'operating' : 'online',
-      isCurrentUser: false,
-    });
-  });
-}
-
-export function startBotUpdates() {
-  if (_botInterval) clearInterval(_botInterval);
-  _botInterval = setInterval(() => {
-    Object.entries(_markers).forEach(([id, marker]) => {
-      if (!id.startsWith('bot_')) return;
-      const bot = BOTS.find(b => b.id === id);
-      if (!bot || !marker) return;
-      const pos = marker.getLatLng();
-      const maxDrift = 0.5;
-      const newLat = pos.lat + (Math.random() - 0.5) * 0.003;
-      const newLon = pos.lng + (Math.random() - 0.5) * 0.003;
-      const clampedLat = Math.abs(newLat - bot.baseLat) > maxDrift ? bot.baseLat : newLat;
-      const clampedLon = Math.abs(newLon - bot.baseLon) > maxDrift ? bot.baseLon : newLon;
-      marker.setLatLng([
-        Math.max(-35, Math.min(5, clampedLat)),
-        Math.max(-75, Math.min(-35, clampedLon)),
-      ]);
-    });
-  }, 15000);
-}
-
-export function stopBotUpdates() {
-  if (_botInterval) clearInterval(_botInterval);
-            }
-// ── Localização ───────────────────────────────────────────────
-export function startLocationTracking(uid, onUpdate) {
-  let lastLat = null, lastLon = null;
-  function update() {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(pos => {
-      const { latitude: lat, longitude: lon } = pos.coords;
-      const dist = lastLat ? Math.sqrt(Math.pow((lat - lastLat) * 111000, 2) + Math.pow((lon - lastLon) * 111000, 2)) : 9999;
-      if (dist >= 300 || !lastLat) { lastLat = lat; lastLon = lon; onUpdate(lat, lon); }
-    }, null, { enableHighAccuracy: true, timeout: 10000 });
-  }
-  update();
-  if (_locationInterval) clearInterval(_locationInterval);
-  _locationInterval = setInterval(update, 60000);
-}
-
-export function stopLocationTracking() {
-  if (_locationInterval) clearInterval(_locationInterval);
-}
-
-// ── Operações ─────────────────────────────────────────────────
-export function startOperation(config, weatherState, lat, lon) {
-  _operationActive = true;
-  _operationStart = Date.now();
-  _operationConfig = config || {};
-  _operationData = { startTime: new Date().toISOString(), lat, lon, weather: { ...weatherState }, pauses: 0, lastActivity: Date.now() };
-  if (_autoEndTimer) clearTimeout(_autoEndTimer);
-  _autoEndTimer = setTimeout(() => {
-    if (_operationActive) window.dispatchEvent(new CustomEvent('amx:check-operation'));
-  }, 4 * 3600 * 1000);
-  return _operationData;
-}
-
-export function endOperation(weatherState) {
-  if (!_operationActive) return null;
-  _operationActive = false;
-  if (_autoEndTimer) clearTimeout(_autoEndTimer);
-  if (_pauseTimer) clearTimeout(_pauseTimer);
-  const durationMin = Math.round((Date.now() - _operationStart) / 60000);
-  const score = calcAMXScore(durationMin, weatherState, _operationData, _operationConfig);
-  const estimate = calcOperationEstimate(durationMin, _operationConfig, _operationData);
-  return { ..._operationData, endTime: new Date().toISOString(), durationMin, score, estimate, config: _operationConfig };
-}
+// ── FIM DO ARQUIVO ───────────────────────────────────────────────
