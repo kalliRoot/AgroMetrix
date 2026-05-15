@@ -1,1814 +1,1400 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>AgroMetrix Radar</title>
-<meta name="theme-color" content="#060e08">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1f5534">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroMetrix — Clima certo, aplicação perfeita</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --g9:#0d2b1a;--g8:#163d26;--g7:#1f5534;--g6:#286b42;--g5:#2f8450;
-  --g4:#3da866;--g3:#5ec880;--g2:#a0e4b5;
-  --sky:#1e88d0;--amb:#e07a00;--red:#e03535;
-  --bg:#060e08;--s1:#0d1a0f;--s2:#111d14;--s3:#162119;
-  --bd:rgba(61,168,102,.12);--bdm:rgba(61,168,102,.25);
-  --tx:#e8f5eb;--tx2:#9ac8a6;--mt:#5a8a65;
-  --fu:'Syne',system-ui,sans-serif;
-  --fm:'JetBrains Mono',monospace;
-  --fd:'DM Serif Display',Georgia,serif;
-}
-html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg);color:var(--tx)}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-.screen{position:fixed;inset:0;transition:opacity .35s,transform .35s}
-.screen.off{opacity:0;pointer-events:none;transform:scale(.97)}
-
-/* ══ SPLASH ══ */
-#sSplash{background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden}
-.sp-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(31,85,52,.35),transparent 70%),radial-gradient(ellipse 50% 40% at 80% 80%,rgba(30,136,208,.1),transparent 60%)}
-.sp-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(61,168,102,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(61,168,102,.04) 1px,transparent 1px);background-size:40px 40px}
-.sp-wrap{position:relative;z-index:1;text-align:center;padding:32px 24px;max-width:400px;width:100%}
-.sp-logo{font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
-.sp-logo span{color:var(--g4)}
-.sp-tag{font-size:10px;color:var(--mt);letter-spacing:.15em;text-transform:uppercase;margin-bottom:28px}
-.sp-radar{width:160px;height:160px;border-radius:50%;border:1px solid var(--bdm);position:relative;margin:0 auto 28px;background:radial-gradient(circle,rgba(31,85,52,.2),transparent 70%);overflow:hidden}
-.sp-sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 340deg,rgba(61,168,102,.6) 360deg);animation:sweep 3s linear infinite}
-@keyframes sweep{to{transform:rotate(360deg)}}
-.sp-ring{position:absolute;border-radius:50%;border:1px solid rgba(61,168,102,.15)}
-.sp-ring:nth-child(2){inset:20%}.sp-ring:nth-child(3){inset:40%}.sp-ring:nth-child(4){inset:60%}
-.sp-ch{position:absolute;inset:0}
-.sp-ch::before,.sp-ch::after{content:'';position:absolute;background:rgba(61,168,102,.15)}
-.sp-ch::before{width:1px;height:100%;left:50%}.sp-ch::after{width:100%;height:1px;top:50%}
-.sp-dot{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--g4);box-shadow:0 0 6px var(--g4)}
-
-/* Trial box na splash */
-.sp-trial-box{
-  margin:0 0 16px;
-  padding:11px 14px;
-  border-radius:14px;
-  background:rgba(31,85,52,.13);
-  border:1px solid rgba(61,168,102,.22);
-  text-align:left;
+/* ── TEMAS ── */
+[data-theme="light"] {
+  --bg: #f2f5f0;
+  --surface: #ffffff;
+  --surface2: #f7faf6;
+  --surface3: #eef3ec;
+  --border: rgba(30,60,30,0.1);
+  --border-md: rgba(30,60,30,0.18);
+  --text-primary: #0f1f12;
+  --text-secondary: #3a5240;
+  --text-muted: #6b8573;
+  --header-bg: rgba(242,245,240,0.92);
+  --now-bg: #0d2b1a;
+  --now-sun-bg: #163d26;
+  --modal-overlay: rgba(0,0,0,0.5);
+  --shadow-card: 0 2px 16px rgba(10,30,15,0.08), 0 1px 4px rgba(10,30,15,0.05);
+  --shadow-float: 0 8px 40px rgba(10,30,15,0.18);
 }
-.sp-trial-top{
-  font-size:12px;
-  font-weight:700;
-  color:var(--g3);
-  margin-bottom:8px;
-  letter-spacing:.01em;
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
-.sp-trial-feats{
-  display:flex;
-  flex-wrap:wrap;
-  gap:5px;
-}
-.sp-trial-feats span{
-  font-size:10px;
-  color:var(--tx2);
-  background:rgba(61,168,102,.08);
-  border:1px solid rgba(61,168,102,.15);
-  border-radius:20px;
-  padding:3px 9px;
+[data-theme="dark"] {
+  --bg: #0a140d;
+  --surface: #111d14;
+  --surface2: #162119;
+  --surface3: #1c2a1e;
+  --border: rgba(80,180,100,0.12);
+  --border-md: rgba(80,180,100,0.22);
+  --text-primary: #e8f5eb;
+  --text-secondary: #9ac8a6;
+  --text-muted: #5a8a65;
+  --header-bg: rgba(10,20,13,0.95);
+  --now-bg: #071008;
+  --now-sun-bg: #061009;
+  --modal-overlay: rgba(0,0,0,0.75);
+  --shadow-card: 0 2px 20px rgba(0,0,0,0.4);
+  --shadow-float: 0 8px 40px rgba(0,0,0,0.6);
 }
 
-.btn-cta{width:100%;padding:15px;border-radius:22px;background:linear-gradient(135deg,var(--g7),var(--g5));color:white;border:none;font-family:var(--fu);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 24px rgba(31,85,52,.5);transition:all .25s;letter-spacing:.02em}
-.btn-cta:hover{transform:translateY(-2px)}
-.sp-divider{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.sp-divider::before,.sp-divider::after{content:'';flex:1;height:1px;background:var(--bdm)}
-.sp-divider span{font-size:11px;color:var(--mt)}
-.btn-google{width:100%;padding:13px;border-radius:14px;background:var(--s2);border:1.5px solid var(--bdm);color:var(--tx);font-family:var(--fu);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s}
-.btn-google:hover{background:var(--s3);border-color:var(--g4)}
-.btn-google svg{width:20px;height:20px;flex-shrink:0}
-.sp-terms{font-size:10px;color:var(--mt);margin-top:12px;opacity:.7}
-
-/* ══ RADAR SCREEN ══ */
-#sRadar{background:var(--bg)}
-#mapEl{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
-.leaflet-tile{filter:brightness(.42) saturate(.35) hue-rotate(88deg)}
-.leaflet-popup-content-wrapper{background:rgba(10,20,12,.98)!important;border:1px solid var(--bdm)!important;border-radius:16px!important;color:var(--tx)!important;box-shadow:0 12px 48px rgba(0,0,0,.7)!important;backdrop-filter:blur(12px)}
-.leaflet-popup-tip{background:rgba(10,20,12,.98)!important}
-.leaflet-popup-content{margin:12px!important;min-width:200px}
-
-.p-card{display:flex;flex-direction:column;gap:8px}
-.p-card-hdr{display:flex;align-items:center;gap:10px}
-.p-card-av{width:32px;height:32px;border-radius:50%;background:var(--g7);display:flex;align-items:center;justify-content:center;font-size:16px;overflow:hidden}
-.p-card-av img{width:100%;height:100%;object-fit:cover}
-.p-card-name{font-size:14px;font-weight:800;color:var(--tx);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;word-break:break-word}
-.p-card-body{display:flex;flex-direction:column;gap:4px}
-.p-card-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase}
-.p-card-tag.amx{background:rgba(61,168,102,.15);color:var(--g4)}
-.p-card-tag.status{background:rgba(255,255,255,.05);color:var(--mt)}
-.p-card-info{font-size:11px;color:var(--tx2);display:flex;align-items:center;gap:4px}
-.p-card-btn{margin-top:4px;width:100%;padding:8px;border-radius:8px;background:var(--g7);color:white;border:none;font-family:var(--fu);font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
-.p-card-btn:hover{background:var(--g6)}
-.leaflet-popup-close-button{color:var(--mt)!important;font-size:16px!important;top:8px!important;right:8px!important}
-.leaflet-control-zoom a{background:rgba(10,20,12,.9)!important;color:var(--tx)!important;border-color:var(--bdm)!important}
-.leaflet-container{background:var(--bg)!important}
-
-/* Header */
-.r-hdr{position:fixed;top:0;left:0;right:0;z-index:100;padding:10px 14px;background:linear-gradient(to bottom,rgba(6,14,8,.97),transparent);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.r-logo{font-size:15px;font-weight:800;flex:1;color:var(--tx)}.r-logo span{color:var(--g4)}
-.r-badge{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;background:rgba(6,14,8,.85);border:1px solid var(--bdm);font-size:11px;color:var(--tx2);backdrop-filter:blur(8px)}
-.ldot{width:6px;height:6px;border-radius:50%;background:var(--g4);animation:ldotP 2s infinite}
-@keyframes ldotP{0%,100%{opacity:1}50%{opacity:.3}}
-.ico-btn{width:36px;height:36px;border-radius:50%;background:rgba(6,14,8,.85);border:1px solid var(--bdm);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:all .2s;flex-shrink:0;backdrop-filter:blur(8px);position:relative}
-.ico-btn:hover{border-color:var(--g4)}
-.chat-float{margin-right:8px;position:relative}
-.location-ico{background:rgba(6,14,8,.85);border:1px solid var(--bdm);color:var(--g4)}
-.location-ico:hover{border-color:var(--g4);background:rgba(61,168,102,.2)}
-.notif-dot{position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:var(--red);color:white;font-size:8px;font-weight:700;display:none;align-items:center;justify-content:center}
-.notif-dot.on{display:flex}
-
-@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
-
-/* SOS bar */
-.sos-bar{position:fixed;top:56px;left:0;right:0;z-index:200;padding:8px 14px;display:none;align-items:center;gap:10px;animation:sosBlink .9s ease-in-out infinite}
-.sos-bar.on{display:flex}
-@keyframes sosBlink{0%,100%{background:rgba(200,30,30,.95)}50%{background:rgba(150,15,15,.95)}}
-.sos-txt{flex:1;font-size:12px;font-weight:700;color:white}
-.sos-cancel{padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.4);background:transparent;color:white;font-size:11px;font-weight:600;cursor:pointer}
-
-/* Nav bottom */
-.r-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:linear-gradient(to top,rgba(6,14,8,.99) 0%,transparent 100%);padding:10px 12px 28px}
-.nav-tabs{display:flex;gap:5px;margin-bottom:10px}
-.nav-tab{flex:1;padding:8px 4px;border-radius:12px;border:1px solid var(--bdm);background:rgba(6,14,8,.85);color:var(--tx2);font-family:var(--fu);font-size:11px;font-weight:600;cursor:pointer;text-align:center;transition:all .2s;backdrop-filter:blur(8px)}
-.nav-tab.act{background:var(--g7);border-color:var(--g4);color:white}
-
-.panel{display:none}.panel.act{display:block}
-
-/* AMX card */
-.amx-card{background:rgba(11,22,13,.92);border:1px solid var(--bdm);border-radius:16px;padding:11px 14px;backdrop-filter:blur(16px);margin-bottom:10px;display:flex;align-items:center;gap:12px}
-.amx-num{font-family:var(--fd);font-size:34px;line-height:1;letter-spacing:-1px}
-.amx-info{flex:1}
-.amx-desc{font-size:12px;color:var(--tx2)}
-.amx-lbl{font-size:9px;color:var(--mt);margin-top:1px;font-family:var(--fm)}
-.amx-bar{height:3px;background:var(--bd);border-radius:2px;overflow:hidden;margin-top:5px}
-.amx-fill{height:100%;border-radius:2px;transition:width 1s}
-
-/* Clima chips */
-.clima-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
-.wchip{display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:20px;background:rgba(11,22,13,.9);border:1px solid var(--bd);font-size:10px;color:var(--tx2);backdrop-filter:blur(8px);white-space:nowrap}
-.wchip.g{border-color:rgba(61,168,102,.5);color:var(--g3)}
-.wchip.w{border-color:rgba(224,122,0,.4);color:#f5a623}
-.wchip.b{border-color:rgba(224,53,53,.4);color:#ff7070}
-
-/* Quick row */
-.quick-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px;padding-bottom:2px}
-.quick-row::-webkit-scrollbar{display:none}
-.qbtn{display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:20px;white-space:nowrap;background:rgba(11,22,13,.9);border:1px solid var(--bdm);font-size:11px;font-weight:600;color:var(--tx2);cursor:pointer;transition:all .2s;flex-shrink:0;backdrop-filter:blur(8px)}
-.qbtn:hover{border-color:var(--g4);color:var(--g3)}
-.qbtn.red{border-color:rgba(224,53,53,.5);color:#ff8080}
-.qbtn.red:hover{background:rgba(224,53,53,.15)}
-
-/* Botão operação */
-.btn-op{width:100%;padding:15px;border-radius:18px;border:none;font-family:var(--fu);font-size:15px;font-weight:800;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:10px;letter-spacing:.02em}
-.btn-op.start{background:linear-gradient(135deg,var(--g7),var(--g5));color:white;box-shadow:0 4px 24px rgba(31,85,52,.5)}
-.btn-op.stop{background:linear-gradient(135deg,#7a1a1a,var(--red));color:white;animation:stopP 2s ease-in-out infinite}
-@keyframes stopP{0%,100%{box-shadow:0 4px 24px rgba(224,53,53,.4)}50%{box-shadow:0 4px 36px rgba(224,53,53,.7)}}
-.btn-op:hover{transform:translateY(-1px)}
-
-/* Ranking */
-.rank-list{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;scrollbar-width:none}
-.rank-list::-webkit-scrollbar{display:none}
-.rank-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(11,22,13,.9);border:1px solid var(--bd);border-radius:12px;backdrop-filter:blur(8px)}
-.rank-pos{font-family:var(--fm);font-size:13px;font-weight:700;min-width:24px;color:var(--mt)}
-.rank-pos.gold{color:#f5c842}.rank-pos.silver{color:#c0c0c0}.rank-pos.bronze{color:#cd7f32}
-.rank-name{flex:1;font-size:12px;font-weight:600;color:var(--tx)}
-.rank-sub{font-size:9px;color:var(--mt);margin-top:1px}
-.rank-score{font-family:var(--fm);font-size:12px;color:var(--g4);font-weight:700}
-
-/* ══ SHEETS ══ */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(4px)}
-.overlay.on{opacity:1;pointer-events:auto}
-.sheet{position:fixed;bottom:0;left:0;right:0;z-index:501;background:var(--s1);border-radius:24px 24px 0 0;border-top:1px solid var(--bdm);padding:0 0 36px;transform:translateY(100%);transition:transform .4s cubic-bezier(.34,1.2,.64,1);max-height:92vh;overflow-y:auto}
-.sheet.on{transform:translateY(0)}
-.sh-handle{width:36px;height:4px;border-radius:2px;background:var(--bdm);margin:12px auto 18px}
-.sh-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mt);padding:0 20px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
-.sh-close-btn{background:none;border:none;color:var(--mt);font-size:20px;cursor:pointer;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:50%}
-.sh-close-btn:hover{background:rgba(255,255,255,.1);color:var(--red)}
-
-/* Perfil */
-.pf-hero{display:flex;align-items:center;gap:14px;padding:0 20px 16px;border-bottom:1px solid var(--bd);margin-bottom:16px}
-.pf-av{width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--g7);display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;transition:all .2s}
-.pf-av:hover{opacity:.8;transform:scale(1.02)}
-.pf-av img{width:100%;height:100%;object-fit:cover}
-.pf-name{font-size:18px;font-weight:800;color:var(--tx)}
-.pf-city{font-size:11px;color:var(--mt);margin-top:2px}
-.pf-drone{font-size:11px;color:var(--tx2);margin-top:3px}
-.pf-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 20px;margin-bottom:14px}
-.pstat{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:11px;text-align:center}
-.pstat-v{font-family:var(--fm);font-size:19px;font-weight:500;color:var(--g4)}
-.pstat-l{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--mt);margin-top:2px}
-
-/* Inputs */
-.inp-g{padding:0 20px;margin-bottom:12px}
-.inp-l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--mt);margin-bottom:5px;display:block}
-.inp{width:100%;padding:11px 14px;background:var(--s2);border:1.5px solid var(--bdm);border-radius:12px;font-family:var(--fu);font-size:14px;color:var(--tx);outline:none;transition:border .2s}
-.inp:focus{border-color:var(--g4)}
-select.inp{cursor:pointer}
-
-/* Plan badge */
-.plan-b{margin:0 20px 14px;padding:11px 14px;border-radius:12px;border:1px solid;display:flex;align-items:center;gap:10px}
-.plan-b.trial{background:rgba(224,122,0,.08);border-color:rgba(224,122,0,.3)}
-.plan-b.paid{background:rgba(61,168,102,.08);border-color:rgba(61,168,102,.3)}
-.plan-b.exp{background:rgba(224,53,53,.08);border-color:rgba(224,53,53,.3)}
-.plan-icon{font-size:20px}
-.plan-title{font-size:13px;font-weight:700}
-.plan-sub{font-size:10px;color:var(--mt);margin-top:1px}
-
-/* Aviso plano no perfil — sem botão que reabre paywall */
-.plan-info-note{
-  margin:0 20px 14px;
-  padding:9px 14px;
-  border-radius:10px;
-  background:rgba(61,168,102,.05);
-  border:1px solid rgba(61,168,102,.12);
-  font-size:11px;
-  color:var(--mt);
-  text-align:center;
-  line-height:1.5;
+:root {
+  --green-900:#0d2b1a;--green-800:#163d26;--green-700:#1f5534;
+  --green-600:#286b42;--green-500:#2f8450;--green-400:#3da866;
+  --green-300:#5ec880;--green-200:#a0e4b5;--green-100:#d4f5df;--green-50:#edfbf3;
+  --earth-800:#4a2d0a;--earth-600:#8c5a1e;--earth-400:#c47c2a;
+  --earth-200:#e8c48a;--earth-100:#f5e4c3;
+  --sky-700:#0e3d5c;--sky-500:#1567a0;--sky-400:#1e88d0;
+  --sky-200:#91cff0;--sky-100:#d4edfc;
+  --red-500:#e03535;--amber-500:#e07a00;--amber-100:#fef3d9;
+  --font-display:'DM Serif Display',Georgia,serif;
+  --font-ui:'Syne',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --radius-sm:8px;--radius-md:14px;--radius-lg:22px;
 }
 
-/* Vis */
-.vis-row{padding:0 20px;margin-bottom:14px}
-.vis-opts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.vis-opt{padding:6px 13px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--bdm);background:var(--s2);color:var(--tx2);cursor:pointer;transition:all .2s}
-.vis-opt.on{background:var(--g7);border-color:var(--g4);color:white}
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-ui); background: var(--bg); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; transition: background .3s, color .3s; }
 
-/* Buttons */
-.btn-prim{width:calc(100% - 40px);margin:0 20px 10px;padding:13px;border-radius:14px;background:linear-gradient(135deg,var(--g7),var(--g5));color:white;border:none;font-family:var(--fu);font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 4px 20px rgba(31,85,52,.4);transition:all .2s;display:block;text-align:center}
-.btn-prim:hover{transform:translateY(-1px)}
-.btn-sec{width:calc(100% - 40px);margin:0 20px;padding:11px;border-radius:14px;background:transparent;border:1px solid var(--bdm);color:var(--mt);font-family:var(--fu);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:block}
-.btn-sec:hover{border-color:var(--red);color:var(--red)}
+/* ── HEADER ── */
+header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 0 16px; }
+.header-inner { max-width: 960px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 10px; }
+.logo-mark { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.logo-icon { width: 30px; height: 30px; background: var(--green-700); border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+.logo-icon::after { content:''; width:13px; height:13px; border:2.5px solid rgba(255,255,255,.9); border-radius:50% 50% 50% 0; transform:rotate(-45deg); display:block; }
+.logo-name { font-size:17px; font-weight:800; color:var(--green-600); letter-spacing:-.5px; }
+.logo-name span { color:var(--green-400); }
+.logo-tag { font-size:10px; font-weight:500; color:var(--text-muted); }
 
-/* Op chips */
-.op-chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.op-chip{padding:7px 13px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--bdm);background:var(--s2);color:var(--tx2);cursor:pointer;transition:all .2s}
-.op-chip.on{background:var(--g7);border-color:var(--g4);color:white}
-.op-chip:hover{border-color:var(--g4)}
+/* SEARCH BAR no header */
+.header-search { flex:1; max-width:340px; position:relative; }
+.header-search input {
+  width:100%; padding:8px 14px 8px 36px;
+  background:var(--surface); border:1px solid var(--border-md);
+  border-radius:20px; font-family:var(--font-ui); font-size:13px;
+  color:var(--text-primary); outline:none; transition:border .2s;
+}
+.header-search input::placeholder { color:var(--text-muted); }
+.header-search input:focus { border-color:var(--green-400); }
+.search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); font-size:14px; pointer-events:none; }
+.search-results {
+  position:absolute; top:calc(100% + 6px); left:0; right:0;
+  background:var(--surface); border:1px solid var(--border-md);
+  border-radius:var(--radius-md); box-shadow:var(--shadow-float);
+  max-height:260px; overflow-y:auto; display:none; z-index:300;
+}
+.search-results.open { display:block; }
+.search-item { padding:10px 14px; font-size:13px; cursor:pointer; color:var(--text-primary); border-bottom:1px solid var(--border); transition:background .15s; }
+.search-item:last-child { border-bottom:none; }
+.search-item:hover { background:var(--surface2); }
+.search-item-name { font-weight:600; }
+.search-item-state { font-size:11px; color:var(--text-muted); }
 
-/* Op result */
-.op-result{margin:0 20px 14px;padding:14px;border-radius:14px;background:var(--s2);border:1px solid var(--bdm)}
-.op-stat-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-.op-stat{background:var(--s1);border-radius:10px;padding:10px;text-align:center}
-.op-stat-v{font-family:var(--fm);font-size:18px;color:var(--g4);font-weight:500}
-.op-stat-l{font-size:9px;color:var(--mt);text-transform:uppercase;letter-spacing:.07em;margin-top:2px}
+/* HEADER ACTIONS */
+.header-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.theme-btn {
+  width:36px; height:36px; border-radius:50%; border:1px solid var(--border-md);
+  background:var(--surface); display:flex; align-items:center; justify-content:center;
+  font-size:18px; cursor:pointer; transition:all .2s;
+}
+.theme-btn:hover { border-color:var(--green-400); transform:scale(1.08); }
+.loc-pill { display:flex; align-items:center; gap:5px; background:var(--surface); border:1px solid var(--border-md); border-radius:20px; padding:6px 12px; font-size:12px; font-weight:500; color:var(--text-secondary); cursor:pointer; transition:all .2s; white-space:nowrap; }
+.loc-pill:hover { border-color:var(--green-400); }
+.loc-dot { width:7px; height:7px; border-radius:50%; background:var(--green-400); box-shadow:0 0 0 3px rgba(61,168,102,.2); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 3px rgba(61,168,102,.2)}50%{box-shadow:0 0 0 6px rgba(61,168,102,.06)} }
 
-/* Pedidos */
-.req-item{background:var(--s2);border-radius:12px;padding:12px;margin:0 20px 8px;border:1px solid var(--bd)}
-.req-item.sos-req{border-color:rgba(224,53,53,.4);animation:reqPulse 1.5s ease-in-out infinite}
-@keyframes reqPulse{0%,100%{border-left-width:4px;border-left-color:transparent}50%{border-left-width:4px;border-left-color:var(--red)}}
+/* ── MODAL LOCALIZAÇÃO ── */
+.modal-overlay { position:fixed; inset:0; background:var(--modal-overlay); backdrop-filter:blur(6px); z-index:500; display:flex; align-items:center; justify-content:center; padding:20px; transition:opacity .3s; }
+.modal-overlay.hidden { opacity:0; pointer-events:none; }
+.modal-box { background:var(--surface); border:1px solid var(--border-md); border-radius:var(--radius-lg); padding:28px 24px; max-width:390px; width:100%; box-shadow:var(--shadow-float); text-align:center; }
+.modal-icon { font-size:44px; margin-bottom:14px; }
+.modal-title { font-family:var(--font-display); font-size:21px; color:var(--text-primary); margin-bottom:7px; }
+.modal-sub { font-size:13px; color:var(--text-muted); margin-bottom:20px; line-height:1.6; }
+.btn-primary { width:100%; padding:13px; background:var(--green-600); color:white; border:none; border-radius:var(--radius-md); font-family:var(--font-ui); font-size:14px; font-weight:700; cursor:pointer; transition:all .2s; margin-bottom:14px; }
+.btn-primary:hover { background:var(--green-700); transform:translateY(-1px); }
+.modal-divider { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.modal-divider span { font-size:11px; color:var(--text-muted); font-weight:600; white-space:nowrap; }
+.modal-divider::before,.modal-divider::after { content:''; flex:1; height:1px; background:var(--border-md); }
+.modal-search-wrap { position:relative; margin-bottom:6px; text-align:left; }
+.modal-search-wrap input {
+  width:100%; padding:12px 14px 12px 38px;
+  background:var(--surface2); border:1.5px solid var(--border-md);
+  border-radius:var(--radius-md); font-family:var(--font-ui); font-size:14px;
+  color:var(--text-primary); outline:none; transition:border .2s, background .2s;
+}
+.modal-search-wrap input::placeholder { color:var(--text-muted); }
+.modal-search-wrap input:focus { border-color:var(--green-400); background:var(--surface); }
+.modal-search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:15px; pointer-events:none; }
+.modal-search-results {
+  text-align:left; background:var(--surface); border:1px solid var(--border-md);
+  border-radius:var(--radius-md); max-height:190px; overflow-y:auto;
+  display:none; box-shadow:var(--shadow-float); margin-top:4px;
+}
+.modal-search-results.open { display:block; }
 
-/* Chat */
-.chat-msgs{background:var(--s2);border:1px solid var(--bd);border-radius:16px;padding:12px;max-height:52vh;min-height:200px;overflow-y:auto;margin:0 16px 10px;display:flex;flex-direction:column;gap:4px;scrollbar-width:thin;scrollbar-color:var(--bdm) transparent}
-.chat-msgs::-webkit-scrollbar{width:4px}
-.chat-msgs::-webkit-scrollbar-thumb{background:var(--bdm);border-radius:4px}
-.message{display:flex;width:100%;margin:4px 0}
-.message.mine{justify-content:flex-end}
-.message.theirs{justify-content:flex-start}
-.bubble{max-width:82%;padding:8px 12px;border-radius:16px;word-break:break-word;position:relative;font-size:13px;line-height:1.4;box-shadow:0 1px 2px rgba(0,0,0,.2)}
-.message.mine .bubble{background:linear-gradient(135deg,var(--g7),var(--g6));color:#fff;border-bottom-right-radius:4px}
-.message.theirs .bubble{background:var(--s3);color:var(--tx);border-bottom-left-radius:4px;border:1px solid var(--bd)}
-.chat-msg-name{font-size:10px;font-weight:800;color:var(--g3);margin-bottom:2px;text-transform:uppercase;letter-spacing:.05em}
-.message .time{font-size:9px;margin-top:4px;text-align:right;opacity:.6}
-.message.mine .time{color:rgba(255,255,255,.8)}
-.message.theirs .time{color:var(--mt)}
-.chat-empty{text-align:center;color:var(--mt);font-size:12px;padding:30px 20px;line-height:1.6}
-.chat-input-row{display:flex;gap:8px;padding:0 16px}
-.chat-inp{flex:1;padding:11px 14px;background:var(--s2);border:1.5px solid var(--bdm);border-radius:14px;font-family:var(--fu);font-size:13px;color:var(--tx);outline:none;transition:border .2s,box-shadow .2s}
-.chat-inp:focus{border-color:var(--g4);box-shadow:0 0 0 3px rgba(61,168,102,.1)}
-.chat-send{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--g7),var(--g5));border:none;color:white;font-size:16px;cursor:pointer;flex-shrink:0;transition:all .2s;box-shadow:0 2px 8px rgba(31,85,52,.4)}
-.chat-send:hover{transform:scale(1.08)}
-.chat-send:active{transform:scale(.96)}
-.chat-header-info{display:flex;align-items:center;gap:12px;padding:0 20px 12px;border-bottom:1px solid var(--bd);margin-bottom:10px}
-.chat-header-av{width:42px;height:42px;border-radius:50%;background:var(--g7);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;border:1.5px solid var(--bdm)}
-.chat-header-name{font-size:15px;font-weight:800;color:var(--tx);letter-spacing:-.01em}
-.chat-header-status{font-size:10px;color:var(--g4);margin-top:2px;display:flex;align-items:center;gap:4px}
-.chat-header-status::before{content:'';width:6px;height:6px;background:var(--g4);border-radius:50%;display:inline-block}
+/* ── DOWNLOAD BTN ── */
+.download-bar { max-width:960px; margin:0 auto 14px; padding:0 20px; display:flex; justify-content:flex-end; gap:8px; }
+.btn-download { display:flex; align-items:center; gap:7px; padding:9px 18px; background:var(--green-700); color:white; border:none; border-radius:var(--radius-md); font-family:var(--font-ui); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; box-shadow:0 2px 8px rgba(31,85,52,.25); }
+.btn-download:hover { background:var(--green-600); transform:translateY(-1px); }
 
-/* Chat Drawer */
-.chat-list-item{padding:14px 20px;border-bottom:1px solid var(--bd);cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .2s;position:relative}
-.chat-list-item:hover{background:rgba(61,168,102,.05)}
-.chat-list-av{width:46px;height:46px;border-radius:50%;background:var(--s2);border:1.5px solid var(--bdm);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;overflow:hidden}
-.chat-list-av img{width:100%;height:100%;object-fit:cover}
-.chat-list-info{flex:1;min-width:0}
-.chat-list-name{font-size:14px;font-weight:700;color:var(--tx);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chat-list-last{font-size:11px;color:var(--mt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chat-list-meta{text-align:right;flex-shrink:0}
-.chat-list-time{font-size:10px;color:var(--mt);margin-bottom:6px}
-.chat-list-del{width:28px;height:28px;border-radius:50%;background:rgba(224,53,53,.1);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:14px;opacity:0;transition:opacity .2s}
-.chat-list-item:hover .chat-list-del{opacity:1}
-.chat-list-del:hover{background:var(--red);color:white}
+/* ── HERO ── */
+.hero { max-width:960px; margin:0 auto; padding:24px 20px 16px; }
+.hero-status-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+.status-badge { display:inline-flex; align-items:center; gap:6px; padding:5px 13px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+.status-good{background:var(--green-100);color:var(--green-800)}
+.status-warn{background:var(--amber-100);color:var(--earth-800)}
+.status-bad{background:#fde8e8;color:#7a1a1a}
+.status-dot{width:6px;height:6px;border-radius:50%}
+.status-good .status-dot{background:var(--green-500)}
+.status-warn .status-dot{background:var(--amber-500)}
+.status-bad  .status-dot{background:var(--red-500)}
+.date-label { font-family:var(--font-mono); font-size:11px; color:var(--text-muted); }
+.hero-title { font-family:var(--font-display); font-size:clamp(24px,5.5vw,38px); line-height:1.1; margin-bottom:5px; }
+.hero-title em { font-style:italic; color:var(--green-500); }
+.hero-sub { font-size:13px; color:var(--text-muted); }
 
-/* Paywall */
-.pw-wrap{padding:0 20px;text-align:center}
-.pw-icon{font-size:48px;margin-bottom:12px}
-.pw-title{font-family:var(--fd);font-size:24px;margin-bottom:6px}
-.pw-sub{font-size:13px;color:var(--mt);line-height:1.6;margin-bottom:20px}
-.pw-feats{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;text-align:left}
-.pw-feat{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--tx2)}
-.pw-price{background:var(--s2);border:1px solid var(--bdm);border-radius:16px;padding:16px;margin-bottom:16px}
-.pw-price-v{font-family:var(--fd);font-size:36px;color:var(--g4);line-height:1}
-.pw-price-p{font-size:11px;color:var(--mt);margin-top:2px}
-.pw-price-n{font-size:11px;color:var(--mt);margin-top:6px}
+/* ── CARD ── */
+.main-card { max-width:960px; margin:0 auto 14px; padding:0 20px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-card); overflow:hidden; transition:background .3s, border .3s; }
 
-/* Toast */
-.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-10px);background:rgba(11,22,13,.97);border:1px solid var(--bdm);border-radius:14px;padding:10px 20px;font-size:12px;color:var(--tx);backdrop-filter:blur(12px);z-index:900;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.4)}
-.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+/* NOW */
+.now-strip { display:flex; align-items:center; gap:14px; padding:18px 22px; border-bottom:1px solid rgba(255,255,255,.07); background:var(--now-bg); color:white; flex-wrap:wrap; }
+.now-label { font-family:var(--font-mono); font-size:9px; letter-spacing:.15em; text-transform:uppercase; opacity:.55; margin-bottom:2px; }
+.now-temp { font-family:var(--font-display); font-size:50px; line-height:1; letter-spacing:-2px; }
+.now-temp-unit { font-size:19px; opacity:.45; }
+.now-cond { font-size:14px; font-weight:600; }
+.now-feel { font-size:12px; opacity:.6; margin-top:2px; }
+.now-icon { font-size:46px; margin-left:auto; }
 
-/* Modal chamado */
-@keyframes modalEntrance{from{opacity:0;transform:translate(-50%,-50%) scale(.85)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
-@keyframes modalSosPulse{0%,100%{box-shadow:0 20px 40px rgba(224,53,53,.3),0 0 0 0 rgba(224,53,53,.4)}50%{box-shadow:0 20px 40px rgba(224,53,53,.5),0 0 0 12px rgba(224,53,53,0)}}
-.modal-chamado{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;background:var(--s1);border:1.5px solid var(--bdm);border-radius:24px;padding:24px;width:calc(100% - 40px);max-width:340px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,.6);display:none}
-.modal-chamado.on{display:block;animation:modalEntrance .3s cubic-bezier(.34,1.3,.64,1)}
-.modal-chamado.sos-mode{animation:modalEntrance .3s cubic-bezier(.34,1.3,.64,1),modalSosPulse 1.5s ease-in-out infinite .3s}
-.modal-chamado-icon{font-size:52px;margin-bottom:10px;display:block}
-.modal-chamado-title{font-size:18px;font-weight:800;margin-bottom:6px;letter-spacing:-.02em}
-.modal-chamado-msg{font-size:13px;color:var(--tx2);margin-bottom:8px;line-height:1.5;padding:0 4px}
-.modal-chamado-timer{font-size:11px;color:var(--mt);margin-bottom:16px;font-family:var(--fm)}
-.modal-chamado-buttons{display:flex;gap:10px}
-.modal-chamado-btn{flex:1;padding:13px;border-radius:16px;border:none;font-weight:700;cursor:pointer;font-family:var(--fu);font-size:13px;transition:all .2s}
-.modal-chamado-btn.accept{background:linear-gradient(135deg,var(--g7),var(--g5));color:white;box-shadow:0 4px 16px rgba(31,85,52,.4)}
-.modal-chamado-btn.accept:hover{transform:translateY(-1px)}
-.modal-chamado-btn.accept:active{transform:scale(.97)}
-.modal-chamado-btn.ignore{background:var(--s3);border:1px solid var(--bdm);color:var(--tx2)}
-.modal-chamado-btn.ignore:hover{background:rgba(224,53,53,.12);border-color:var(--red);color:#ff8080}
+/* SUN BAR */
+.sun-bar { display:flex; align-items:center; gap:14px; padding:12px 22px; background:var(--now-sun-bg); border-bottom:1px solid rgba(255,255,255,.05); color:white; flex-wrap:wrap; }
+.sun-item { display:flex; align-items:center; gap:7px; }
+.sun-label { font-size:9px; font-family:var(--font-mono); letter-spacing:.1em; text-transform:uppercase; opacity:.45; }
+.sun-time { font-family:var(--font-mono); font-size:15px; font-weight:500; }
+.sun-sep { flex:1; height:1px; background:rgba(255,255,255,.07); }
+.golden-tag { font-size:11px; font-weight:600; color:#f5c842; font-family:var(--font-mono); }
 
-.clear-history-btn{background-color:rgba(224,53,53,.15);border:1px solid var(--red);color:#ff8080;margin-top:-8px;margin-bottom:16px;width:calc(100% - 40px);display:block;margin-left:auto;margin-right:auto;padding:8px;border-radius:20px;font-size:11px;font-weight:600;text-align:center;cursor:pointer;transition:all .2s}
-.clear-history-btn:hover{background-color:rgba(224,53,53,.3);transform:scale(.98)}
+/* METRICS */
+.metrics-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); }
+.metric-cell { background:var(--surface); padding:15px 16px 19px; position:relative; transition:background .15s; }
+.metric-cell:hover { background:var(--surface2); }
+.metric-label { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:5px; }
+.metric-value { font-family:var(--font-mono); font-size:20px; font-weight:500; color:var(--text-primary); line-height:1.1; }
+.metric-unit { font-size:11px; opacity:.45; }
+.metric-sub { font-size:10px; color:var(--text-muted); margin-top:3px; line-height:1.4; }
+.metric-bar { position:absolute; bottom:0; left:0; height:3px; border-radius:0 2px 2px 0; transition:width .9s cubic-bezier(.4,0,.2,1); }
+.bar-green{background:var(--green-400)}.bar-amber{background:var(--amber-500)}.bar-red{background:var(--red-500)}.bar-sky{background:var(--sky-400)}
+
+/* Delta T highlight */
+.metric-cell.delta-t-cell { background:var(--surface); }
+.delta-t-badge { display:inline-block; margin-top:4px; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:700; }
+.dt-ideal { background:var(--green-100); color:var(--green-800); }
+.dt-warn  { background:var(--amber-100); color:var(--earth-800); }
+.dt-bad   { background:#fde8e8; color:#7a1a1a; }
+
+/* COMPASS */
+.compass-wrap { margin-top:5px; }
+.compass { width:58px; height:58px; position:relative; }
+.compass-ring { width:58px; height:58px; border-radius:50%; border:1.5px solid var(--border-md); display:flex; align-items:center; justify-content:center; position:relative; }
+.c-n,.c-s,.c-e,.c-w { position:absolute; font-size:8px; font-weight:700; color:var(--text-muted); font-family:var(--font-mono); }
+.c-n{top:2px;left:50%;transform:translateX(-50%)}
+.c-s{bottom:2px;left:50%;transform:translateX(-50%)}
+.c-e{right:2px;top:50%;transform:translateY(-50%)}
+.c-w{left:2px;top:50%;transform:translateY(-50%)}
+.compass-needle { width:2px; height:20px; background:linear-gradient(to bottom,var(--red-500) 50%,var(--green-400) 50%); border-radius:1px; transform-origin:bottom center; position:absolute; bottom:50%; left:50%; margin-left:-1px; transition:transform .9s cubic-bezier(.4,0,.2,1); }
+.cloud-cell { grid-column:span 2; }
+
+/* APP INDEX */
+.app-index-section { padding:16px 20px; border-top:1px solid var(--border); background:var(--surface2); }
+.section-title { font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; }
+.app-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:7px; }
+.app-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:11px 13px; display:flex; align-items:center; gap:9px; }
+.app-icon { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+.app-icon-green{background:var(--green-100)}.app-icon-sky{background:var(--sky-100)}.app-icon-earth{background:var(--earth-100)}.app-icon-red{background:#fde8e8}
+.app-name { font-size:11px; font-weight:600; color:var(--text-primary); }
+.app-score-row { display:flex; align-items:center; gap:5px; margin-top:3px; }
+.app-score-bar { flex:1; height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+.app-score-fill { height:100%; border-radius:2px; transition:width 1.1s cubic-bezier(.4,0,.2,1); }
+.fill-green{background:var(--green-500)}.fill-amber{background:var(--amber-500)}.fill-red{background:var(--red-500)}
+.app-pct { font-family:var(--font-mono); font-size:10px; color:var(--text-muted); min-width:26px; text-align:right; }
+
+/* SECTIONS */
+.section-block { max-width:960px; margin:0 auto 12px; padding:0 20px; }
+.section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; }
+.section-heading { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-secondary); }
+.section-sub { font-size:10px; color:var(--text-muted); }
+
+/* DAILY */
+.daily-scroll { display:flex; gap:7px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+.daily-scroll::-webkit-scrollbar { display:none; }
+.day-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:13px 11px; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:80px; cursor:pointer; transition:all .2s; flex-shrink:0; }
+.day-card:hover { border-color:var(--green-400); box-shadow:var(--shadow-card); }
+.day-card.active { border-color:var(--green-500); background:var(--surface3); }
+.day-name { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-muted); }
+.day-icon { font-size:20px; }
+.day-tmax { font-family:var(--font-mono); font-size:13px; font-weight:500; color:var(--text-primary); }
+.day-tmin { font-family:var(--font-mono); font-size:10px; color:var(--text-muted); }
+.day-sdot { width:6px; height:6px; border-radius:50%; }
+
+/* HOURLY */
+.hourly-list { display:flex; flex-direction:column; gap:4px; }
+.hour-row { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); display:flex; align-items:center; padding:11px 14px; gap:9px; cursor:pointer; transition:all .2s; position:relative; overflow:hidden; }
+.hour-row::before { content:''; position:absolute; left:0;top:0;bottom:0; width:4px; border-radius:4px 0 0 4px; }
+.hour-good::before{background:var(--green-400)}.hour-warn::before{background:var(--amber-500)}.hour-bad::before{background:var(--red-500)}
+.hour-row:hover { transform:translateX(2px); box-shadow:var(--shadow-card); border-color:var(--border-md); }
+.hour-time { font-family:var(--font-mono); font-size:12px; font-weight:500; color:var(--text-primary); min-width:38px; }
+.hour-icon { font-size:17px; }
+.hour-temp { font-family:var(--font-mono); font-size:12px; font-weight:500; color:var(--text-secondary); min-width:33px; }
+.hour-desc { flex:1; font-size:11px; color:var(--text-muted); }
+.hour-tags { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; }
+.tag { font-size:10px; font-weight:600; padding:2px 7px; border-radius:5px; white-space:nowrap; }
+.tag-wind{background:var(--sky-100);color:var(--sky-700)}.tag-rain{background:#e8f4fd;color:var(--sky-700)}
+.tag-good{background:var(--green-100);color:var(--green-800)}.tag-warn{background:var(--amber-100);color:var(--earth-800)}.tag-bad{background:#fde8e8;color:#8a2020}.tag-cloud{background:var(--surface3);color:var(--text-muted)}
+
+/* DETAIL */
+.hour-detail { display:none; background:var(--surface2); border:1px solid var(--border); border-top:none; border-radius:0 0 var(--radius-md) var(--radius-md); }
+.hour-detail.open { display:grid; grid-template-columns:repeat(4,1fr); }
+.detail-col { padding:11px 13px; border-right:1px solid var(--border); }
+.detail-col:last-child { border-right:none; }
+.detail-label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--text-muted); margin-bottom:3px; }
+.detail-val { font-family:var(--font-mono); font-size:13px; font-weight:500; color:var(--text-primary); }
+.detail-sub { font-size:9px; color:var(--text-muted); margin-top:2px; }
+
+/* LOADING */
+.loading-screen { position:fixed; inset:0; background:var(--green-900); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; z-index:999; transition:opacity .5s,visibility .5s; }
+.loading-screen.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+.loading-logo { font-family:var(--font-ui); font-size:22px; font-weight:800; color:white; letter-spacing:-.5px; }
+.loading-logo span { color:var(--green-300); }
+.loading-bar-track { width:130px; height:2px; background:rgba(255,255,255,.15); border-radius:2px; overflow:hidden; }
+.loading-bar-fill { height:100%; background:var(--green-300); animation:loadbar 2.2s ease-in-out forwards; }
+@keyframes loadbar { from{width:0}to{width:100%} }
+.loading-text { font-size:10px; color:rgba(255,255,255,.38); font-family:var(--font-mono); letter-spacing:.1em; }
+
+.fade-in { opacity:0; transform:translateY(10px); animation:fadeUp .4s ease forwards; }
+@keyframes fadeUp { to{opacity:1;transform:translateY(0)} }
+.fade-in:nth-child(1){animation-delay:.05s}.fade-in:nth-child(2){animation-delay:.1s}.fade-in:nth-child(3){animation-delay:.15s}.fade-in:nth-child(4){animation-delay:.2s}.fade-in:nth-child(5){animation-delay:.25s}
+
+.btn-radar-fab {
+  position: fixed; bottom: 24px; right: 20px; z-index: 300;
+  display: flex; align-items: center; gap: 8px;
+  padding: 13px 20px; border-radius: 28px;
+  background: linear-gradient(135deg, var(--green-800), var(--green-600));
+  color: white; border: none; font-family: var(--font-ui);
+  font-size: 13px; font-weight: 800; cursor: pointer;
+  box-shadow: 0 4px 24px rgba(31,85,52,.5);
+  transition: all .3s cubic-bezier(.34,1.56,.64,1);
+  letter-spacing: .02em;
+  animation: radarFabPulse 3s ease-in-out infinite;
+}
+.btn-radar-fab:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 8px 32px rgba(31,85,52,.6); }
+.btn-radar-fab .fab-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green-300); animation: pulse 1.5s infinite; }
+@keyframes radarFabPulse {
+  0%,100% { box-shadow: 0 4px 24px rgba(31,85,52,.5); }
+  50%      { box-shadow: 0 4px 32px rgba(61,168,102,.7); }
+}
+footer { text-align:center; padding:24px 20px 80px; color:var(--text-muted); font-size:11px; line-height:1.9; }
+footer a { color:var(--green-500); text-decoration:none; }
+
+/* ── KP INDEX ── */
+.kp-section { max-width:960px; margin:0 auto 12px; padding:0 20px; }
+.kp-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow-card); }
+.kp-header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px 10px; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:8px; }
+.kp-title-wrap { display:flex; align-items:center; gap:9px; }
+.kp-icon { font-size:22px; }
+.kp-title { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-secondary); }
+.kp-sub { font-size:10px; color:var(--text-muted); margin-top:2px; }
+.kp-badge { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; }
+.kp-quiet  { background:var(--green-100); color:var(--green-800); }
+.kp-active { background:var(--amber-100); color:var(--earth-800); }
+.kp-storm  { background:#fde8e8; color:#7a1a1a; }
+.kp-body { display:flex; align-items:center; gap:16px; padding:14px 18px; flex-wrap:wrap; }
+.kp-value-wrap { display:flex; flex-direction:column; align-items:center; min-width:70px; }
+.kp-value { font-family:var(--font-display); font-size:44px; line-height:1; letter-spacing:-2px; color:var(--text-primary); }
+.kp-unit { font-size:11px; color:var(--text-muted); font-family:var(--font-mono); }
+.kp-gauge-wrap { flex:1; min-width:180px; }
+.kp-gauge-track { height:10px; background:var(--border); border-radius:6px; overflow:hidden; margin-bottom:8px; position:relative; }
+.kp-gauge-fill { height:100%; border-radius:6px; transition:width 1.1s cubic-bezier(.4,0,.2,1); }
+.kp-gauge-labels { display:flex; justify-content:space-between; font-size:9px; font-family:var(--font-mono); color:var(--text-muted); }
+.kp-desc { font-size:12px; color:var(--text-secondary); line-height:1.5; flex:1; min-width:140px; }
+.kp-agro-note { padding:0 18px 14px; font-size:11px; color:var(--text-muted); border-top:1px solid var(--border); padding-top:10px; }
+.kp-agro-note strong { color:var(--text-secondary); }
+.kp-updated { font-size:9px; color:var(--text-muted); font-family:var(--font-mono); text-align:right; padding:0 18px 10px; }
+
+@media(max-width:540px){
+  .metrics-grid{grid-template-columns:repeat(2,1fr)}
+  .cloud-cell{grid-column:span 2}
+  .app-grid{grid-template-columns:1fr}
+  .hour-detail.open{grid-template-columns:repeat(2,1fr)}
+  .detail-col{border-right:none;border-bottom:1px solid var(--border)}
+  .hour-tags{display:none}
+  .header-search{display:none}
+}
 </style>
 </head>
 <body>
 
-<!-- ══ SPLASH ══ -->
-<div class="screen" id="sSplash">
-  <div class="sp-bg"></div>
-  <div class="sp-grid"></div>
-  <div class="sp-wrap">
-    <div class="sp-logo">Agro<span>Metrix</span></div>
-    <div class="sp-tag">Radar Operacional Agrícola</div>
+<!-- ── LOADING ── -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-logo">Agro<span>Metrix</span></div>
+  <div class="loading-bar-track"><div class="loading-bar-fill"></div></div>
+  <div class="loading-text" id="loadingText">iniciando…</div>
+</div>
 
-    <div class="sp-radar">
-      <div class="sp-sweep"></div>
-      <div class="sp-ring"></div>
-      <div class="sp-ring"></div>
-      <div class="sp-ring"></div>
-      <div class="sp-ch"></div>
-      <div class="sp-dot" style="top:28%;left:58%"></div>
-      <div class="sp-dot" style="top:62%;left:34%;opacity:.6"></div>
-      <div class="sp-dot" style="top:44%;left:72%;opacity:.8"></div>
-      <div class="sp-dot" style="top:72%;left:58%;opacity:.5"></div>
+<!-- ── MODAL LOCALIZAÇÃO ── -->
+<div class="modal-overlay" id="locModal">
+  <div class="modal-box">
+    <div class="modal-icon">📍</div>
+    <div class="modal-title">Onde você está?</div>
+    <div class="modal-sub">Use sua localização GPS ou busque qualquer cidade, município ou patrimônio do Brasil.</div>
+    <button class="btn-primary" onclick="requestGPS()">📡 Usar minha localização GPS</button>
+    <div class="modal-divider"><span>ou busque manualmente</span></div>
+    <div class="modal-search-wrap">
+      <span class="modal-search-icon">🔍</span>
+      <input type="text" id="modalCityInput" placeholder="Ex: Rio Verde, Londrina, Ribeirão Preto..." autocomplete="off" oninput="onModalCityInput()" onkeydown="onModalCityKey(event)">
     </div>
+    <div class="modal-search-results" id="modalSearchResults"></div>
+  </div>
+</div>
 
-    <!-- Card de trial direto na tela inicial -->
-    <div class="sp-trial-box">
-      <div class="sp-trial-top">🎁 7 dias grátis · depois R$ 19,90/mês</div>
-      <div class="sp-trial-feats">
-        <span>🗺️ Radar ao vivo</span>
-        <span>📊 AMX Score</span>
-        <span>🚨 SOS</span>
-        <span>💬 Chat</span>
-        <span>🏆 Ranking</span>
+<!-- ── HEADER ── -->
+<header>
+  <div class="header-inner">
+    <div class="logo-mark">
+      <div class="logo-icon"></div>
+      <div>
+        <div class="logo-name">Agro<span>Metrix</span></div>
+        <div class="logo-tag">Clima certo, aplicação perfeita</div>
       </div>
     </div>
 
-    <!-- Botão principal: inicia trial direto após login -->
-    <button class="btn-cta" id="btnEntrar">🚀 Começar 7 dias grátis</button>
-
-    <div class="sp-divider"><span>já tenho conta</span></div>
-
-    <button class="btn-google" id="btnGoogle">
-      <svg viewBox="0 0 24 24">
-        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-      </svg>
-      Entrar com Google
-    </button>
-
-    <div class="sp-terms">Ao entrar, você concorda com os Termos de Uso · Cancele quando quiser</div>
-  </div>
-</div>
-
-<!-- ══ RADAR ══ -->
-<div class="screen off" id="sRadar">
-  <div id="mapEl"></div>
-
-  <!-- Header -->
-  <div class="r-hdr">
-    <div class="r-logo">Agro<span>Metrix</span> <span style="font-size:10px;color:var(--mt);font-weight:400">RADAR</span></div>
-    <div class="r-badge"><div class="ldot"></div><span id="pilotCount">—</span></div>
-    <button class="ico-btn location-ico" onclick="window.centerOnUser()" title="Minha Localização">📍</button>
-    <div class="chat-float" style="position:relative">
-      <button class="ico-btn" id="btnChatIco" onclick="window.onChatIconClick()" title="Chat">💬</button>
-      <div class="notif-dot" id="chatDot">!</div>
-    </div>
-    <div style="position:relative">
-      <button class="ico-btn" onclick="window.openSheet('shReq')" title="Pedidos">🔧</button>
-      <div class="notif-dot" id="reqDot">!</div>
-    </div>
-    <button class="ico-btn" onclick="window.openSheet('shProfile')" title="Perfil">👤</button>
-  </div>
-
-  <!-- SOS Bar -->
-  <div class="sos-bar" id="sosBar">
-    <span style="font-size:18px">🚨</span>
-    <div class="sos-txt">SOS ATIVO — Aguardando pilotos próximos…</div>
-    <button class="sos-cancel" onclick="window.cancelSOS()">Cancelar</button>
-  </div>
-
-  <!-- Nav bottom -->
-  <div class="r-nav">
-    <div class="nav-tabs">
-      <button class="nav-tab act" id="tab-radar" onclick="window.switchTab('radar')">📡 Radar</button>
-      <button class="nav-tab" id="tab-clima" onclick="window.switchTab('clima')">🌡️ Clima</button>
-      <button class="nav-tab" id="tab-ops" onclick="window.switchTab('ops')">🚁 Ops</button>
-      <button class="nav-tab" id="tab-rank" onclick="window.switchTab('rank')">🏆 Rank</button>
+    <div class="header-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="cityInput" placeholder="Buscar cidade ou município..." autocomplete="off" oninput="onCityInput()" onkeydown="onCityKey(event)">
+      <div class="search-results" id="searchResults"></div>
     </div>
 
-    <!-- Painel Radar -->
-    <div class="panel act" id="pRadar">
-      <div class="amx-card">
-        <div>
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--mt)">AMX Score</div>
-          <div class="amx-num" id="amxNum" style="color:var(--g4)">—</div>
-        </div>
-        <div class="amx-info">
-          <div class="amx-desc" id="amxDesc">Carregando condições…</div>
-          <div class="amx-lbl" id="amxLbl">—</div>
-          <div class="amx-bar"><div class="amx-fill" id="amxFill" style="width:0%;background:var(--g4)"></div></div>
-        </div>
-      </div>
-      <button class="btn-op start" id="btnOp" onclick="window.handleOp()">🚁 Iniciar Operação</button>
-    </div>
-
-    <!-- Painel Clima -->
-    <div class="panel" id="pClima">
-      <div class="clima-row" id="climaChips">
-        <div class="wchip">🌡️ —°C</div>
-        <div class="wchip">💨 — km/h</div>
-        <div class="wchip">💧 —%</div>
-        <div class="wchip">ΔT —°C</div>
-      </div>
-      <div class="amx-card">
-        <div>
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--mt)">AMX</div>
-          <div class="amx-num" id="amxNum2" style="color:var(--g4)">—</div>
-        </div>
-        <div class="amx-info">
-          <div class="amx-desc" id="amxDesc2">—</div>
-          <div class="amx-bar"><div class="amx-fill" id="amxFill2" style="width:0%"></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Painel Ops -->
-    <div class="panel" id="pOps">
-      <div class="quick-row">
-        <div class="qbtn red" onclick="window.activateSOS()">🚨 SOS</div>
-        <div class="qbtn" onclick="window.sendReq('battery','🔋 Preciso de bateria')">🔋 Bateria</div>
-        <div class="qbtn" onclick="window.sendReq('helice','🚁 Preciso de hélice')">🚁 Hélice</div>
-        <div class="qbtn" onclick="window.sendReq('part','🔧 Preciso de peça')">🔧 Peça</div>
-        <div class="qbtn" onclick="window.sendReq('support','🛠️ Preciso de suporte')">🛠️ Suporte</div>
-        <div class="qbtn" onclick="window.sendReq('fuel','⛽ Abastecimento')">⛽ Combustível</div>
-        <div class="qbtn" onclick="window.sendReq('tow','🚜 Preciso de guincho/atolamento')">🚜 Atolamento</div>
-      </div>
-      <button class="btn-op start" id="btnOp2" onclick="window.handleOp()">🚁 Iniciar Operação</button>
-    </div>
-
-    <!-- Painel Ranking -->
-    <div class="panel" id="pRank">
-      <div class="rank-list" id="rankList">
-        <div style="text-align:center;color:var(--mt);font-size:12px;padding:16px">Carregando ranking…</div>
+    <div class="header-actions">
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema">☀️</button>
+      <div class="loc-pill" onclick="openLocModal()" title="Mudar localização">
+        <div class="loc-dot"></div>
+        <span id="locationLabel">—</span>
       </div>
     </div>
   </div>
+</header>
+
+<!-- ── HERO ── -->
+<div class="hero fade-in">
+  <div class="hero-status-row">
+    <div class="status-badge" id="heroStatus" style="display:none"></div>
+    <div class="date-label" id="heroDate"></div>
+  </div>
+  <h1 class="hero-title" id="heroTitle">Bem-vindo ao<br><em>AgroMetrix</em></h1>
+  <p class="hero-sub" id="heroSub">Permita o acesso à sua localização ou busque uma cidade para começar.</p>
 </div>
 
-<!-- ══ SHEET PERFIL ══ -->
-<div class="overlay" id="ovProfile" onclick="window.closeSheet('shProfile')"></div>
-<div class="sheet" id="shProfile">
-  <div class="sh-handle"></div>
-  <div class="sh-title">
-    Meu Perfil
-    <button class="sh-close-btn" onclick="window.closeSheet('shProfile')">✕</button>
-  </div>
-  <div id="profileContent"></div>
+<!-- ── DOWNLOAD BAR ── -->
+<div class="download-bar fade-in" id="downloadBar" style="display:none">
+  <button class="btn-download" onclick="shareOrDownloadTXT()" title="Baixar ou compartilhar relatório TXT">
+    <span>&#8681;</span> Relatório TXT
+  </button>
+  <button class="btn-download" onclick="shareOrDownloadCSV()" title="Baixar ou compartilhar CSV Excel" style="background:var(--sky-500)">
+    <span>&#8681;</span> Relatório CSV
+  </button>
 </div>
 
-<!-- ══ SHEET OP CONFIG ══ -->
-<div class="overlay" id="ovOpConfig" onclick="window.closeSheet('shOpConfig')"></div>
-<div class="sheet" id="shOpConfig">
-  <div class="sh-handle"></div>
-  <div class="sh-title">
-    ⚙️ Configurar Operação
-    <button class="sh-close-btn" onclick="window.closeSheet('shOpConfig')">✕</button>
-  </div>
-
-  <div class="inp-g">
-    <label class="inp-l">Drone utilizado</label>
-    <div class="op-chip-row" id="droneChips">
-      <div class="op-chip" onclick="window.selChip(this,'drone','DJI T25')">DJI T25</div>
-      <div class="op-chip" onclick="window.selChip(this,'drone','DJI T40')">DJI T40</div>
-      <div class="op-chip" onclick="window.selChip(this,'drone','DJI T50')">DJI T50</div>
-      <div class="op-chip" onclick="window.selChip(this,'drone','XAG P100')">XAG P100</div>
-      <div class="op-chip" onclick="window.selChip(this,'drone','XAG V40')">XAG V40</div>
-      <div class="op-chip" onclick="window.selChip(this,'drone','EAVision')">EAVision</div>
-      <div class="op-chip" onclick="window.showDroneCustomInput(this,'drone','Outro')">Outro</div>
-    </div>
-    <input type="text" id="customDroneInput" class="inp" placeholder="Digite o modelo do drone" style="display:none;margin-top:8px">
-  </div>
-
-  <div class="inp-g">
-    <label class="inp-l">Faixa média de aplicação</label>
-    <div class="op-chip-row" id="faixaChips">
-      <div class="op-chip" onclick="window.selChip(this,'faixa','7')">7 m</div>
-      <div class="op-chip" onclick="window.selChip(this,'faixa','9')">9 m</div>
-      <div class="op-chip" onclick="window.selChip(this,'faixa','11')">11 m</div>
-      <div class="op-chip" onclick="window.selChip(this,'faixa','13')">13 m</div>
-    </div>
-  </div>
-
-  <div class="inp-g">
-    <label class="inp-l">Vazão média utilizada</label>
-    <div class="op-chip-row" id="vazaoChips">
-      <div class="op-chip" onclick="window.selChip(this,'vazao','5')">5 L/ha</div>
-      <div class="op-chip" onclick="window.selChip(this,'vazao','10')">10 L/ha</div>
-      <div class="op-chip" onclick="window.selChip(this,'vazao','15')">15 L/ha</div>
-      <div class="op-chip" onclick="window.selChip(this,'vazao','20')">20 L/ha</div>
-      <div class="op-chip" onclick="window.selChip(this,'vazao','30')">30 L/ha</div>
-    </div>
-  </div>
-
-  <div class="inp-g">
-    <label class="inp-l">Média operacional estimada</label>
-    <div class="op-chip-row" id="haChips">
-      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','15')">15 ha/h</div>
-      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','20')">20 ha/h</div>
-      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','25')">25 ha/h</div>
-      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','30')">30 ha/h</div>
-      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','40')">40 ha/h</div>
-    </div>
-  </div>
-
-  <div style="padding:0 20px 6px;font-size:10px;color:var(--mt);line-height:1.5">
-    ⚠️ Sistema gera <strong style="color:var(--tx2)">estimativa operacional coerente</strong>. Vazões extremas reduzem confiabilidade do AMX Score.
-  </div>
-
-  <button class="btn-prim" onclick="window.confirmOp()" style="margin-top:14px">🚁 Iniciar Operação</button>
-  <button class="btn-sec" onclick="window.closeSheet('shOpConfig')" style="margin-top:8px">Cancelar</button>
-</div>
-
-<!-- ══ SHEET OP RESULTADO ══ -->
-<div class="overlay" id="ovOpResult" onclick="window.closeSheet('shOpResult')"></div>
-<div class="sheet" id="shOpResult">
-  <div class="sh-handle"></div>
-  <div class="sh-title">
-    📊 Resultado da Operação
-    <button class="sh-close-btn" onclick="window.closeSheet('shOpResult')">✕</button>
-  </div>
-  <div id="opResultContent"></div>
-  <button class="btn-prim" onclick="window.closeSheet('shOpResult')" style="margin-top:10px">Fechar</button>
-</div>
-
-<!-- ══ SHEET PEDIDOS ══ -->
-<div class="overlay" id="ovReq" onclick="window.closeSheet('shReq')"></div>
-<div class="sheet" id="shReq">
-  <div class="sh-handle"></div>
-  <div class="sh-title">
-    📢 Pedidos e SOS Ativos
-    <button class="sh-close-btn" onclick="window.closeSheet('shReq')">✕</button>
-  </div>
-  <button class="clear-history-btn" onclick="window.clearHistoryPermanent()">🗑️ Limpar Histórico de Chamados</button>
-  <div id="reqList"></div>
-</div>
-
-<!-- ══ SHEET CHAT ══ -->
-<div class="overlay" id="ovChat" onclick="window.closeSheet('shChat')"></div>
-<div class="sheet" id="shChat" style="z-index:503">
-  <div class="sh-handle"></div>
-  <div class="sh-title" style="padding-bottom:8px">
-    💬 Conversa
-    <button class="sh-close-btn" onclick="window.closeSheet('shChat')">✕</button>
-  </div>
-  <div class="chat-header-info" id="chatHeaderInfo">
-    <div class="chat-header-av" id="chatHeaderAv">👨‍✈️</div>
-    <div>
-      <div class="chat-header-name" id="chatName">—</div>
-      <div class="chat-header-status" id="chatStatus">🟢 Online</div>
-    </div>
-  </div>
-  <div class="chat-msgs" id="chatMsgs">
-    <div class="chat-empty">💬 Inicie a conversa!<br><span style="font-size:10px;opacity:.7">Mensagens aparecem aqui em tempo real.</span></div>
-  </div>
-  <div class="chat-input-row" style="margin-bottom:8px">
-    <input class="chat-inp" id="chatInp" placeholder="Digite uma mensagem…" onkeydown="if(event.key==='Enter')window.sendMsg()" autocomplete="off">
-    <button class="chat-send" onclick="window.sendMsg()">➤</button>
-  </div>
-  <div style="text-align:center;padding:4px 20px 10px;border-top:1px solid var(--bd);margin-top:4px">
-    <button onclick="window.closeSheet('shChat');setTimeout(window.toggleChatDrawer,300)"
-      style="font-size:12px;font-weight:700;color:var(--g4);background:rgba(61,168,102,.1);border:1px solid var(--bdm);border-radius:20px;cursor:pointer;font-family:var(--fu);padding:8px 16px;width:100%;transition:all .2s">
-      💬 Ver Minhas Conversas
-    </button>
-  </div>
-</div>
-
-<!-- ══ SHEET PAYWALL ══ -->
-<div class="overlay" id="ovPaywall"></div>
-<div class="sheet" id="shPaywall">
-  <div class="sh-handle"></div>
-  <div class="pw-wrap">
-    <div class="pw-icon">🚁</div>
-    <div class="pw-title">Acesse o Radar</div>
-    <div class="pw-sub">Veja pilotos próximos, registre operações e acompanhe seu AMX Score em tempo real.</div>
-    <div class="pw-feats">
-      <div class="pw-feat">🗺️ Radar ao vivo com pilotos próximos</div>
-      <div class="pw-feat">📊 AMX Score operacional</div>
-      <div class="pw-feat">🚁 Modo operação com estimativa agrícola</div>
-      <div class="pw-feat">🚨 SOS e pedidos de suporte rápido</div>
-      <div class="pw-feat">🏆 Ranking de pilotos</div>
-      <div class="pw-feat">💬 Chat operacional</div>
-    </div>
-    <div class="pw-price">
-      <div class="pw-price-v">R$ 19,90</div>
-      <div class="pw-price-p">por mês · cancele quando quiser</div>
-      <div class="pw-price-n">🎁 7 dias grátis para testar</div>
-    </div>
-    <button class="btn-prim" onclick="window.startTrial()" style="margin-bottom:8px">🚀 Começar 7 dias grátis</button>
-    <button onclick="window.closeSheet('shPaywall')" style="width:100%;padding:10px;background:none;border:none;color:var(--mt);font-family:var(--fu);font-size:13px;cursor:pointer">Agora não</button>
-  </div>
-</div>
-
-<!-- Toast -->
-<div class="toast" id="toast"></div>
-
-<!-- Chat Drawer Flutuante -->
-<div class="overlay" id="ovChatDrawer" onclick="window.closeChatDrawer()"></div>
-<div class="sheet" id="shChatDrawer" style="z-index:502">
-  <div class="sh-handle"></div>
-  <div class="sh-title">
-    💬 Minhas Conversas
-    <button class="sh-close-btn" onclick="window.closeChatDrawer()">✕</button>
-  </div>
-  <div style="padding:0 20px 10px;display:flex;align-items:center;justify-content:space-between">
-    <span style="font-size:11px;color:var(--mt)">Toque para abrir o chat em tempo real.</span>
-    <button onclick="window.closeChatDrawer();showToast('📍 Toque em um piloto no mapa para iniciar conversa')"
-      style="font-size:10px;padding:4px 12px;border-radius:20px;border:1px solid var(--bdm);background:rgba(61,168,102,.1);color:var(--g3);cursor:pointer;font-family:var(--fu);font-weight:700">+ Nova</button>
-  </div>
-  <div id="chatList" style="max-height:58vh;overflow-y:auto;padding:0">
-    <div style="text-align:center;color:var(--mt);padding:30px 20px;font-size:12px">💭 Nenhuma conversa ativa no momento.</div>
-  </div>
-  <button class="btn-sec" onclick="window.closeChatDrawer()" style="margin-top:10px;width:calc(100% - 40px)">Fechar</button>
-</div>
-
-<!-- Modal de Chamado -->
-<div style="position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.6);display:none;backdrop-filter:blur(3px)" id="modalChamadoOverlay" onclick="window.modalIgnore()"></div>
-<div class="modal-chamado" id="modalChamado">
-  <span class="modal-chamado-icon" id="modalIcon">🔧</span>
-  <div class="modal-chamado-title" id="modalTitle">Novo Chamado</div>
-  <div class="modal-chamado-msg" id="modalMsg">Alguém precisa de ajuda!</div>
-  <div class="modal-chamado-timer" id="modalTimer">Expira em 30s</div>
-  <div class="modal-chamado-buttons">
-    <button class="modal-chamado-btn accept" onclick="window.modalAccept()">✅ Aceitar Chamado</button>
-    <button class="modal-chamado-btn ignore" onclick="window.modalIgnore()">❌ Ignorar</button>
-  </div>
-</div>
-
-<script type="module">
-import { firebaseConfig, isFirebaseConfigured } from './firebase-config.js';
-import { initFirebase, loginGoogle, logout, onAuthChange, getProfile, updateProfile, getPlanStatus } from './auth.js';
-import { initMap, upsertPilot as originalUpsertPilot, spawnBots, startBotUpdates, startLocationTracking, listenPilots,
-         startOperation, endOperation, isOperating, calcAMXScore, calcOperationEstimate, amxLabel } from './radar.js';
-import { audio } from './audio.js';
-import { chat } from './chat.js';
-
-// Interceptar upsertPilot para sanitizar nomes
-function upsertPilot(data) {
-  if (data) {
-    const nameStr = String(data.name || '');
-    if (!data.name || nameStr.startsWith('http') || nameStr.includes('googleusercontent.com')) {
-      const nickStr = String(data.nickname || '');
-      data.name = (data.nickname && !nickStr.startsWith('http') && !nickStr.includes('googleusercontent.com')) ? data.nickname : 'Piloto';
-    }
-    if (data.photo && String(data.photo).length > 1000) data.photo = '👨‍✈️';
-    if (data.isCurrentUser && R.profile) {
-      data.name = cleanName(R.profile.nickname || R.profile.name, R.user);
-      data.score = R.profile.amxScore || 0;
-      data.city = R.profile.city || '';
-      data.drone = R.profile.drone || '';
-      data.opsTotal = R.profile.opsTotal || 0;
-      data.hoursTotal = R.profile.hoursTotal || 0;
-    }
-  }
-  return originalUpsertPilot(data);
-}
-
-// ══ ÁUDIO ══
-let loopSoundId = null;
-function playLoopSound(type, duration = 30000) {
-  stopLoopSound();
-  const interval = 600;
-  let elapsed = 0;
-  const play = () => {
-    if (elapsed >= duration) { stopLoopSound(); return; }
-    audio.play(type);
-    elapsed += interval;
-    loopSoundId = setTimeout(play, interval);
-  };
-  audio.play(type);
-  loopSoundId = setTimeout(play, interval);
-}
-function stopLoopSound() {
-  if (loopSoundId) { clearTimeout(loopSoundId); loopSoundId = null; }
-}
-let soundVolume = 50;
-function setVolume(v) {
-  soundVolume = Math.max(0, Math.min(100, v));
-  localStorage.setItem('soundVolume', soundVolume);
-}
-window.playLoopSound = playLoopSound;
-window.stopLoopSound = stopLoopSound;
-window.setVolume = setVolume;
-
-document.body.addEventListener('click', async function initFirst() {
-  await audio.init();
-  document.body.removeEventListener('click', initFirst);
-}, { once: true });
-
-// ══ HELPERS ══
-function fixGooglePhoto(url) {
-  if (!url) return null;
-  if (typeof url !== 'string') return null;
-  if (url.length > 300 && !url.startsWith('http')) return null;
-  if (url.includes('googleusercontent.com')) return url.split('?')[0] + '?sz=150';
-  return url;
-}
-
-function cleanName(name, user) {
-  let n = String(name || '').trim();
-  const invalid = !n || n.startsWith('http') || n.includes('googleusercontent.com') ||
-    n.includes('lh3.googleusercontent.com') || n.includes('.com/') || n.includes('=s96-c');
-  if (invalid) n = user?.displayName || user?.email?.split('@')[0] || 'Piloto';
-  if (!n || n.startsWith('http') || n.includes('googleusercontent.com')) n = 'Piloto';
-  if (n.length > 25) n = n.substring(0, 22) + '...';
-  return n;
-}
-
-function isValidUrl(string) {
-  if (!string) return false;
-  try { new URL(string); return true; } catch { return false; }
-}
-
-// ══ ESTADO PRINCIPAL ══
-const R = window.AgroRadar = {
-  user: null, profile: null, plan: null,
-  lat: null, lon: null, map: null, weather: null,
-  opCfg: {}, chatTarget: null, chatUnsub: null, sosActive: false,
-  hiddenRequests: new Set(),
-  operationStartLat: null, operationStartLon: null, operationMonitorInterval: null
-};
-
-const $ = id => document.getElementById(id);
-const ov = id => id.replace('sh', 'ov');
-
-// ══ BOTS REALISTAS ══
-const CIDADES_BRASIL = [
-  { name:'Ribeirão Preto, SP', lat:-21.1787, lon:-47.8103 },
-  { name:'Sorriso, MT', lat:-12.5500, lon:-55.7200 },
-  { name:'Lucas do Rio Verde, MT', lat:-13.0600, lon:-55.9100 },
-  { name:'Rondonópolis, MT', lat:-16.4700, lon:-54.6350 },
-  { name:'Uberlândia, MG', lat:-18.9186, lon:-48.2772 },
-  { name:'Uberaba, MG', lat:-19.7472, lon:-47.9381 },
-  { name:'Londrina, PR', lat:-23.3107, lon:-51.1628 },
-  { name:'Maringá, PR', lat:-23.4205, lon:-51.9333 },
-  { name:'Cascavel, PR', lat:-24.9578, lon:-53.4595 },
-  { name:'Ponta Grossa, PR', lat:-25.0950, lon:-50.1619 },
-  { name:'Rio Verde, GO', lat:-17.7981, lon:-50.9278 },
-  { name:'Jataí, GO', lat:-17.8831, lon:-51.7158 },
-  { name:'Cristalina, GO', lat:-16.7681, lon:-47.6147 },
-  { name:'Campo Grande, MS', lat:-20.4697, lon:-54.6201 },
-  { name:'Dourados, MS', lat:-22.2211, lon:-54.8056 },
-  { name:'Passo Fundo, RS', lat:-28.2620, lon:-52.4063 },
-  { name:'Cruz Alta, RS', lat:-28.6394, lon:-53.6061 },
-  { name:'Ijuí, RS', lat:-28.3878, lon:-53.9150 },
-  { name:'Chapecó, SC', lat:-27.1003, lon:-52.6150 },
-  { name:'Xanxerê, SC', lat:-26.8759, lon:-52.4031 },
-  { name:'Barreiras, BA', lat:-12.1522, lon:-44.9989 },
-  { name:'Luís Eduardo Magalhães, BA', lat:-12.0956, lon:-45.7869 },
-  { name:'Palmas, TO', lat:-10.2491, lon:-48.3243 },
-  { name:'Gurupi, TO', lat:-11.7278, lon:-49.0658 },
-  { name:'Balsas, MA', lat:-7.5328, lon:-46.0358 },
-  { name:'Caxias, MA', lat:-4.8597, lon:-43.3556 },
-  { name:'Uruçuí, PI', lat:-7.2328, lon:-44.5561 },
-  { name:'Goiânia, GO', lat:-16.6869, lon:-49.2648 },
-  { name:'Campinas, SP', lat:-22.9099, lon:-47.0626 },
-  { name:'Cuiabá, MT', lat:-15.5989, lon:-56.0949 },
-];
-
-const BOT_NAMES_MASC = [
-  'João Silva','Pedro Oliveira','Lucas Lima','Rafael Alves','Gustavo Pereira',
-  'Bruno Ferreira','Rodrigo Gomes','Thiago Monteiro','Felipe Nogueira','Marcelo Batista',
-  'Daniel Martins','Leonardo Teixeira','Ricardo Farias','Eduardo Santos','Marcos Rocha',
-  'André Costa','Paulo Souza','Diego Almeida','Vinicius Nunes','Carlos Moreira',
-  'Henrique Pinto','Gabriel Cardoso','Mateus Araújo','Leandro Vieira','Roberto Lima'
-];
-
-const BOT_NAMES_FEM = [
-  'Maria Santos','Ana Costa','Fernanda Souza','Patrícia Rocha','Carla Mendes'
-];
-
-const BOT_PHOTOS_MASC = ['👨‍✈️','🧑‍✈️','👨‍🚀','👨‍🌾'];
-const BOT_PHOTOS_FEM  = ['👩‍✈️','👩‍🚀','👩‍🌾'];
-
-function gerarDataRecente() {
-  const agora = Date.now();
-  const diasAtras = Math.floor(Math.random() * 14);
-  return new Date(agora - diasAtras * 86400000).toISOString();
-}
-
-function generateRealisticBots(count) {
-  const bots = [];
-  const cidades = [...CIDADES_BRASIL].sort(() => Math.random() - 0.5);
-  const drones = ['DJI Agras T40','DJI Agras T50','XAG P100 Pro','XAG V40','EAVision U10','DJI Agras T25'];
-
-  for (let i = 0; i < Math.min(count, cidades.length); i++) {
-    const cidade = cidades[i];
-    const isFem = i < 5; // primeiras 5 são femininas
-    const names = isFem ? BOT_NAMES_FEM : BOT_NAMES_MASC;
-    const photos = isFem ? BOT_PHOTOS_FEM : BOT_PHOTOS_MASC;
-    const nameIdx = isFem ? i : (i - 5);
-
-    // Hectares realistas: maioria até 200, alguns poucos maiores
-    let hectaresBase;
-    if (Math.random() < 0.15) {
-      hectaresBase = 200 + Math.floor(Math.random() * 300); // ~15% com mais
-    } else {
-      hectaresBase = 20 + Math.floor(Math.random() * 180);  // maioria até 200
-    }
-
-    const score = 45 + Math.floor(Math.random() * 50);
-    const opsTotal = 5 + Math.floor(Math.random() * 200);
-    const hoursTotal = 10 + Math.floor(Math.random() * 800);
-    const statusRoll = Math.random();
-    const status = statusRoll < 0.3 ? 'operating' : statusRoll < 0.7 ? 'online' : 'offline';
-
-    bots.push({
-      id: `bot_${Date.now()}_${i}`,
-      name: names[nameIdx % names.length],
-      city: cidade.name,
-      drone: drones[Math.floor(Math.random() * drones.length)],
-      score,
-      amxScore: score,
-      photo: photos[Math.floor(Math.random() * photos.length)],
-      hoursTotal,
-      opsTotal,
-      hectares: hectaresBase,
-      lat: cidade.lat + (Math.random() - 0.5) * 0.4,
-      lon: cidade.lon + (Math.random() - 0.5) * 0.4,
-      status,
-      lastOp: gerarDataRecente(),
-    });
-  }
-  return bots;
-}
-
-let activeBots = [];
-let botMovementInterval = null;
-
-function startBotMovement() {
-  if (botMovementInterval) clearInterval(botMovementInterval);
-  botMovementInterval = setInterval(() => {
-    activeBots.forEach(bot => {
-      if (Math.random() > 0.85) {
-        const novaCidade = CIDADES_BRASIL[Math.floor(Math.random() * CIDADES_BRASIL.length)];
-        bot.lat = novaCidade.lat + (Math.random() - 0.5) * 0.3;
-        bot.lon = novaCidade.lon + (Math.random() - 0.5) * 0.3;
-        bot.city = novaCidade.name;
-        upsertPilot(bot);
-      } else {
-        bot.lat += (Math.random() - 0.5) * 0.015;
-        bot.lon += (Math.random() - 0.5) * 0.015;
-        upsertPilot(bot);
-      }
-    });
-    updatePilotCount();
-  }, 60000);
-}
-
-function updatePilotCount() {
-  const n = document.querySelectorAll('.leaflet-marker-icon').length;
-  const countEl = $('pilotCount');
-  if (countEl) countEl.textContent = `${Math.max(n, 8)} pilotos`;
-}
-
-function startPilotCounter() {
-  setInterval(updatePilotCount, 5000);
-}
-
-// ══ MONITORAMENTO DE OPERAÇÃO ══
-function startOperationDistanceMonitor() {
-  if (R.operationMonitorInterval) clearInterval(R.operationMonitorInterval);
-  R.operationMonitorInterval = setInterval(() => {
-    if (isOperating() && R.operationStartLat && R.operationStartLon && R.lat && R.lon) {
-      const distance = Math.sqrt(
-        Math.pow((R.lat - R.operationStartLat) * 111000, 2) +
-        Math.pow((R.lon - R.operationStartLon) * 111000, 2)
-      );
-      if (distance > 300) {
-        showToast(`⚠️ Operação finalizada: você se afastou ${Math.round(distance)}m`);
-        endOp();
-      }
-    }
-  }, 10000);
-}
-
-// ══ UI HELPERS ══
-window.openSheet = (id) => {
-  $(ov(id)).classList.add('on');
-  $(id).classList.add('on');
-  if (id === 'shProfile') renderProfile();
-  if (id === 'shReq') loadRequests();
-};
-window.closeSheet = (id) => {
-  $(ov(id)).classList.remove('on');
-  $(id).classList.remove('on');
-};
-window.showToast = (msg, dur = 3500) => {
-  const t = $('toast');
-  t.textContent = msg;
-  t.classList.add('on');
-  setTimeout(() => t.classList.remove('on'), dur);
-};
-window.switchTab = (tab) => {
-  ['radar', 'clima', 'ops', 'rank'].forEach(t => {
-    const tb = $('tab-' + t); if (tb) tb.classList.remove('act');
-    const pn = $('p' + t[0].toUpperCase() + t.slice(1)); if (pn) pn.classList.remove('act');
-  });
-  const at = $('tab-' + tab); if (at) at.classList.add('act');
-  const ap = $('p' + tab[0].toUpperCase() + tab.slice(1)); if (ap) ap.classList.add('act');
-  if (tab === 'rank') loadRanking();
-};
-window.selChip = (el, field, val) => {
-  el.closest('.op-chip-row').querySelectorAll('.op-chip').forEach(c => c.classList.remove('on'));
-  el.classList.add('on');
-  R.opCfg[field] = val;
-};
-window.showDroneCustomInput = (el, field, val) => {
-  window.selChip(el, field, val);
-  const customInput = $('customDroneInput');
-  if (customInput) {
-    customInput.style.display = 'block';
-    customInput.focus();
-    customInput.onblur = () => {
-      if (customInput.value.trim()) R.opCfg.drone = customInput.value.trim();
-      customInput.style.display = 'none';
-    };
-    customInput.onkeypress = (e) => {
-      if (e.key === 'Enter') {
-        if (customInput.value.trim()) R.opCfg.drone = customInput.value.trim();
-        customInput.style.display = 'none';
-      }
-    };
-  }
-};
-window.centerOnUser = () => {
-  if (R.map && R.lat && R.lon) {
-    R.map.setView([R.lat, R.lon], 13);
-    showToast('📍 Centralizando na sua localização');
-  } else {
-    showToast('⚠️ Localização não disponível');
-  }
-};
-
-// ══ CHAT DRAWER ══
-window.onChatIconClick = async () => {
-  if (R.chatTarget && R.chatTarget.uid) {
-    await window.openChatWith(R.chatTarget.uid, R.chatTarget.name || 'Piloto');
-    const chatDot = $('chatDot');
-    if (chatDot) chatDot.classList.remove('on');
-  } else {
-    window.toggleChatDrawer();
-  }
-};
-window.toggleChatDrawer = () => {
-  const drawer = $('shChatDrawer');
-  const overlay = $('ovChatDrawer');
-  if (drawer.classList.contains('on')) {
-    window.closeChatDrawer();
-  } else {
-    loadActiveChats();
-    overlay.classList.add('on');
-    drawer.classList.add('on');
-    const chatDot = $('chatDot');
-    if (chatDot) chatDot.classList.remove('on');
-  }
-};
-window.closeChatDrawer = () => {
-  $('ovChatDrawer').classList.remove('on');
-  $('shChatDrawer').classList.remove('on');
-};
-
-async function loadActiveChats() {
-  console.log('[LOAD ACTIVE CHATS] Delegado ao chat.js');
-}
-
-window.deleteConversation = async (otherUid, name) => {
-  if (!confirm(`Deseja realmente apagar a conversa com ${name}?`)) return;
-  try {
-    const db = window._firebaseDB;
-    if (!db) return;
-    const chatId = [R.user.uid, otherUid].sort().join('_');
-    const { doc, deleteDoc, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    const msgsSnap = await getDocs(collection(db, `chats/${chatId}/messages`));
-    await Promise.all(msgsSnap.docs.map(d => deleteDoc(d.ref)));
-    showToast(`🗑️ Conversa com ${name} apagada.`);
-    loadActiveChats();
-    if (R.chatTarget && R.chatTarget.uid === otherUid) {
-      window.closeSheet('shChat');
-      R.chatTarget = null;
-    }
-  } catch (e) {
-    console.error('Erro ao apagar conversa:', e);
-    showToast('❌ Erro ao apagar conversa');
-  }
-};
-
-window.openChatWith = async (uid, name) => {
-  if (!uid) return;
-  window.closeChatDrawer();
-  window.closeSheet('shReq');
-  const modalOverlay = $('modalChamadoOverlay');
-  if (modalOverlay) modalOverlay.style.display = 'none';
-  const modal = $('modalChamado');
-  if (modal) modal.classList.remove('on');
-
-  const pilotName = name || 'Piloto';
-  R.chatTarget = { uid, name: pilotName };
-
-  const chatNameEl = $('chatName');
-  const chatStatusEl = $('chatStatus');
-  const chatHeaderAv = $('chatHeaderAv');
-  if (chatNameEl) chatNameEl.textContent = pilotName;
-  if (chatStatusEl) chatStatusEl.innerHTML = '🟢 Online';
-  if (chatHeaderAv) {
-    chatHeaderAv.innerHTML = '👨‍✈️';
-    const db = window._firebaseDB;
-    if (db) {
-      try {
-        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-        const snap = await getDoc(doc(db, 'pilots', uid));
-        if (snap.exists() && snap.data().photo) {
-          chatHeaderAv.innerHTML = `<img src="${fixGooglePhoto(snap.data().photo)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.outerHTML='👨‍✈️'">`;
-        }
-      } catch (e) {}
-    }
-  }
-
-  const chatMsgsEl = $('chatMsgs');
-  if (chatMsgsEl) chatMsgsEl.innerHTML = '<div class="chat-empty">🔄 Carregando histórico…</div>';
-
-  window.openSheet('shChat');
-  await chat.openWith(uid, pilotName);
-
-  setTimeout(() => {
-    const el = $('chatMsgs');
-    if (el) el.scrollTop = el.scrollHeight;
-    const inp = $('chatInp');
-    if (inp) inp.focus();
-  }, 300);
-
-  const chatDot = $('chatDot');
-  if (chatDot) chatDot.classList.remove('on');
-};
-
-// ══ MODAL DE CHAMADO ══
-let pendingRequest = null;
-let _modalTimerInterval = null;
-
-window.showRequestModal = (req) => {
-  pendingRequest = req;
-  const modal = $('modalChamado');
-  const icon = $('modalIcon');
-  const title = $('modalTitle');
-  const msg = $('modalMsg');
-  const timerEl = $('modalTimer');
-
-  if (req.type === 'sos') {
-    icon.textContent = '🚨';
-    title.textContent = 'SOS URGENTE!';
-    modal.style.borderColor = 'rgba(224,53,53,.6)';
-    modal.classList.add('sos-mode');
-  } else {
-    icon.textContent = '🔧';
-    title.textContent = 'Novo Pedido de Ajuda';
-    modal.style.borderColor = '';
-    modal.classList.remove('sos-mode');
-  }
-  msg.textContent = `${req.pilotName}: ${req.message}`;
-
-  if (_modalTimerInterval) clearInterval(_modalTimerInterval);
-  let secs = 30;
-  if (timerEl) timerEl.textContent = `Expira em ${secs}s`;
-  _modalTimerInterval = setInterval(() => {
-    secs--;
-    if (timerEl) timerEl.textContent = `Expira em ${secs}s`;
-    if (secs <= 0) {
-      clearInterval(_modalTimerInterval);
-      _modalTimerInterval = null;
-      modal.classList.remove('on');
-      if ($('modalChamadoOverlay')) $('modalChamadoOverlay').style.display = 'none';
-      pendingRequest = null;
-      stopLoopAlert();
-    }
-  }, 1000);
-
-  $('modalChamadoOverlay').style.display = 'block';
-  modal.classList.add('on');
-};
-
-window.modalAccept = async () => {
-  if (pendingRequest) {
-    const req = pendingRequest;
-    pendingRequest = null;
-    if (_modalTimerInterval) { clearInterval(_modalTimerInterval); _modalTimerInterval = null; }
-    audio.stopLoop?.();
-    stopLoopAlert();
-    stopLoopSound();
-    $('modalChamado').classList.remove('on');
-    $('modalChamado').classList.remove('sos-mode');
-    if ($('modalChamadoOverlay')) $('modalChamadoOverlay').style.display = 'none';
-    await window.acceptReq(req.uid, req.pilotName, req.message);
-  }
-};
-
-window.modalIgnore = () => {
-  if (_modalTimerInterval) { clearInterval(_modalTimerInterval); _modalTimerInterval = null; }
-  $('modalChamado').classList.remove('on');
-  $('modalChamado').classList.remove('sos-mode');
-  if ($('modalChamadoOverlay')) $('modalChamadoOverlay').style.display = 'none';
-  pendingRequest = null;
-  audio.stopLoop?.();
-  stopLoopAlert();
-  stopLoopSound();
-  showToast('❌ Você ignorou o chamado');
-};
-
-// ══ INIT ══
-async function init() {
-  if (!isFirebaseConfigured()) { showToast('⚠️ Firebase não configurado'); return; }
-  await initFirebase();
-  onAuthChange(async (user, profile) => {
-    if (user && profile) {
-      R.user = user; R.profile = profile; R.plan = getPlanStatus(profile);
-      loadHiddenRequestsFromStorage();
-      if (R.plan.active) showRadar(); else window.openSheet('shPaywall');
-    }
-  });
-}
-
-function loadHiddenRequestsFromStorage() {
-  if (!R.user) return;
-  const stored = localStorage.getItem(`hidden_requests_${R.user.uid}`);
-  if (stored) {
-    try { R.hiddenRequests = new Set(JSON.parse(stored)); } catch (e) {}
-  }
-}
-
-function saveHiddenRequestsToStorage() {
-  if (!R.user) return;
-  localStorage.setItem(`hidden_requests_${R.user.uid}`, JSON.stringify(Array.from(R.hiddenRequests)));
-}
-
-window.clearHistoryPermanent = () => {
-  if (!R.user) { showToast('⚠️ Usuário não identificado'); return; }
-  const currentItems = document.querySelectorAll('#reqList .req-item');
-  if (currentItems.length === 0) { showToast('📭 Nenhum chamado para limpar'); return; }
-  currentItems.forEach(item => {
-    const id = item.getAttribute('data-request-id');
-    if (id) R.hiddenRequests.add(id);
-  });
-  saveHiddenRequestsToStorage();
-  loadRequests();
-  showToast(`🗑️ ${currentItems.length} chamado(s) removido(s)`);
-};
-
-async function showRadar() {
-  $('sSplash').classList.add('off');
-  $('sRadar').classList.remove('off');
-  await new Promise(r => setTimeout(r, 150));
-  navigator.geolocation?.getCurrentPosition(
-    pos => { R.lat = pos.coords.latitude; R.lon = pos.coords.longitude; setupMap(R.lat, R.lon); },
-    () => setupMap(-15.78, -47.93),
-    { timeout: 8000, enableHighAccuracy: true }
-  );
-  setTimeout(() => { if (!R.map) setupMap(-15.78, -47.93); }, 5000);
-}
-
-function getW() {
-  return window._weatherState ||
-    JSON.parse(localStorage.getItem('agrometrix_weather') || 'null') ||
-    { temp: 24, humidity: 65, wind: 8, deltaT: 5.2, rainProb: 10, cloud: 20, condition: 'Parcialmente nublado' };
-}
-
-function setupMap(lat, lon) {
-  R.map = initMap('mapEl', lat, lon);
-  R.weather = getW();
-  setTimeout(() => R.map?.invalidateSize(), 300);
-  publishSelf(lat, lon, 'online');
-
-  // 30 bots: 5 femininos + 25 masculinos em regiões agrícolas reais
-  activeBots = generateRealisticBots(30);
-  activeBots.forEach(bot => upsertPilot(bot));
-  startBotMovement();
-  setInterval(() => {
-    // Atualizar status aleatório dos bots a cada hora
-    activeBots.forEach(bot => {
-      const r = Math.random();
-      bot.status = r < 0.3 ? 'operating' : r < 0.75 ? 'online' : 'offline';
-    });
-  }, 3600000);
-
-  listenPilots(lat, lon, R.user.uid);
-  startLocationTracking(R.user.uid, (nlat, nlon) => {
-    R.lat = nlat; R.lon = nlon;
-    publishSelf(nlat, nlon, isOperating() ? 'operating' : 'online');
-  });
-
-  chat.init(window._firebaseDB, R.user, R.profile);
-  listenNotifications();
-  listenRequests();
-  updateAMX(R.weather);
-  updateClima(R.weather);
-  startPilotCounter();
-  startOperationDistanceMonitor();
-}
-
-function publishSelf(lat, lon, status) {
-  if (!R.user || !R.profile) return;
-  const p = R.profile;
-  const displayName = cleanName(p.nickname || p.name, R.user);
-  let userPhoto = fixGooglePhoto(p.photo);
-  if (!userPhoto && R.user?.photoURL) userPhoto = fixGooglePhoto(R.user.photoURL);
-  upsertPilot({
-    id: R.user.uid,
-    name: displayName,
-    photo: userPhoto || '👨‍✈️',
-    city: p.city || '',
-    drone: p.drone || '',
-    score: p.amxScore || 0,
-    hoursTotal: p.hoursTotal || 0,
-    opsTotal: p.opsTotal || 0,
-    lat, lon, status, isCurrentUser: true,
-  });
-  updateProfile(R.user.uid, {
-    lat, lon, status,
-    nickname: displayName,
-    visibility: p.visibility || 'online',
-    lastSeen: window._fsTimestamp?.(),
-  });
-}
-
-function updateAMX(w) {
-  const score = calcAMXScore(99, w, {}, R.opCfg);
-  const { label, color } = amxLabel(score);
-  ['amxNum', 'amxNum2'].forEach(id => {
-    const el = $(id); if (el) { el.textContent = score; el.style.color = color; }
-  });
-  $('amxDesc').textContent = `${label} · ${w.condition || 'Clima atual'}`;
-  $('amxDesc2').textContent = `${label} · ${w.condition || 'Clima atual'}`;
-  $('amxLbl').textContent = `AMX ${score}/100`;
-  $('amxFill').style.width = score + '%'; $('amxFill').style.background = color;
-  $('amxFill2').style.width = score + '%'; $('amxFill2').style.background = color;
-}
-
-function updateClima(w) {
-  const dtC = w.deltaT >= 2 && w.deltaT <= 8 ? 'g' : w.deltaT > 10 ? 'b' : 'w';
-  const wdC = w.wind <= 10 ? 'g' : w.wind <= 20 ? 'w' : 'b';
-  $('climaChips').innerHTML = `
-    <div class="wchip g">🌡️ ${w.temp || '—'}°C</div>
-    <div class="wchip ${wdC}">💨 ${w.wind || '—'} km/h</div>
-    <div class="wchip">💧 ${w.humidity || '—'}%</div>
-    <div class="wchip ${dtC}">ΔT ${w.deltaT || '—'}°C</div>
-    ${w.rainProb > 30 ? `<div class="wchip w">🌧️ ${w.rainProb}%</div>` : ''}
-  `;
-}
-
-window.handleOp = () => isOperating() ? endOp() : window.openSheet('shOpConfig');
-
-window.confirmOp = () => {
-  const c = R.opCfg;
-  if (!c.drone || !c.faixa || !c.vazao || !c.avgHaPerH) { showToast('⚠️ Preencha todos os campos'); return; }
-  window.closeSheet('shOpConfig');
-  startOperation(c, getW(), R.lat, R.lon);
-  R.operationStartLat = R.lat;
-  R.operationStartLon = R.lon;
-  setBtn(true);
-  audio.play('accept');
-  showToast('🚁 Operação iniciada!');
-  publishSelf(R.lat, R.lon, 'operating');
-};
-
-function setBtn(active) {
-  ['btnOp', 'btnOp2'].forEach(id => {
-    const b = $(id); if (!b) return;
-    b.className = 'btn-op ' + (active ? 'stop' : 'start');
-    b.innerHTML = active ? '🛑 Finalizar Operação' : '🚁 Iniciar Operação';
-  });
-}
-
-function endOp() {
-  const result = endOperation(getW());
-  setBtn(false);
-  publishSelf(R.lat, R.lon, 'online');
-  R.operationStartLat = null;
-  R.operationStartLon = null;
-  if (result) { showResult(result); saveOp(result); updateAMX(getW()); }
-}
-
-function showResult(r) {
-  const est = r.estimate || {};
-  const { label, color } = amxLabel(r.score);
-  $('opResultContent').innerHTML = `
-    <div class="op-result">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--mt);margin-bottom:2px">Resumo da operação</div>
-      <div style="font-size:13px;color:var(--tx2);margin-bottom:10px">${r.config?.drone || ''} · ${r.config?.avgHaPerH || '—'} ha/h estimado</div>
-      <div class="op-stat-row">
-        <div class="op-stat"><div class="op-stat-v" style="color:${color}">${r.score}</div><div class="op-stat-l">AMX Score</div></div>
-        <div class="op-stat"><div class="op-stat-v">${r.durationMin} min</div><div class="op-stat-l">Duração</div></div>
-        <div class="op-stat"><div class="op-stat-v">~${est.estHa || '—'} ha</div><div class="op-stat-l">Estimativa</div></div>
-        <div class="op-stat"><div class="op-stat-v">${est.confiability || '—'}%</div><div class="op-stat-l">Confiab.</div></div>
+<!-- ── MAIN CARD ── -->
+<div class="main-card fade-in" id="mainCard" style="display:none">
+  <div class="card">
+    <div class="now-strip">
+      <div>
+        <div class="now-label">Agora</div>
+        <div class="now-temp"><span id="nowTemp">—</span><span class="now-temp-unit">°C</span></div>
       </div>
-      <div style="margin-top:10px;font-size:10px;color:var(--mt);text-align:center;line-height:1.5">
-        ⚠️ Área estimada com base em tempo operacional e configuração.<br>
-        <strong style="color:var(--tx2)">Confiabilidade: ${est.label || '—'}</strong>
-      </div>
-    </div>`;
-  window.openSheet('shOpResult');
-}
-
-async function saveOp(r) {
-  if (!R.user) return;
-  const db = window._firebaseDB; if (!db) return;
-  const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  await addDoc(collection(db, 'operations'), {
-    uid: R.user.uid, pilotName: R.profile?.nickname || R.profile?.name, ...r, createdAt: window._fsTimestamp?.()
-  });
-  const ns = Math.round(((R.profile?.amxScore || 0) + r.score) / 2);
-  await updateProfile(R.user.uid, {
-    opsTotal: (R.profile?.opsTotal || 0) + 1,
-    hoursTotal: +(((R.profile?.hoursTotal || 0) + r.durationMin / 60)).toFixed(1),
-    amxScore: ns,
-  });
-  R.profile.amxScore = ns;
-  R.profile.opsTotal = (R.profile.opsTotal || 0) + 1;
-}
-
-window.activateSOS = async () => {
-  if (R.sosActive) { window.cancelSOS(); return; }
-  R.sosActive = true;
-  audio.play('sos');
-  $('sosBar').classList.add('on');
-  publishSelf(R.lat, R.lon, 'sos');
-  await updateProfile(R.user.uid, { requestMsg: '🚨 SOS — Preciso de ajuda!', sosAt: new Date().toISOString() });
-  await saveRequest('sos', '🚨 SOS — Preciso de ajuda urgente!');
-  showToast('🚨 SOS ativado!', 5000);
-};
-
-window.cancelSOS = async () => {
-  R.sosActive = false;
-  $('sosBar').classList.remove('on');
-  await updateProfile(R.user.uid, { status: isOperating() ? 'operating' : 'online', requestMsg: null, sosAt: null });
-  publishSelf(R.lat, R.lon, isOperating() ? 'operating' : 'online');
-  showToast('✅ SOS cancelado');
-};
-
-window.sendReq = async (type, msg) => {
-  audio.play('request');
-  publishSelf(R.lat, R.lon, 'request');
-  await updateProfile(R.user.uid, { status: 'request', requestMsg: msg });
-  await saveRequest(type, msg);
-  showToast(`${msg} — Pilotos notificados! 🟢`, 4000);
-  setTimeout(async () => {
-    if (!R.sosActive) {
-      publishSelf(R.lat, R.lon, isOperating() ? 'operating' : 'online');
-      await updateProfile(R.user.uid, { status: isOperating() ? 'operating' : 'online', requestMsg: null });
-    }
-  }, 300000);
-};
-
-async function saveRequest(type, message) {
-  const db = window._firebaseDB; if (!db) return;
-  const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  await addDoc(collection(db, 'requests'), {
-    uid: R.user.uid, type, message,
-    pilotName: R.profile?.nickname || R.profile?.name || 'Piloto',
-    lat: R.lat, lon: R.lon, status: 'open', createdAt: window._fsTimestamp?.(),
-  });
-}
-
-async function loadRequests() {
-  const db = window._firebaseDB;
-  if (!db) { $('reqList').innerHTML = '<div style="padding:20px;color:var(--mt);font-size:12px">Nenhum pedido ativo</div>'; return; }
-  const { collection, query, where, limit, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  const q = query(collection(db, 'requests'), where('status', '==', 'open'), limit(50));
-  const snap = await getDocs(q);
-  const reqs = snap.docs
-    .map(d => ({ id: d.id, ...d.data() }))
-    .filter(r => r.uid !== R.user?.uid && !R.hiddenRequests.has(r.id));
-
-  if (!reqs.length) {
-    $('reqList').innerHTML = '<div style="padding:16px 20px;text-align:center;color:var(--mt);font-size:12px">Nenhum pedido ativo no momento 🟢</div>';
-    return;
-  }
-  const icons = { sos: '🚨', helice: '🚁', battery: '🔋', fuel: '⛽', part: '🔧', support: '🛠️', tow: '🚜' };
-  $('reqList').innerHTML = reqs.map(r => `
-    <div class="req-item ${r.type === 'sos' ? 'sos-req' : ''}" data-request-id="${r.id}">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="font-size:20px">${icons[r.type] || '🔧'}</span>
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--tx)">${r.pilotName || 'Piloto'}</div>
-          <div style="font-size:11px;color:${r.type === 'sos' ? '#ff8080' : 'var(--mt)'}">${r.message}</div>
-        </div>
-      </div>
-      <button onclick="window.acceptReq('${r.uid}','${(r.pilotName || '').replace(/'/g, "\\'")}','${(r.message || '').replace(/'/g, "\\'")}')"
-        style="width:100%;padding:8px;border-radius:10px;border:none;background:${r.type === 'sos' ? 'var(--red)' : 'var(--g6)'};color:white;font-family:var(--fu);font-size:12px;font-weight:700;cursor:pointer">
-        ${r.type === 'sos' ? '🚨 Responder SOS' : '✅ Aceitar chamado'}
-      </button>
-    </div>`).join('');
-}
-
-const _shownRequests = new Set();
-
-async function listenRequests() {
-  const db = window._firebaseDB; if (!db) return;
-  const { collection, query, where, limit, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  const q = query(collection(db, 'requests'), where('status', '==', 'open'), limit(50));
-  onSnapshot(q, snap => {
-    snap.docChanges().forEach(change => {
-      const r = { id: change.doc.id, ...change.doc.data() };
-      if (r.uid === R.user?.uid) return;
-      if (R.hiddenRequests.has(r.id)) return;
-      if (R.lat && R.lon && r.lat && r.lon) {
-        const dist = calcDistKm(R.lat, R.lon, r.lat, r.lon);
-        if (dist > 100) return;
-      }
-      if (change.type === 'added' && !_shownRequests.has(r.id)) {
-        _shownRequests.add(r.id);
-        audio.play(r.type === 'sos' ? 'sos' : 'request');
-        startLoopAlert(r.type === 'sos' ? 'sos' : 'request', 30000);
-        window.showRequestModal(r);
-      }
-    });
-    const allReqs = [];
-    snap.forEach(doc => {
-      const r = { id: doc.id, ...doc.data() };
-      if (r.uid !== R.user?.uid && !R.hiddenRequests.has(r.id)) allReqs.push(r);
-    });
-    const dot = $('reqDot');
-    if (allReqs.length > 0) {
-      dot.classList.add('on');
-      dot.textContent = allReqs.length > 9 ? '9+' : allReqs.length;
-    } else {
-      dot.classList.remove('on');
-      dot.textContent = '!';
-    }
-  });
-}
-
-function calcDistKm(lat1, lon1, lat2, lon2) {
-  const Rk = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-  return Rk * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-let _alertInterval = null;
-function startLoopAlert(type, duration) {
-  stopLoopAlert();
-  _alertInterval = setInterval(() => { audio.play(type); }, 3000);
-  setTimeout(stopLoopAlert, duration);
-}
-function stopLoopAlert() {
-  if (_alertInterval) { clearInterval(_alertInterval); _alertInterval = null; }
-}
-window.stopLoopAlert = stopLoopAlert;
-
-window.acceptReq = async (uid, name, message) => {
-  audio.stopLoop?.();
-  stopLoopAlert();
-  stopLoopSound();
-  audio.play('accept');
-
-  const db = window._firebaseDB;
-  if (db) {
-    try {
-      const { collection, query, where, getDocs, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const q = query(collection(db, 'requests'), where('uid', '==', uid), where('status', '==', 'open'));
-      const snap = await getDocs(q);
-      snap.forEach(docSnap => {
-        updateDoc(docSnap.ref, { status: 'accepted', acceptedBy: R.user.uid, acceptedAt: new Date().toISOString() });
-        R.hiddenRequests.add(docSnap.id);
-      });
-      saveHiddenRequestsToStorage();
-    } catch (e) { console.error('❌ Erro ao marcar request:', e); }
-  }
-
-  $('modalChamado')?.classList.remove('on');
-  if ($('modalChamadoOverlay')) $('modalChamadoOverlay').style.display = 'none';
-
-  R.chatTarget = { uid, name };
-  showToast(`✅ ${name} foi notificado! Abrindo chat...`);
-  await window.openChatWith(uid, name);
-  if (chat.acceptRequest) await chat.acceptRequest(uid, name, message);
-};
-
-window.sendMsg = async () => {
-  const inp = $('chatInp'), txt = inp.value.trim();
-  if (!txt || !R.chatTarget) return;
-  inp.value = '';
-  inp.focus();
-  const db = window._firebaseDB;
-  if (!db) { showToast('⚠️ Sem conexão com o servidor'); return; }
-  try {
-    const expectedChatId = chat.getChatId(R.user.uid, R.chatTarget.uid);
-    if (chat.currentChatId !== expectedChatId) {
-      await chat.openWith(R.chatTarget.uid, R.chatTarget.name || 'Piloto');
-    }
-    const ok = await chat.send(txt);
-    if (!ok) throw new Error('Falha ao enviar');
-    audio.play('message');
-  } catch (error) {
-    console.error('❌ Erro ao enviar mensagem:', error);
-    showToast('❌ Erro ao enviar mensagem');
-  }
-};
-
-async function loadRanking() {
-  const db = window._firebaseDB;
-  let pilots = [];
-  if (db) {
-    const { collection, query, orderBy, limit, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    const snap = await getDocs(query(collection(db, 'pilots'), orderBy('amxScore', 'desc'), limit(20)));
-    pilots = snap.docs.map(d => d.data());
-  }
-  const all = [...pilots, ...activeBots]
-    .sort((a, b) => (b.amxScore || b.score || 0) - (a.amxScore || a.score || 0))
-    .slice(0, 20);
-  const medals = ['🥇', '🥈', '🥉'];
-  const pCls = ['gold', 'silver', 'bronze'];
-  $('rankList').innerHTML = all.map((p, i) => `
-    <div class="rank-item">
-      <div class="rank-pos ${pCls[i] || ''}">${medals[i] || '#' + (i + 1)}</div>
       <div style="flex:1">
-        <div class="rank-name">${p.nickname || p.name || p.pilotName || 'Piloto'}</div>
-        <div class="rank-sub">${p.city || ''} · ${p.drone || ''} · ${p.opsTotal || 0} ops</div>
+        <div class="now-cond" id="nowCond">—</div>
+        <div class="now-feel" id="nowFeel">—</div>
       </div>
-      <div class="rank-score">AMX ${p.amxScore || p.score || 0}</div>
-    </div>`).join('');
+      <div id="nowIcon" style="font-size:46px">🌤</div>
+    </div>
+
+    <div class="sun-bar">
+      <div class="sun-item">
+        <span>🌅</span>
+        <div><div class="sun-label">Nascer</div><div class="sun-time" id="sunRise">—</div></div>
+      </div>
+      <div class="sun-sep"></div>
+      <div class="golden-tag" id="goldenHour">—</div>
+      <div class="sun-sep"></div>
+      <div class="sun-item">
+        <span>🌇</span>
+        <div><div class="sun-label">Pôr do sol</div><div class="sun-time" id="sunSet">—</div></div>
+      </div>
+    </div>
+
+    <div class="metrics-grid">
+
+      <!-- Temperatura -->
+      <div class="metric-cell">
+        <div class="metric-label">Temperatura</div>
+        <div class="metric-value"><span id="mTemp">—</span><span class="metric-unit">°C</span></div>
+        <div class="metric-sub" id="mDew">Orvalho: —°C</div>
+        <div class="metric-bar bar-amber" id="barTemp" style="width:0%"></div>
+      </div>
+
+      <!-- Vento -->
+      <div class="metric-cell">
+        <div class="metric-label">Vento</div>
+        <div class="metric-value"><span id="mWind">—</span><span class="metric-unit"> km/h</span></div>
+        <div class="metric-sub" id="mWindMs">— m/s</div>
+        <div class="metric-bar bar-sky" id="barWind" style="width:0%"></div>
+      </div>
+
+      <!-- Rajadas -->
+      <div class="metric-cell">
+        <div class="metric-label">Rajadas</div>
+        <div class="metric-value"><span id="mGust">—</span><span class="metric-unit"> km/h</span></div>
+        <div class="metric-sub" id="mGustMs">— m/s</div>
+        <div class="metric-bar" id="barGust" style="width:0%"></div>
+      </div>
+
+      <!-- Delta T -->
+      <div class="metric-cell delta-t-cell">
+        <div class="metric-label">Delta T</div>
+        <div class="metric-value"><span id="mDeltaT">—</span><span class="metric-unit">°C</span></div>
+        <div class="metric-sub" id="mDeltaTSub">—</div>
+        <div id="deltaTBadge" class="delta-t-badge" style="display:none"></div>
+        <div class="metric-bar" id="barDeltaT" style="width:0%"></div>
+      </div>
+
+      <!-- Direção + bússola -->
+      <div class="metric-cell">
+        <div class="metric-label">Direção Vento</div>
+        <div class="metric-value" id="mWindDir">—</div>
+        <div class="compass-wrap">
+          <div class="compass">
+            <div class="compass-ring">
+              <span class="c-n">N</span><span class="c-s">S</span><span class="c-e">L</span><span class="c-w">O</span>
+              <div class="compass-needle" id="compassNeedle"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Umidade -->
+      <div class="metric-cell">
+        <div class="metric-label">Umid. Ar</div>
+        <div class="metric-value"><span id="mHumid">—</span><span class="metric-unit">%</span></div>
+        <div class="metric-sub" id="mHumidSub">—</div>
+        <div class="metric-bar bar-sky" id="barHumid" style="width:0%"></div>
+      </div>
+
+      <!-- Nuvens (span 2) -->
+      <div class="metric-cell cloud-cell">
+        <div class="metric-label">Cobertura de Nuvens</div>
+        <div class="metric-value"><span id="mCloud">—</span><span class="metric-unit">%</span></div>
+        <div class="metric-sub" id="mCloudSub">Base estimada: —</div>
+        <div class="metric-bar bar-sky" id="barCloud" style="width:0%"></div>
+      </div>
+
+      <!-- Prob Precipitação -->
+      <div class="metric-cell">
+        <div class="metric-label">Prob. Precipit.</div>
+        <div class="metric-value"><span id="mRainProb">—</span><span class="metric-unit">%</span></div>
+        <div class="metric-sub" id="mRainMm">— mm acum.</div>
+        <div class="metric-bar" id="barRain" style="width:0%"></div>
+      </div>
+
+      <!-- Visibilidade -->
+      <div class="metric-cell">
+        <div class="metric-label">Visibilidade</div>
+        <div class="metric-value"><span id="mVis">—</span><span class="metric-unit"> km</span></div>
+        <div class="metric-sub" id="mVisSub">—</div>
+        <div class="metric-bar bar-green" id="barVis" style="width:0%"></div>
+      </div>
+
+      <!-- UV -->
+      <div class="metric-cell">
+        <div class="metric-label">Índice UV</div>
+        <div class="metric-value" id="mUV">—</div>
+        <div class="metric-sub" id="mUVSub">—</div>
+        <div class="metric-bar" id="barUV" style="width:0%"></div>
+      </div>
+
+      <!-- Pressão -->
+      <div class="metric-cell">
+        <div class="metric-label">Pressão Atm.</div>
+        <div class="metric-value"><span id="mPress">—</span><span class="metric-unit"> hPa</span></div>
+        <div class="metric-sub" id="mPressSub">—</div>
+        <div class="metric-bar bar-sky" style="width:60%"></div>
+      </div>
+
+      <!-- Índice Kp — linha inteira -->
+      <div class="metric-cell" style="grid-column:1/-1;padding:15px 16px 18px;position:relative;">
+        <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+          <div style="display:flex;flex-direction:column;min-width:64px;align-items:center;">
+            <div class="metric-label" style="text-align:center;">Índice Kp</div>
+            <div style="font-family:var(--font-display);font-size:36px;line-height:1;letter-spacing:-1px;color:var(--text-primary)" id="kpValue">—</div>
+            <div style="font-size:9px;color:var(--text-muted);font-family:var(--font-mono);margin-top:2px">Kp atual</div>
+          </div>
+          <div style="flex:1;min-width:160px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;flex-wrap:wrap;gap:4px;">
+              <span style="font-size:10px;color:var(--text-muted)">🌌 Atividade Geomagnética — NOAA</span>
+              <span class="kp-badge kp-quiet" id="kpBadge" style="font-size:10px;padding:2px 9px;">—</span>
+            </div>
+            <div style="height:8px;background:var(--border);border-radius:6px;overflow:hidden;margin-bottom:6px;">
+              <div id="kpGaugeFill" style="height:100%;width:0%;border-radius:6px;transition:width 1.1s cubic-bezier(.4,0,.2,1);background:var(--green-400)"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;font-family:var(--font-mono);color:var(--text-muted);margin-bottom:6px;">
+              <span>0 Quiesc.</span><span>4 Ativo</span><span>7 Tempest.</span><span>9</span>
+            </div>
+            <div class="metric-sub" id="kpDesc" style="font-size:10px;line-height:1.4;margin-bottom:4px;">Carregando dados da NOAA…</div>
+            <div class="metric-sub" id="kpAgroNote" style="font-size:10px;line-height:1.4;"></div>
+            <div style="font-size:9px;color:var(--text-muted);font-family:var(--font-mono);margin-top:5px;" id="kpUpdated"></div>
+          </div>
+        </div>
+        <div id="kpBar" style="position:absolute;bottom:0;left:0;height:3px;width:0%;border-radius:0 2px 2px 0;transition:width 1.1s cubic-bezier(.4,0,.2,1);background:var(--green-400)"></div>
+      </div>
+
+    </div>
+
+    <!-- APP INDEX -->
+    <div class="app-index-section">
+      <div class="section-title">Índice de aplicação agronômica</div>
+      <div class="app-grid" id="appGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY -->
+<div class="section-block fade-in" id="dailySection" style="display:none">
+  <div class="section-header">
+    <div class="section-heading">Previsão 7 dias</div>
+    <div class="section-sub">Selecione para ver hora a hora</div>
+  </div>
+  <div class="daily-scroll" id="dailyScroll"></div>
+</div>
+
+<!-- HOURLY -->
+<div class="section-block fade-in" id="hourlySection" style="display:none">
+  <div class="section-header">
+    <div class="section-heading">Hora a hora</div>
+    <div class="section-sub" id="hourlyDateLabel"></div>
+  </div>
+  <div class="hourly-list" id="hourlyList"></div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  Dados meteorológicos: <a href="https://open-meteo.com" target="_blank">Open-Meteo</a> (sem chave, alta precisão) ·
+  Geocodificação: <a href="https://nominatim.openstreetmap.org" target="_blank">Nominatim / OSM</a><br>
+  © 2026 <strong>AgroMetrix</strong> — Clima certo, aplicação perfeita
+</footer>
+
+<!-- ── BOTÃO RADAR FAB ── -->
+<button class="btn-radar-fab" onclick="window.location.href='radar/radar.html'" id="radarFab" style="display:none">
+  <div class="fab-dot"></div>
+  🚁 Entrar no Radar
+</button>
+
+<script>
+// ── Globals ──────────────────────────────────────────────────────────────────
+const $=id=>document.getElementById(id);
+const DAYS=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const MONTHS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+let fullData=null;
+let currentLat=null,currentLon=null,currentLocName='';
+let searchTimeout=null;
+let currentTheme='light';
+let currentReportData=null;
+
+// ── Tema ─────────────────────────────────────────────────────────────────────
+function toggleTheme(){
+  currentTheme=currentTheme==='light'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',currentTheme);
+  $('themeBtn').textContent=currentTheme==='light'?'☀️':'🌙';
+  localStorage.setItem('agrometrix-theme',currentTheme);
 }
+(function initTheme(){
+  const saved=localStorage.getItem('agrometrix-theme')||'light';
+  currentTheme=saved;
+  document.documentElement.setAttribute('data-theme',saved);
+  document.addEventListener('DOMContentLoaded',()=>{
+    $('themeBtn').textContent=currentTheme==='light'?'☀️':'🌙';
+  });
+})();
 
-// ══ PERFIL — sem botão "Assinar" que reabre paywall ══
-function renderProfile() {
-  const p = R.profile, plan = R.plan;
-  if (!p) return;
+// ── Modal localização ─────────────────────────────────────────────────────────
+function openLocModal(){$('locModal').classList.remove('hidden');}
+function closeLocModal(){$('locModal').classList.add('hidden');}
 
-  if (p.nickname && isValidUrl(p.nickname)) p.nickname = R.user?.displayName || R.user?.email?.split('@')[0] || 'Piloto';
-  if (p.name && isValidUrl(p.name)) p.name = R.user?.displayName || R.user?.email?.split('@')[0] || 'Piloto';
-
-  let fotoUrl = fixGooglePhoto(p.photo);
-  if (!fotoUrl && R.user?.photoURL) fotoUrl = fixGooglePhoto(R.user.photoURL);
-  const fotoHtml = fotoUrl
-    ? `<img src="${fotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onclick="window.changeProfilePhoto()" onerror="this.outerHTML='👨‍✈️'">`
-    : '👨‍✈️';
-
-  const pCls = plan?.plan === 'paid' ? 'paid' : plan?.plan === 'trial' ? 'trial' : 'exp';
-  const pIcon = plan?.plan === 'paid' ? '✅' : plan?.plan === 'trial' ? '⏳' : '🔒';
-  const pTitle = plan?.plan === 'paid' ? 'Plano Ativo' : plan?.plan === 'trial' ? `Trial — ${plan.daysLeft} dias restantes` : 'Trial expirado';
-  const isPro = plan?.plan === 'paid';
-
-  // Texto de plano: se não for pago, mostra info discreta (sem botão que reabre paywall)
-  const planNote = !isPro
-    ? `<div class="plan-info-note">Para renovar ou assinar, saia e entre novamente — a opção aparece na tela inicial.</div>`
-    : '';
-
-  $('profileContent').innerHTML = `
-    <div class="pf-hero">
-      <div class="pf-av">${fotoHtml}</div>
-      <div>
-        <div class="pf-name">${p.nickname || p.name || 'Piloto'}</div>
-        <div class="pf-city">📍 ${p.city || 'Cidade não informada'}</div>
-        <div class="pf-drone">🚁 ${p.drone || 'Drone não informado'}</div>
-      </div>
-    </div>
-    <div class="pf-stats">
-      <div class="pstat"><div class="pstat-v">${p.amxScore || 0}</div><div class="pstat-l">AMX Score</div></div>
-      <div class="pstat"><div class="pstat-v">${(p.hoursTotal || 0).toFixed(0)}h</div><div class="pstat-l">Horas</div></div>
-      <div class="pstat"><div class="pstat-v">${p.opsTotal || 0}</div><div class="pstat-l">Operações</div></div>
-    </div>
-    <div class="inp-g">
-      <label class="inp-l">Nome / Apelido</label>
-      <input class="inp" id="pfNick" value="${p.nickname || p.name || ''}" placeholder="Como quer ser chamado?">
-    </div>
-    <div class="inp-g">
-      <label class="inp-l">Cidade</label>
-      <input class="inp" id="pfCity" value="${p.city || ''}" placeholder="Sua cidade">
-    </div>
-    <div class="inp-g">
-      <label class="inp-l">Drone principal</label>
-      <select class="inp" id="pfDrone">
-        <option value="">Selecione…</option>
-        ${['DJI T25', 'DJI T40', 'DJI T50', 'XAG P100', 'XAG V40', 'EAVision', 'Pegasus Agri', 'Outro']
-          .map(d => `<option ${p.drone === d ? 'selected' : ''}>${d}</option>`).join('')}
-      </select>
-    </div>
-    ${isPro ? `<div class="inp-g"><label class="inp-l">Foto de Perfil (URL)</label><input class="inp" id="pfPhoto" placeholder="URL da sua foto" value="${p.photo || ''}"></div>` : ''}
-    <div class="plan-b ${pCls}">
-      <div class="plan-icon">${pIcon}</div>
-      <div>
-        <div class="plan-title">${pTitle}</div>
-        <div class="plan-sub">${plan?.plan === 'trial' ? 'Aproveite o período gratuito' : plan?.plan === 'paid' ? 'Acesso completo ao radar' : 'Trial encerrado'}</div>
-      </div>
-    </div>
-    ${planNote}
-    <div class="vis-row">
-      <label class="inp-l">Visibilidade no radar</label>
-      <div class="vis-opts">
-        <div class="vis-opt ${p.visibility === 'online' ? 'on' : ''}" onclick="window.setVis('online')">🟢 Online</div>
-        <div class="vis-opt ${p.visibility === 'invisible' ? 'on' : ''}" onclick="window.setVis('invisible')">⚫ Invisível</div>
-        <div class="vis-opt ${p.visibility === 'sos' ? 'on' : ''}" onclick="window.setVis('sos')">🚨 SOS</div>
-      </div>
-    </div>
-    <button class="btn-prim" onclick="window.saveProfile()" style="margin-top:12px">💾 Salvar perfil</button>
-    <button class="btn-sec" onclick="window.doLogout()" style="margin-top:8px">Sair da conta</button>
-  `;
+// ── Busca DENTRO DO MODAL ─────────────────────────────────────────────────────
+let modalSearchTimeout=null;
+function onModalCityInput(){
+  const q=$('modalCityInput').value.trim();
+  clearTimeout(modalSearchTimeout);
+  if(q.length<2){$('modalSearchResults').classList.remove('open');return;}
+  modalSearchTimeout=setTimeout(()=>searchModalCities(q),350);
 }
-
-window.changeProfilePhoto = () => {
-  if (R.plan?.plan !== 'paid') {
-    showToast('🔒 Usuários PRO podem mudar a foto. Assine o plano!');
-    return;
-  }
-  const url = prompt('📸 Cole a URL da sua nova foto de perfil:', R.profile?.photo || '');
-  if (url && url.trim()) {
-    updateProfile(R.user.uid, { photo: url.trim() });
-    R.profile.photo = url.trim();
-    renderProfile();
-    publishSelf(R.lat, R.lon, isOperating() ? 'operating' : 'online');
-    showToast('✅ Foto atualizada!');
-  }
-};
-
-window.saveProfile = async () => {
-  const uid = R.user?.uid; if (!uid) return;
-  let nickname = $('pfNick')?.value.trim();
-  nickname = cleanName(nickname, R.user);
-  const city = $('pfCity')?.value.trim();
-  const drone = $('pfDrone')?.value;
-  const photo = R.plan?.plan === 'paid' ? $('pfPhoto')?.value.trim() : null;
-  const updateData = { nickname, city, drone };
-  if (photo) updateData.photo = photo;
-  await updateProfile(uid, updateData);
-  Object.assign(R.profile, updateData);
-  publishSelf(R.lat || (-15.78), R.lon || (-47.93), isOperating() ? 'operating' : 'online');
-  chat.currentProfile = R.profile;
-  showToast('✅ Perfil salvo!');
-  window.closeSheet('shProfile');
-};
-
-window.setVis = async vis => {
-  if (!R.user) return;
-  await updateProfile(R.user.uid, { visibility: vis });
-  R.profile.visibility = vis;
-  renderProfile();
-};
-
-window.doLogout = async () => {
-  await logout();
-  window.closeSheet('shProfile');
-  $('sRadar').classList.add('off');
-  $('sSplash').classList.remove('off');
-};
-
-// ══ NOTIFICAÇÕES ══
-async function listenNotifications() {
-  const db = window._firebaseDB; if (!db || !R.user) return;
-  try {
-    const { collection, query, where, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    const q = query(collection(db, 'notifications'), where('to', '==', R.user.uid));
-    onSnapshot(q, (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === 'added') {
-          const notif = change.doc.data();
-          if (notif.type === 'accept') {
-            import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(({ updateDoc }) => {
-              updateDoc(change.doc.ref, { read: true }).catch(() => {});
-            });
-            stopLoopAlert(); stopLoopSound(); audio.stopLoop?.();
-            audio.play('accept');
-            const accepterName = notif.accepterName || notif.fromName || 'Piloto';
-            const accepterUid = notif.from;
-            setTimeout(async () => {
-              if (R.chatTarget?.uid === accepterUid && $('shChat').classList.contains('on')) return;
-              if (window.openChatWith) {
-                await window.openChatWith(accepterUid, accepterName);
-                showToast(`🎉 ${accepterName} aceitou seu chamado! Chat aberto.`, 5000);
-              }
-            }, 200);
-            return;
-          }
-          if (!notif.read) {
-            import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(({ updateDoc }) => {
-              updateDoc(change.doc.ref, { read: true }).catch(() => {});
-            });
-            if (notif.type === 'new_message') {
-              const senderUid = notif.from;
-              const senderName = notif.fromName || 'Piloto';
-              const preview = notif.message || '';
-              const shChat = $('shChat');
-              const isChatOpen = shChat && shChat.classList.contains('on') && R.chatTarget?.uid === senderUid;
-              if (!isChatOpen) {
-                audio.play('message');
-                const chatDot = $('chatDot');
-                if (chatDot) chatDot.classList.add('on');
-                showToast(`💬 ${senderName}: ${preview.substring(0, 30)}`, 3000);
-              }
-            }
-          }
-        }
-      });
-    });
-  } catch (error) {
-    console.error('❌ Erro ao configurar notificações:', error);
-  }
+async function searchModalCities(q){
+  try{
+    const url=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&countrycodes=br&format=json&limit=8&addressdetails=1`;
+    const r=await fetch(url,{headers:{'Accept-Language':'pt-BR,pt'}});
+    const results=await r.json();
+    showModalResults(results);
+  }catch(e){console.error(e);}
 }
+function showModalResults(list){
+  const box=$('modalSearchResults');
+  if(!list||!list.length){box.classList.remove('open');return;}
+  box.innerHTML=list.map(item=>{
+    const addr=item.address||{};
+    const city=addr.city||addr.town||addr.village||addr.hamlet||addr.suburb||item.display_name.split(',')[0];
+    const state=addr.state||'';
+    const county=addr.county||'';
+    const sub=state?`${county?county+' · ':''}${state}`:'Brasil';
+    return `<div class="search-item" onclick="selectModalCity(${item.lat},${item.lon},'${escQ(city)}','${escQ(sub)}')">
+      <div class="search-item-name">${city}</div>
+      <div class="search-item-state">${sub}</div>
+    </div>`;
+  }).join('');
+  box.classList.add('open');
+}
+async function selectModalCity(lat,lon,name,state){
+  closeLocModal();
+  $('locationLabel').textContent=state?`${name}, ${state.split(' · ').pop()}`:name;
+  currentLat=lat;currentLon=lon;currentLocName=name;
+  $('loadingScreen').classList.remove('hidden');
+  $('loadingText').textContent='buscando dados…';
+  await fetchWeather(lat,lon,name);
+}
+function onModalCityKey(e){
+  if(e.key==='Escape'){$('modalSearchResults').classList.remove('open');}
+}
+async function requestGPS(){
+  closeLocModal();
+  $('loadingText').textContent='obtendo GPS…';
+  if(!navigator.geolocation){fallbackLocation();return;}
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    currentLat=pos.coords.latitude;
+    currentLon=pos.coords.longitude;
+    const geo=await reverseGeocode(currentLat,currentLon);
+    $('locationLabel').textContent=geo.label;
+    currentLocName=geo.short;
+    await fetchWeather(currentLat,currentLon,currentLocName);
+  },()=>fallbackLocation(),{timeout:12000,enableHighAccuracy:true});
+}
+function fallbackLocation(){
+  currentLat=-22.6611;currentLon=-50.4122;currentLocName='Assis';
+  $('locationLabel').textContent='Assis, SP';
+  fetchWeather(currentLat,currentLon,currentLocName);
+}
+function reloadLocation(){openLocModal();}
 
-// ══ ENTRADA ══
-window.enterRadar = async () => {
-  if (!isFirebaseConfigured()) { showToast('⚠️ Firebase não configurado'); return; }
-  const btn = $('btnEntrar');
-  btn.textContent = '🔄 Conectando…';
-  btn.disabled = true;
-  const user = await loginGoogle();
-  btn.textContent = '🚀 Começar 7 dias grátis';
-  btn.disabled = false;
-  if (!user) return;
-  if (user.photoURL) user.photoURL = fixGooglePhoto(user.photoURL);
-  const profile = await getProfile(user.uid);
-
-  if (profile.nickname?.includes('googleusercontent.com') || profile.name?.includes('googleusercontent.com')) {
-    await updateProfile(user.uid, { nickname: user.displayName || 'Piloto', name: user.displayName || 'Piloto' });
-    profile.nickname = user.displayName || 'Piloto';
-    profile.name = user.displayName || 'Piloto';
-  }
-  if (profile && profile.photo && profile.photo.includes('=s96-c')) {
-    const novaFoto = fixGooglePhoto(profile.photo);
-    await updateProfile(user.uid, { photo: novaFoto });
-    profile.photo = novaFoto;
-  }
-  const safeName = cleanName(profile.nickname || profile.name, user);
-  if (profile.nickname !== safeName || profile.name !== safeName) {
-    await updateProfile(user.uid, { name: safeName, nickname: safeName });
-    profile.name = safeName; profile.nickname = safeName;
-  }
-
-  R.user = user; R.profile = profile; R.plan = getPlanStatus(profile);
-
-  if (R.plan.active) {
-    showRadar();
-  } else {
-    // Iniciar trial direto, sem abrir paywall intermediário
-    await window.startTrial();
-  }
-};
-
-window.startTrial = async () => {
-  if (!R.user) return;
-  const te = new Date();
-  te.setDate(te.getDate() + 7);
-  await updateProfile(R.user.uid, { plan: 'trial', trialEnd: te.toISOString() });
-  R.plan = { active: true, plan: 'trial', daysLeft: 7 };
-  window.closeSheet('shPaywall');
-  showRadar();
-};
-
-window.addEventListener('amx:check-operation', () => {
-  if (confirm('Operação ainda em andamento?')) return;
-  if (isOperating()) endOp();
+// ── Busca de cidades ──────────────────────────────────────────────────────────
+async function onCityInput(){
+  const q=$('cityInput').value.trim();
+  clearTimeout(searchTimeout);
+  if(q.length<2){$('searchResults').classList.remove('open');return;}
+  searchTimeout=setTimeout(()=>searchCities(q),400);
+}
+async function searchCities(q){
+  try{
+    const url=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&countrycodes=br&format=json&limit=8&addressdetails=1&featuretype=city,town,village,hamlet,suburb`;
+    const r=await fetch(url,{headers:{'Accept-Language':'pt-BR,pt'}});
+    const results=await r.json();
+    showResults(results);
+  }catch(e){console.error(e);}
+}
+function showResults(list){
+  const box=$('searchResults');
+  if(!list||!list.length){box.classList.remove('open');return;}
+  box.innerHTML=list.map((item,i)=>{
+    const addr=item.address||{};
+    const city=addr.city||addr.town||addr.village||addr.hamlet||addr.suburb||item.display_name.split(',')[0];
+    const state=addr.state||'';
+    const county=addr.county||'';
+    const sub=state?`${county?county+' · ':''}${state}`:'Brasil';
+    return `<div class="search-item" onclick="selectCity(${item.lat},${item.lon},'${escQ(city)}','${escQ(sub)}')">
+      <div class="search-item-name">${city}</div>
+      <div class="search-item-state">${sub}</div>
+    </div>`;
+  }).join('');
+  box.classList.add('open');
+}
+function escQ(s){return s.replace(/'/g,"\\'");}
+async function selectCity(lat,lon,name,state){
+  $('cityInput').value=name;
+  $('searchResults').classList.remove('open');
+  $('locationLabel').textContent=state?`${name}, ${state}`:name;
+  currentLat=lat;currentLon=lon;currentLocName=name;
+  $('loadingScreen').classList.remove('hidden');
+  $('loadingText').textContent='buscando dados…';
+  await fetchWeather(lat,lon,name);
+}
+function onCityKey(e){
+  if(e.key==='Escape'){$('searchResults').classList.remove('open');}
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.header-search'))$('searchResults').classList.remove('open');
 });
 
-// Conectar botões do splash
-document.getElementById('btnEntrar')?.addEventListener('click', window.enterRadar);
-document.getElementById('btnGoogle')?.addEventListener('click', window.enterRadar);
+// ── Helpers meteorológicos ────────────────────────────────────────────────────
+function wmoIcon(c,d=true){
+  const m={0:d?'☀️':'🌙',1:d?'🌤':'🌤',2:'⛅',3:'☁️',
+    45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',
+    61:'🌧',63:'🌧',65:'🌧',71:'🌨',73:'❄️',75:'❄️',
+    80:'🌦',81:'🌧',82:'⛈',95:'⛈',96:'⛈',99:'⛈'};
+  return m[c]||'🌡';
+}
+function wmoDesc(c){
+  const m={0:'Céu limpo',1:'Poucas nuvens',2:'Parcialmente nublado',3:'Nublado',
+    45:'Neblina',48:'Neblina c/ geada',51:'Garoa leve',53:'Garoa moderada',55:'Garoa forte',
+    61:'Chuva leve',63:'Chuva moderada',65:'Chuva forte',71:'Neve leve',73:'Neve moderada',75:'Neve forte',
+    80:'Pancadas leves',81:'Pancadas moderadas',82:'Pancadas fortes',95:'Trovoada',96:'Trovoada c/ granizo',99:'Trovoada forte'};
+  return m[c]||'Variável';
+}
+function windDirLabel(d){const dirs=['N','NE','L','SE','S','SO','O','NO'];return dirs[Math.round(d/45)%8];}
+function dewPoint(T,RH){const a=17.62,b=243.12;const g=(a*T/(b+T))+Math.log(RH/100);return +(b*g/(a-g)).toFixed(1);}
+function cloudBase(T,Td){return Math.max(0,Math.round(125*(T-Td)));}
+function fmtTime(iso){if(!iso)return'—';const d=new Date(iso);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function formatDate(s){const d=new Date(s+'T00:00:00');return`${DAYS[d.getDay()]}, ${d.getDate()} de ${MONTHS[d.getMonth()]}`;}
 
-init();
+// Delta T = Tbs - Tbu
+function wetBulb(T,RH){
+  return T*Math.atan(0.151977*Math.pow(RH+8.313659,0.5))
+    +Math.atan(T+RH)
+    -Math.atan(RH-1.676331)
+    +0.00391838*Math.pow(RH,1.5)*Math.atan(0.023101*RH)
+    -4.686035;
+}
+function deltaT(T,RH){return +(T-wetBulb(T,RH)).toFixed(1);}
+function deltaTStatus(dt){
+  if(dt<2)return{label:'Muito úmido — evaporação insuficiente',cls:'dt-bad'};
+  if(dt<=8)return{label:'Condição ideal para aplicação',cls:'dt-ideal'};
+  if(dt<=10)return{label:'Atenção — evaporação elevada',cls:'dt-warn'};
+  return{label:'Alto — deriva e evaporação excessiva',cls:'dt-bad'};
+}
+
+// ── App index ─────────────────────────────────────────────────────────────────
+function calcAppIndex(wind,gust,humidity,rain,temp){
+  let fung=100;
+  fung-=wind>10?Math.min((wind-10)*4,40):0;
+  fung-=gust>15?Math.min((gust-15)*3,30):0;
+  fung-=humidity<60?(60-humidity)*1.2:0;
+  fung-=rain>0?Math.min(rain*20,40):0;
+  fung-=(temp<10||temp>35)?20:0;
+  fung=Math.max(0,Math.min(100,Math.round(fung)));
+
+  let herb=100;
+  herb-=wind>8?Math.min((wind-8)*5,50):0;
+  herb-=gust>12?Math.min((gust-12)*4,40):0;
+  herb-=rain>0.2?Math.min(rain*25,40):0;
+  herb-=humidity>90?(humidity-90)*1.5:0;
+  herb=Math.max(0,Math.min(100,Math.round(herb)));
+
+  let insec=100;
+  insec-=wind>15?Math.min((wind-15)*4,40):0;
+  insec-=gust>25?Math.min((gust-25)*3,30):0;
+  insec-=rain>0.5?Math.min(rain*18,40):0;
+  insec-=temp>32?(temp-32)*4:0;
+  insec=Math.max(0,Math.min(100,Math.round(insec)));
+
+  let adub=100;
+  adub-=wind>12?Math.min((wind-12)*4,40):0;
+  adub-=humidity<50?(50-humidity)*2:0;
+  adub-=humidity>95?20:0;
+  adub-=rain>0.3?Math.min(rain*20,40):0;
+  adub-=temp>33?(temp-33)*5:0;
+  adub=Math.max(0,Math.min(100,Math.round(adub)));
+
+  return{fung,herb,insec,adub};
+}
+function scoreColor(v){return v>=70?'fill-green':v>=40?'fill-amber':'fill-red';}
+function scoreLabel(v){return v>=70?'Favoravel':v>=40?'Moderado':'Desfavoravel';}
+
+function renderAppGrid(wind,gust,humidity,rain,temp){
+  const{fung,herb,insec,adub}=calcAppIndex(wind,gust,humidity,rain,temp);
+  const items=[
+    {icon:'🍃',name:'Fungicida',score:fung,cls:'app-icon-green'},
+    {icon:'🌿',name:'Herbicida',score:herb,cls:'app-icon-sky'},
+    {icon:'🐛',name:'Inseticida',score:insec,cls:'app-icon-earth'},
+    {icon:'💧',name:'Adubo Foliar',score:adub,cls:'app-icon-red'},
+  ];
+  $('appGrid').innerHTML=items.map(it=>`
+    <div class="app-card">
+      <div class="app-icon ${it.cls}">${it.icon}</div>
+      <div style="flex:1;min-width:0">
+        <div class="app-name">${it.name}</div>
+        <div class="app-score-row">
+          <div class="app-score-bar"><div class="app-score-fill ${scoreColor(it.score)}" style="width:${it.score}%"></div></div>
+          <div class="app-pct">${it.score}%</div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function overallStatus(wind,gust,rain){
+  if(gust>35||rain>2)return{cls:'status-bad',label:'Alto risco',txt:'Condições desfavoráveis para aplicação no campo.'};
+  if(gust>20||rain>0.5||wind>20)return{cls:'status-warn',label:'Atenção',txt:'Algumas condições limitam a aplicação. Avalie cada produto.'};
+  return{cls:'status-good',label:'Bom para aplicar',txt:'Condições adequadas para operações de campo agora.'};
+}
+function hourStatus(wind,gust,rain){
+  if(gust>35||rain>1.5)return'bad';
+  if(gust>20||rain>0.3||wind>18)return'warn';
+  return'good';
+}
+
+// ── Hourly ───────────────────────────────────────────────────────────────────
+function renderHourly(dayIndex){
+  if(!fullData)return;
+  const d=fullData;
+  const dateStr=d.daily.time[dayIndex];
+  $('hourlyDateLabel').textContent=formatDate(dateStr);
+  const list=$('hourlyList');
+  list.innerHTML='';
+
+  d.hourly.time.forEach((t,i)=>{
+    if(!t.startsWith(dateStr))return;
+    const hr=parseInt(t.split('T')[1]);
+    const wind=Math.round(d.hourly.wind_speed_10m[i]);
+    const gust=Math.round(d.hourly.wind_gusts_10m[i]);
+    const rain=+(d.hourly.precipitation[i]).toFixed(1);
+    const rainProb=Math.round(d.hourly.precipitation_probability[i]||0);
+    const temp=Math.round(d.hourly.temperature_2m[i]);
+    const humid=Math.round(d.hourly.relative_humidity_2m[i]);
+    const cloud=Math.round(d.hourly.cloud_cover[i]);
+    const vis=+(d.hourly.visibility[i]/1000).toFixed(1);
+    const press=Math.round(d.hourly.surface_pressure[i]);
+    const code=d.hourly.weather_code[i];
+    const isDay=d.hourly.is_day[i];
+    const windDeg=Math.round(d.hourly.wind_direction_10m[i]);
+    const dew=dewPoint(temp,humid);
+    const cb=cloudBase(temp,dew);
+    const dt=deltaT(temp,humid);
+    const dts=deltaTStatus(dt);
+    const uv=d.hourly.uv_index!=null?Math.round(d.hourly.uv_index[i]||0):null;
+
+    const st=hourStatus(wind,gust,rain);
+    const stLabel=st==='good'?'✓ Bom':st==='warn'?'⚠ Atenção':'✕ Não aplicar';
+    const stTagCls=st==='good'?'tag-good':st==='warn'?'tag-warn':'tag-bad';
+    const detId=`hd-${i}`;
+
+    list.innerHTML+=`
+      <div class="hour-row hour-${st}" onclick="toggleHour(${i})">
+        <div class="hour-time">${String(hr).padStart(2,'0')}h</div>
+        <div class="hour-icon">${wmoIcon(code,isDay)}</div>
+        <div class="hour-temp">${temp}°C</div>
+        <div class="hour-desc">${wmoDesc(code)}</div>
+        <div class="hour-tags">
+          <span class="tag tag-wind">💨${wind}km/h</span>
+          ${rain>0?`<span class="tag tag-rain">🌧${rain}mm</span>`:''}
+          <span class="tag tag-cloud">☁${cloud}%</span>
+          <span class="tag tag-cloud">ΔT${dt}°</span>
+          <span class="tag ${stTagCls}">${stLabel}</span>
+        </div>
+      </div>
+      <div class="hour-detail" id="${detId}">
+        <div class="detail-col">
+          <div class="detail-label">Temperatura</div>
+          <div class="detail-val">${temp}°C</div>
+          <div class="detail-sub">Sensação — Orvalho ${dew}°C</div>
+        </div>
+        <div class="detail-col">
+          <div class="detail-label">Delta T</div>
+          <div class="detail-val">${dt}°C</div>
+          <div class="detail-sub">${dts.label}</div>
+        </div>
+        <div class="detail-col">
+          <div class="detail-label">Vento / Rajada</div>
+          <div class="detail-val">${wind} km/h</div>
+          <div class="detail-sub">Rajada ${gust}km/h · ${windDirLabel(windDeg)}</div>
+        </div>
+        <div class="detail-col">
+          <div class="detail-label">Precipitação</div>
+          <div class="detail-val">${rainProb}%</div>
+          <div class="detail-sub">${rain} mm acumulado</div>
+        </div>
+        <div class="detail-col">
+          <div class="detail-label">Umidade</div>
+          <div class="detail-val">${humid}%</div>
+          <div class="detail-sub">Vis. ${vis} km</div>
+        </div>
+        <div class="detail-col">
+          <div class="detail-label">Nuvens</div>
+          <div class="detail-val">${cloud}%</div>
+          <div class="detail-sub">Base ~${cb} m</div>
+        </div>
+        <div class="detail-col">
+          <div class="detail-label">Pressão</div>
+          <div class="detail-val">${press} hPa</div>
+          <div class="detail-sub">—</div>
+        </div>
+        <div class="detail-col">
+          <div class="detail-label">UV / Status</div>
+          <div class="detail-val">${uv!=null?uv:'—'}</div>
+          <div class="detail-sub">${st==='good'?'Bom para aplicar':st==='warn'?'Atenção':'Não aplicar'}</div>
+        </div>
+      </div>`;
+  });
+}
+
+function toggleHour(i){$(`hd-${i}`).classList.toggle('open');}
+
+// ── Daily ─────────────────────────────────────────────────────────────────────
+function renderDaily(d){
+  const scroll=$('dailyScroll');
+  scroll.innerHTML='';
+  d.daily.time.forEach((ds,i)=>{
+    const dt=new Date(ds+'T00:00:00');
+    const name=i===0?'Hoje':DAYS[dt.getDay()];
+    const icon=wmoIcon(d.daily.weather_code[i]);
+    const tmax=Math.round(d.daily.temperature_2m_max[i]);
+    const tmin=Math.round(d.daily.temperature_2m_min[i]);
+    const gust=d.daily.wind_gusts_10m_max[i];
+    const rain=d.daily.precipitation_sum[i];
+    const st=hourStatus(0,gust,rain);
+    const dotColor=st==='good'?'var(--green-400)':st==='warn'?'var(--amber-500)':'var(--red-500)';
+    const card=document.createElement('div');
+    card.className='day-card'+(i===0?' active':'');
+    card.innerHTML=`<div class="day-name">${name}</div><div class="day-icon">${icon}</div>
+      <div style="display:flex;gap:3px;align-items:baseline"><span class="day-tmax">${tmax}°</span><span class="day-tmin">${tmin}°</span></div>
+      <div class="day-sdot" style="background:${dotColor}"></div>`;
+    card.addEventListener('click',()=>{
+      document.querySelectorAll('.day-card').forEach(c=>c.classList.remove('active'));
+      card.classList.add('active');
+      renderHourly(i);
+      $('hourlySection').scrollIntoView({behavior:'smooth',block:'start'});
+    });
+    scroll.appendChild(card);
+  });
+}
+
+// ── Helper download universal (web + mobile) ─────────────────────────────────
+function _sanitizeFilenamePart(s){
+  return String(s||'relatorio')
+    .trim()
+    .replace(/[\s\/\\]+/g,'_')
+    .replace(/[^a-zA-Z0-9_\-]/g,'');
+}
+
+function _getDownloadCounter(locName){
+  try{
+    const now=new Date();
+    const key=`agrometrix_download_count_${_sanitizeFilenamePart(locName)}_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const count=Number(localStorage.getItem(key)||0)+1;
+    localStorage.setItem(key,count);
+    return count;
+  }catch(e){
+    return Date.now();
+  }
+}
+
+function _generateDownloadFilename(ext){
+  const now=new Date();
+  const day=String(now.getDate()).padStart(2,'0');
+  const month=String(now.getMonth()+1).padStart(2,'0');
+  const loc=_sanitizeFilenamePart(currentReportData?.locName||'relatorio');
+  const seq=_getDownloadCounter(currentReportData?.locName||'relatorio');
+  return `agrometrix_${loc}_${day}_${month}_${seq}.${ext}`;
+}
+
+function _triggerDownload(blob, filename){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function _downloadAndAskOpen(blob, filename){
+  _triggerDownload(blob, filename);
+  if(confirm('Arquivo salvo. Deseja abrir agora?')){
+    const url=URL.createObjectURL(blob);
+    window.open(url,'_blank');
+    setTimeout(()=>URL.revokeObjectURL(url),10000);
+  }
+}
+
+async function _shareFile(blob, filename, title){
+  if(navigator.canShare && navigator.canShare({files: [new File([blob], filename)]})){
+    try{
+      await navigator.share({
+        files: [new File([blob], filename, {type: blob.type})],
+        title: title,
+        text: 'Relatório gerado pelo AgroMetrix'
+      });
+      return true;
+    }catch(e){
+      if(e.name !== 'AbortError') _downloadAndAskOpen(blob, filename);
+      return false;
+    }
+  }
+  _downloadAndAskOpen(blob, filename);
+  return false;
+}
+
+function _buildTXTBlob(){
+  if(!currentReportData)return null;
+  const r=currentReportData;
+  const now=new Date();
+  const dateStr=`${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getFullYear()}`;
+  const timeStr=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const {fung,herb,insec,adub}=calcAppIndex(r.wind,r.gust,r.humid,r.rain,r.temp);
+  const sep='-'.repeat(54);
+  const lines=[
+    'AGROMETRIX - RELATORIO METEOROLOGICO',
+    'Clima certo, aplicacao perfeita',
+    sep,
+    `Local         : ${r.locName}`,
+    `Data          : ${dateStr}`,
+    `Hora          : ${timeStr}`,
+    `Condicao      : ${r.cond}`,
+    `Status        : ${r.status}`,
+    sep,
+    'DADOS METEOROLOGICOS',
+    sep,
+    `Temperatura         : ${r.temp} graus C`,
+    `Sensacao termica    : ${r.feel} graus C`,
+    `Ponto de orvalho    : ${r.dew} graus C`,
+    `Delta T             : ${r.dt} graus C  |  ${r.dts}`,
+    '',
+    `Umidade relativa    : ${r.humid}%`,
+    `Pressao atmosferica : ${r.press} hPa`,
+    '',
+    `Vento               : ${r.wind} km/h  (${(r.wind/3.6).toFixed(1)} m/s)`,
+    `Rajadas             : ${r.gust} km/h  (${(r.gust/3.6).toFixed(1)} m/s)`,
+    `Direcao do vento    : ${r.windDir} (${r.windDeg} graus)`,
+    '',
+    `Precipitacao acum.  : ${r.rain} mm`,
+    `Prob. precipitacao  : ${r.rainProb}%`,
+    '',
+    `Cobertura de nuvens : ${r.cloud}%`,
+    `Base das nuvens     : ${r.cloudBase} m (estimado)`,
+    `Visibilidade        : ${r.vis} km`,
+    `Indice UV           : ${r.uv}`,
+    '',
+    `Nascer do sol       : ${r.sunrise}`,
+    `Por do sol          : ${r.sunset}`,
+    sep,
+    'INDICE DE APLICACAO AGRONOMICA',
+    sep,
+    `Fungicida    : ${fung}%  [${scoreLabel(fung)}]`,
+    `Herbicida    : ${herb}%  [${scoreLabel(herb)}]`,
+    `Inseticida   : ${insec}%  [${scoreLabel(insec)}]`,
+    `Adubo Foliar : ${adub}%  [${scoreLabel(adub)}]`,
+    sep,
+    'SOBRE O DELTA T',
+    sep,
+    'Delta T = temperatura bulbo seco menos bulbo umido.',
+    'Indica a taxa de evaporacao das gotas pulverizadas.',
+    '',
+    '  Delta T < 2 graus   -> Muito umido, risco de escorrimento',
+    '  Delta T 2 a 8 graus -> IDEAL para pulverizacao',
+    '  Delta T 8 a 10 gr.  -> Atencao, evaporacao elevada',
+    '  Delta T > 10 graus  -> Nao recomendado, deriva e evaporacao',
+    sep,
+    `Gerado por AgroMetrix | ${dateStr} ${timeStr}`,
+    'Dados: open-meteo.com',
+    sep,
+  ];
+  return new Blob([lines.join('\r\n')],{type:'text/plain;charset=utf-8'});
+}
+
+function _buildCSVBlob(){
+  if(!currentReportData)return null;
+  const r=currentReportData;
+  const now=new Date();
+  const dateStr=`${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}`;
+  const timeStr=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const {fung,herb,insec,adub}=calcAppIndex(r.wind,r.gust,r.humid,r.rain,r.temp);
+  const rows=[
+    ['Campo','Valor','Unidade'],
+    ['Local',r.locName,''],['Data',dateStr,''],['Hora',timeStr,''],
+    ['Condicao',r.cond,''],['Status',r.status,''],
+    ['Temperatura',r.temp,'graus C'],['Sensacao termica',r.feel,'graus C'],
+    ['Ponto de orvalho',r.dew,'graus C'],['Delta T',r.dt,'graus C'],
+    ['Classificacao Delta T',r.dts,''],['Umidade relativa',r.humid,'%'],
+    ['Pressao atmosferica',r.press,'hPa'],['Vento',r.wind,'km/h'],
+    ['Rajadas',r.gust,'km/h'],['Direcao vento',r.windDir,''],
+    ['Precipitacao acumulada',r.rain,'mm'],['Prob precipitacao',r.rainProb,'%'],
+    ['Cobertura de nuvens',r.cloud,'%'],['Base das nuvens',r.cloudBase,'m'],
+    ['Visibilidade',r.vis,'km'],['Indice UV',r.uv,''],
+    ['Nascer do sol',r.sunrise,''],['Por do sol',r.sunset,''],
+    ['Indice Fungicida',fung,'%'],['Indice Herbicida',herb,'%'],
+    ['Indice Inseticida',insec,'%'],['Indice Adubo Foliar',adub,'%'],
+  ];
+  const csv='\uFEFF'+rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  return new Blob([csv],{type:'text/csv;charset=utf-8'});
+}
+
+async function shareOrDownloadTXT(){
+  if(!currentReportData){alert('Carregue os dados climáticos primeiro!');return;}
+  const blob=_buildTXTBlob();
+  if(!blob)return;
+  const filename=_generateDownloadFilename('txt');
+  await _shareFile(blob,filename,'AgroMetrix — Relatório TXT');
+}
+
+async function shareOrDownloadCSV(){
+  if(!currentReportData){alert('Carregue os dados climáticos primeiro!');return;}
+  const blob=_buildCSVBlob();
+  if(!blob)return;
+  const filename=_generateDownloadFilename('csv');
+  await _shareFile(blob,filename,'AgroMetrix — Relatório CSV');
+}
+
+function downloadTXT(){shareOrDownloadTXT();}
+function downloadCSV(){shareOrDownloadCSV();}
+function downloadReport(){shareOrDownloadTXT();}
+
+// ── Kp Index (NOAA) ───────────────────────────────────────────────────────────
+async function fetchKp(){
+  const NOAA_URL='https://services.swpc.noaa.gov/json/planetary_k_index_1m.json';
+  let data=null;
+  const urls=[NOAA_URL,'https://corsproxy.io/?'+encodeURIComponent(NOAA_URL)];
+  for(const url of urls){
+    try{
+      const r=await fetch(url);
+      if(r.ok){data=await r.json();break;}
+    }catch(e){}
+  }
+
+  if(!data||!data.length){
+    $('kpDesc').textContent='Não foi possível carregar dados da NOAA.';
+    $('kpValue').textContent='?';
+    $('kpBadge').textContent='Indisponível';
+    return;
+  }
+
+  let kpRaw=null,kpTime='';
+  for(let i=data.length-1;i>=0;i--){
+    const v=data[i];
+    const val=v.kp_index??v.Kp??v.kp??null;
+    if(val!==null&&val!==undefined){kpRaw=parseFloat(val);kpTime=v.time_tag||v.TimeStamp||'';break;}
+  }
+  if(kpRaw===null){$('kpDesc').textContent='Valor Kp indisponível.';return;}
+
+  const kp=+kpRaw.toFixed(1);
+  const pct=Math.min(kp/9*100,100);
+
+  let cls,label,desc,agroNote,color;
+  if(kp<1){
+    cls='kp-quiet';label='☀️ Quiescente';color='var(--green-400)';
+    desc='Atividade geomagnética mínima. Condições excelentes para qualquer operação a campo.';
+    agroNote='<strong>Impacto agrícola:</strong> Nenhum. GPS de precisão e instrumentação eletrônica funcionam plenamente.';
+  } else if(kp<2){
+    cls='kp-quiet';label='✅ Muito calmo';color='var(--green-400)';
+    desc='Campo geomagnético praticamente estável. Excelentes condições para trabalho de precisão.';
+    agroNote='<strong>Impacto agrícola:</strong> Desprezível. RTK e GNSS operam com precisão plena.';
+  } else if(kp<4){
+    cls='kp-quiet';label='🟢 Calmo';color='var(--green-500)';
+    desc='Atividade leve. Equipamentos de navegação e telemetria agrícola não são afetados.';
+    agroNote='<strong>Impacto agrícola:</strong> Sem impacto prático. Operações de pulverização de precisão liberadas.';
+  } else if(kp<5){
+    cls='kp-active';label='🟡 Perturbado';color='var(--amber-500)';
+    desc='Perturbação moderada (G1 iminente). Pode haver leve degradação em sinais GPS de precisão.';
+    agroNote='<strong>Impacto agrícola:</strong> Atenção ao RTK em áreas com sinal fraco. Drones autônomos podem apresentar deriva leve.';
+  } else if(kp<6){
+    cls='kp-storm';label='🟠 Tempestade G1';color='#e07a00';
+    desc='Tempestade geomagnética menor (G1). Potencial erro de GPS de precisão de 1–2 m.';
+    agroNote='<strong>Impacto agrícola:</strong> Evitar aplicações RTK de alta precisão. Pulverização manual ou aguardar normalização.';
+  } else if(kp<7){
+    cls='kp-storm';label='🔴 Tempestade G2';color='var(--red-500)';
+    desc='Tempestade moderada (G2). GPS degradado significativamente em latitudes médias.';
+    agroNote='<strong>Impacto agrícola:</strong> Não recomendado operar maquinário autônomo GPS-guiado. Risco de erros de aplicação.';
+  } else {
+    cls='kp-storm';label='⛔ Tempestade G3+';color='var(--red-500)';
+    desc='Tempestade geomagnética severa a extrema (G3–G5). GPS altamente degradado.';
+    agroNote='<strong>Impacto agrícola:</strong> Suspender operações guiadas por satélite. Comunicação de máquinas pode falhar.';
+  }
+
+  $('kpValue').textContent=kp;
+  $('kpBadge').className=`kp-badge ${cls}`;
+  $('kpBadge').textContent=label;
+  $('kpGaugeFill').style.width=pct+'%';
+  $('kpGaugeFill').style.background=color;
+  $('kpBar').style.width=pct+'%';
+  $('kpBar').style.background=color;
+  $('kpDesc').textContent=desc;
+  $('kpAgroNote').innerHTML=agroNote;
+
+  if(kpTime){
+    try{
+      const d=new Date(kpTime.replace(' ','T')+'Z');
+      $('kpUpdated').textContent='Kp atualizado: '+d.toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit'})+' (Brasília)';
+    }catch(e){}
+  }
+}
+
+// ── Fetch ─────────────────────────────────────────────────────────────────────
+async function fetchWeather(lat,lon,locName){
+  $('loadingText').textContent='buscando dados meteorológicos…';
+
+  const url=`https://api.open-meteo.com/v1/forecast?`
+    +`latitude=${lat}&longitude=${lon}`
+    +`&current=temperature_2m,apparent_temperature,relative_humidity_2m,`
+    +`precipitation,weather_code,wind_speed_10m,wind_direction_10m,`
+    +`wind_gusts_10m,uv_index,visibility,is_day,surface_pressure,cloud_cover`
+    +`&hourly=temperature_2m,relative_humidity_2m,precipitation,`
+    +`precipitation_probability,weather_code,wind_speed_10m,wind_gusts_10m,`
+    +`wind_direction_10m,cloud_cover,visibility,surface_pressure,uv_index,is_day`
+    +`&daily=weather_code,temperature_2m_max,temperature_2m_min,`
+    +`precipitation_sum,wind_gusts_10m_max,uv_index_max,sunrise,sunset`
+    +`&timezone=auto&forecast_days=7`;
+
+  const res=await fetch(url);
+  if(!res.ok)throw new Error('API error');
+  const d=await res.json();
+  fullData=d;
+
+  const c=d.current;
+  const wind=Math.round(c.wind_speed_10m);
+  const gust=Math.round(c.wind_gusts_10m);
+  const humid=Math.round(c.relative_humidity_2m);
+  const rain=+c.precipitation.toFixed(1);
+  const temp=Math.round(c.temperature_2m);
+  const feel=Math.round(c.apparent_temperature);
+  const uv=Math.round(c.uv_index);
+  const vis=+(c.visibility/1000).toFixed(1);
+  const cloud=Math.round(c.cloud_cover);
+  const press=Math.round(c.surface_pressure);
+  const code=c.weather_code;
+  const isDay=c.is_day;
+  const windDeg=Math.round(c.wind_direction_10m);
+  const dew=dewPoint(temp,humid);
+  const cb=cloudBase(temp,dew);
+  const dt=deltaT(temp,humid);
+  const dts=deltaTStatus(dt);
+
+  const nowH=new Date().getHours();
+  const todayDate=new Date().toISOString().slice(0,10);
+  let rainProb=0;
+  if(d.hourly&&d.hourly.precipitation_probability){
+    const idx=d.hourly.time.findIndex(t=>t.startsWith(todayDate+'T'+String(nowH).padStart(2,'0')));
+    if(idx>=0)rainProb=Math.round(d.hourly.precipitation_probability[idx]||0);
+  }
+
+  const riseStr=d.daily.sunrise[0];
+  const setStr=d.daily.sunset[0];
+  $('sunRise').textContent=fmtTime(riseStr);
+  $('sunSet').textContent=fmtTime(setStr);
+  const riseD=new Date(riseStr);riseD.setHours(riseD.getHours()+1);
+  $('goldenHour').textContent=`✦ Hora dourada ~${fmtTime(riseD.toISOString())}`;
+
+  const st=overallStatus(wind,gust,rain);
+  currentReportData={
+    locName,wind,gust,humid,rain,rainProb,temp,feel,uv,vis,cloud,press,code,isDay,windDeg,
+    dew,cloudBase:cb,dt,dts:dts.label,
+    sunrise:fmtTime(riseStr),sunset:fmtTime(setStr),
+    cond:wmoDesc(code),status:st.label,windDir:windDirLabel(windDeg)
+  };
+
+  badge($('heroStatus'),st.cls,'status-badge '+st.cls,`<div class="status-dot"></div>${st.label}`);
+  const now2=new Date();
+  $('heroDate').textContent=`${DAYS[now2.getDay()]}, ${now2.getDate()} de ${MONTHS[now2.getMonth()]} de ${now2.getFullYear()}`;
+  $('heroTitle').innerHTML=`${locName}<br><em>${wmoDesc(code)}</em>`;
+  $('heroSub').textContent=st.txt;
+
+  $('nowTemp').textContent=temp;
+  $('nowCond').textContent=wmoDesc(code);
+  $('nowFeel').textContent=`Sensação ${feel}°C · ${windDirLabel(windDeg)} · Orvalho ${dew}°C`;
+  $('nowIcon').textContent=wmoIcon(code,isDay);
+
+  set('mTemp',temp); $('mDew').textContent=`Ponto de orvalho: ${dew}°C`;
+  $('barTemp').style.width=Math.min(Math.max((temp+10)/55*100,5),100)+'%';
+
+  set('mWind',wind); $('mWindMs').textContent=`${(wind/3.6).toFixed(1)} m/s`;
+  $('barWind').style.width=Math.min(wind/50*100,100)+'%';
+
+  set('mGust',gust); $('mGustMs').textContent=`${(gust/3.6).toFixed(1)} m/s`;
+  bar('barGust',Math.min(gust/60*100,100),gust>35?'bar-red':gust>20?'bar-amber':'bar-green');
+
+  $('mDeltaT').textContent=dt;
+  $('mDeltaTSub').textContent='Bulbo seco − Bulbo úmido';
+  const dtBadge=$('deltaTBadge');
+  dtBadge.textContent=dts.label;dtBadge.className=`delta-t-badge ${dts.cls}`;dtBadge.style.display='inline-block';
+  bar('barDeltaT',Math.min(dt/12*100,100),dt<2||dt>10?'bar-red':dt<=8?'bar-green':'bar-amber');
+
+  $('mWindDir').textContent=`${windDirLabel(windDeg)} (${windDeg}°)`;
+  $('compassNeedle').style.transform=`rotate(${windDeg}deg)`;
+
+  set('mHumid',humid);
+  $('mHumidSub').textContent=humid<55?'Muito seco':humid>90?'Muito úmido':'Ideal para aplicação';
+  $('barHumid').style.width=humid+'%';
+
+  set('mRainProb',rainProb); $('mRainMm').textContent=`${rain} mm acum.`;
+  bar('barRain',rainProb,rainProb>70?'bar-red':rainProb>30?'bar-amber':'bar-sky');
+
+  set('mCloud',cloud); $('mCloudSub').textContent=`Base estimada: ~${cb} m`;
+  $('barCloud').style.width=cloud+'%';
+
+  set('mVis',vis); $('mVisSub').textContent=vis>=15?'Excelente':vis>=8?'Boa':vis>=3?'Moderada':'Reduzida';
+  $('barVis').style.width=Math.min(vis/20*100,100)+'%';
+
+  $('mUV').textContent=uv; $('mUVSub').textContent=uv<=2?'Baixo':uv<=5?'Moderado':uv<=7?'Alto':'Muito alto';
+  bar('barUV',Math.min(uv/11*100,100),uv<=2?'bar-green':uv<=5?'bar-sky':uv<=7?'bar-amber':'bar-red');
+
+  set('mPress',press); $('mPressSub').textContent=press<1005?'Baixa — tempo instável':press>1020?'Alta — tempo estável':'Normal';
+
+  renderAppGrid(wind,gust,humid,rain,temp);
+  renderDaily(d);
+  renderHourly(0);
+
+  fetchKp();
+
+  $('mainCard').style.display='block';
+  $('dailySection').style.display='block';
+  $('hourlySection').style.display='block';
+  $('downloadBar').style.display='flex';
+  const fab=$('radarFab');if(fab)fab.style.display='flex';
+  setTimeout(()=>$('loadingScreen').classList.add('hidden'),600);
+}
+
+function set(id,v){$(id).textContent=v;}
+function badge(el,_,cls,html){el.className=cls;el.innerHTML=html;el.style.display='inline-flex';}
+function bar(id,pct,cls){const b=$(id);b.style.width=pct+'%';b.className='metric-bar '+cls;}
+
+// ── Geo ───────────────────────────────────────────────────────────────────────
+async function reverseGeocode(lat,lon){
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=pt`);
+    const j=await r.json();
+    const city=j.address.city||j.address.town||j.address.village||j.address.county||'Campo';
+    const state=j.address.state_district||j.address.state||'';
+    return{label:state?`${city}, ${state}`:city,short:city};
+  }catch{return{label:'Campo',short:'Campo'};}
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+window.addEventListener('load',()=>{
+  fetchKp();
+  setTimeout(()=>{
+    $('loadingScreen').classList.add('hidden');
+    $('locModal').classList.remove('hidden');
+  },1200);
+});
+</script>
+
+<!-- PWA Service Worker Registration (opcional) -->
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(e=>console.log('SW not registered:',e));
+}
 </script>
 </body>
 </html>
