@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>AgroMetrix Radar</title>
+<meta name="theme-color" content="#050c07">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g9:#061510;--g8:#0d2318;--g7:#152e1e;--g6:#1e4029;--g5:#265134;
+  --g4:#2f6b40;--g3:#3d8a52;--g2:#5aad70;--g1:#82cd96;--g0:#b8e8c4;
+  --sky:#1a7dc4;--amb:#c47800;--red:#c42828;--red2:#e03535;
+  --bg:#050c07;--s0:#070f09;--s1:#09130b;--s2:#0d180f;--s3:#111e13;--s4:#152218;
+  --bd:rgba(45,107,64,.12);--bdm:rgba(45,107,64,.22);--bdh:rgba(45,107,64,.45);
+  --tx:#dff0e3;--tx2:#8ab896;--tx3:#5a7f63;--mt:#3d5c44;
+  --fu:'Syne',system-ui,sans-serif;
+  --fm:'JetBrains Mono',monospace;
+  --fd:'DM Serif Display',Georgia,serif;
+  --scan-color:rgba(61,138,82,.55);
+  --beacon-main:#3d8a52;
+  --beacon-sos:#c42828;
+  --beacon-op:#1a7dc4;
+}
+html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg);color:var(--tx)}
+
+/* ══ TELAS ══ */
+.screen{position:fixed;inset:0;transition:opacity .4s,transform .4s}
+.screen.off{opacity:0;pointer-events:none;transform:scale(.98)}
+
+/* ══════════════════════════════
+   SPLASH PREMIUM
+══════════════════════════════ */
+#sSplash{background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.sp-ambient{position:absolute;inset:0;background:
+  radial-gradient(ellipse 70% 50% at 50% -5%,rgba(30,64,41,.4) 0%,transparent 65%),
+  radial-gradient(ellipse 40% 30% at 85% 90%,rgba(20,90,175,.08) 0%,transparent 55%),
+  radial-gradient(ellipse 30% 20% at 10% 70%,rgba(45,107,64,.06) 0%,transparent 50%)}
+.sp-grid{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(45,107,64,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(45,107,64,.03) 1px,transparent 1px);
+  background-size:48px 48px}
+.sp-scan-line{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(61,138,82,.3),transparent);animation:scanV 8s linear infinite;opacity:.5}
+@keyframes scanV{0%{top:0%}100%{top:100%}}
+.sp-wrap{position:relative;z-index:2;text-align:center;padding:28px 20px;max-width:390px;width:100%}
+.sp-wordmark{display:flex;align-items:baseline;justify-content:center;gap:2px;margin-bottom:3px}
+.sp-wordmark-a{font-size:28px;font-weight:800;letter-spacing:-.5px;color:var(--tx)}
+.sp-wordmark-m{font-size:28px;font-weight:800;letter-spacing:-.5px;color:var(--g2)}
+.sp-sub{font-size:9px;color:var(--mt);letter-spacing:.2em;text-transform:uppercase;margin-bottom:24px}
+
+/* Radar widget */
+.sp-radar-wrap{position:relative;width:140px;height:140px;margin:0 auto 22px}
+.sp-radar{width:140px;height:140px;border-radius:50%;position:relative;overflow:hidden;
+  background:radial-gradient(circle,rgba(22,46,30,.6) 0%,rgba(6,14,8,.3) 70%)}
+.sp-ring{position:absolute;border-radius:50%;border:1px solid rgba(45,107,64,.14)}
+.sp-ring:nth-child(1){inset:0}.sp-ring:nth-child(2){inset:22%}.sp-ring:nth-child(3){inset:44%}.sp-ring:nth-child(4){inset:66%}
+.sp-cross{position:absolute;inset:0}
+.sp-cross::before,.sp-cross::after{content:'';position:absolute;background:rgba(45,107,64,.1)}
+.sp-cross::before{width:.5px;height:100%;left:50%}.sp-cross::after{height:.5px;width:100%;top:50%}
+.sp-sweep{position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from 0deg,transparent 320deg,rgba(61,138,82,.08) 345deg,rgba(61,138,82,.5) 360deg);
+  animation:sweepRot 3s linear infinite}
+.sp-sweep-trail{position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from 0deg,transparent 300deg,rgba(61,138,82,.04) 360deg);
+  animation:sweepRot 3s linear infinite;animation-delay:-.2s}
+@keyframes sweepRot{to{transform:rotate(360deg)}}
+.sp-dot{position:absolute;border-radius:50%;background:var(--g2)}
+.sp-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;background:currentColor;opacity:.2;animation:dotP 2s ease-in-out infinite}
+.sp-dot.d1{width:5px;height:5px;top:22%;left:60%;color:var(--g2)}
+.sp-dot.d2{width:4px;height:4px;top:64%;left:30%;color:var(--g1);opacity:.7}
+.sp-dot.d3{width:4px;height:4px;top:42%;left:74%;color:var(--g2);opacity:.85}
+@keyframes dotP{0%,100%{transform:scale(1);opacity:.2}50%{transform:scale(1.8);opacity:.05}}
+
+/* Trial box */
+.sp-trial{margin:0 0 14px;padding:10px 14px;border-radius:12px;
+  background:rgba(22,46,30,.15);border:1px solid rgba(45,107,64,.2);text-align:left}
+.sp-trial-lbl{font-size:11px;font-weight:700;color:var(--g1);margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.sp-trial-pills{display:flex;flex-wrap:wrap;gap:4px}
+.sp-trial-pills span{font-size:9px;color:var(--tx2);background:rgba(45,107,64,.1);
+  border:1px solid rgba(45,107,64,.18);border-radius:20px;padding:2px 8px}
+.btn-cta{width:100%;padding:14px;border-radius:14px;
+  background:linear-gradient(135deg,var(--g7) 0%,var(--g5) 50%,var(--g4) 100%);
+  color:white;border:none;font-family:var(--fu);font-size:14px;font-weight:800;
+  cursor:pointer;margin-bottom:10px;letter-spacing:.03em;
+  box-shadow:0 4px 20px rgba(22,46,30,.5),inset 0 1px 0 rgba(255,255,255,.08);
+  transition:all .25s}
+.btn-cta:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(22,46,30,.65)}
+.sp-divider{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.sp-divider::before,.sp-divider::after{content:'';flex:1;height:.5px;background:rgba(45,107,64,.2)}
+.sp-divider span{font-size:10px;color:var(--mt)}
+.btn-google{width:100%;padding:12px;border-radius:12px;background:var(--s2);
+  border:1px solid var(--bdm);color:var(--tx);font-family:var(--fu);font-size:13px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s}
+.btn-google:hover{background:var(--s3);border-color:var(--bdh)}
+.btn-google svg{width:18px;height:18px;flex-shrink:0}
+.sp-terms{font-size:9px;color:var(--mt);margin-top:10px;opacity:.6}
+
+/* ══════════════════════════════
+   TELA RADAR
+══════════════════════════════ */
+#sRadar{background:var(--bg)}
+#mapEl{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
+
+/* Mapa filtro — visual militar */
+.leaflet-tile{filter:brightness(.34) saturate(.28) hue-rotate(95deg) contrast(1.1)}
+.leaflet-container{background:var(--bg)!important}
+.leaflet-control-zoom{border:none!important}
+.leaflet-control-zoom a{background:rgba(5,12,7,.92)!important;color:var(--tx2)!important;
+  border:1px solid var(--bdm)!important;border-radius:6px!important;margin-bottom:3px!important;display:block!important}
+.leaflet-control-zoom a:hover{background:var(--s3)!important;border-color:var(--bdh)!important}
+
+/* Popup premium */
+.leaflet-popup-content-wrapper{background:rgba(7,15,9,.97)!important;border:1px solid var(--bdm)!important;
+  border-radius:14px!important;color:var(--tx)!important;box-shadow:0 16px 48px rgba(0,0,0,.75)!important;
+  backdrop-filter:blur(16px)!important}
+.leaflet-popup-tip-container{display:none}
+.leaflet-popup-content{margin:10px!important;min-width:180px}
+.leaflet-popup-close-button{color:var(--mt)!important;top:8px!important;right:8px!important}
+
+/* Header */
+.r-hdr{position:fixed;top:0;left:0;right:0;z-index:100;padding:10px 14px;
+  background:linear-gradient(to bottom,rgba(5,12,7,.96) 0%,rgba(5,12,7,.6) 70%,transparent);
+  display:flex;align-items:center;gap:7px}
+.r-wordmark{font-size:14px;font-weight:800;flex:1;color:var(--tx)}
+.r-wordmark span{color:var(--g2)}
+.r-wordmark small{font-size:8px;color:var(--mt);font-weight:400;margin-left:4px;letter-spacing:.1em}
+
+/* Status badges */
+.r-status-row{display:flex;gap:5px;align-items:center}
+.status-badge{display:flex;align-items:center;gap:4px;padding:4px 9px;border-radius:20px;
+  background:rgba(5,12,7,.88);border:1px solid var(--bdm);font-family:var(--fm);font-size:9px;
+  color:var(--tx2);letter-spacing:.05em;backdrop-filter:blur(8px)}
+.status-badge .dot{width:5px;height:5px;border-radius:50%;background:var(--g2);animation:ldotP 2.5s infinite}
+.status-badge .dot.area{background:var(--amb)}
+@keyframes ldotP{0%,100%{opacity:1}50%{opacity:.25}}
+.ico-btn{width:34px;height:34px;border-radius:50%;background:rgba(5,12,7,.88);
+  border:1px solid var(--bdm);display:flex;align-items:center;justify-content:center;
+  font-size:14px;cursor:pointer;transition:all .2s;flex-shrink:0;backdrop-filter:blur(8px);position:relative}
+.ico-btn:hover{border-color:var(--bdh);background:var(--s3)}
+.notif-dot{position:absolute;top:-2px;right:-2px;width:13px;height:13px;border-radius:50%;
+  background:var(--red2);color:white;font-size:7px;font-weight:700;display:none;
+  align-items:center;justify-content:center}
+.notif-dot.on{display:flex}
+
+/* SOS Bar */
+.sos-bar{position:fixed;top:54px;left:0;right:0;z-index:200;padding:8px 14px;display:none;
+  align-items:center;gap:10px;animation:sosBlink .9s ease-in-out infinite}
+.sos-bar.on{display:flex}
+@keyframes sosBlink{0%,100%{background:rgba(180,25,25,.96)}50%{background:rgba(120,15,15,.96)}}
+.sos-txt{flex:1;font-size:11px;font-weight:700;color:white;letter-spacing:.02em}
+.sos-cancel{padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.35);
+  background:transparent;color:white;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--fu)}
+
+/* Nav bottom */
+.r-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:linear-gradient(to top,rgba(5,12,7,.99) 0%,rgba(5,12,7,.9) 60%,transparent);
+  padding:8px 12px 28px}
+.nav-tabs{display:flex;gap:4px;margin-bottom:8px}
+.nav-tab{flex:1;padding:7px 3px;border-radius:10px;border:1px solid var(--bdm);
+  background:rgba(5,12,7,.88);color:var(--tx3);font-family:var(--fu);font-size:10px;
+  font-weight:700;cursor:pointer;text-align:center;transition:all .2s;backdrop-filter:blur(8px);
+  letter-spacing:.01em}
+.nav-tab.act{background:rgba(22,46,30,.85);border-color:var(--bdh);color:var(--g1)}
+
+.panel{display:none}.panel.act{display:block}
+
+/* AMX card */
+.amx-card{background:rgba(7,15,9,.9);border:1px solid var(--bdm);border-radius:12px;
+  padding:10px 13px;backdrop-filter:blur(16px);margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.amx-num{font-family:var(--fd);font-size:32px;line-height:1;letter-spacing:-1px}
+.amx-info{flex:1}
+.amx-desc{font-size:11px;color:var(--tx2)}
+.amx-lbl{font-size:8px;color:var(--mt);margin-top:1px;font-family:var(--fm);letter-spacing:.08em}
+.amx-bar{height:2px;background:var(--bd);border-radius:1px;overflow:hidden;margin-top:5px}
+.amx-fill{height:100%;border-radius:1px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+
+/* Chips de clima */
+.clima-row{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.wchip{display:flex;align-items:center;gap:3px;padding:5px 9px;border-radius:20px;
+  background:rgba(7,15,9,.9);border:1px solid var(--bd);font-size:9px;color:var(--tx2);
+  backdrop-filter:blur(8px);white-space:nowrap;font-family:var(--fm)}
+.wchip.g{border-color:rgba(61,138,82,.4);color:var(--g1)}
+.wchip.w{border-color:rgba(196,120,0,.35);color:#e09c30}
+.wchip.b{border-color:rgba(196,40,40,.35);color:#f07070}
+
+/* Quick ops */
+.quick-row{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;margin-bottom:8px;padding-bottom:1px}
+.quick-row::-webkit-scrollbar{display:none}
+.qbtn{display:flex;align-items:center;gap:5px;padding:6px 11px;border-radius:20px;
+  white-space:nowrap;background:rgba(7,15,9,.9);border:1px solid var(--bdm);
+  font-size:10px;font-weight:700;color:var(--tx2);cursor:pointer;transition:all .2s;
+  flex-shrink:0;backdrop-filter:blur(8px);letter-spacing:.02em}
+.qbtn:hover{border-color:var(--bdh);color:var(--g1)}
+.qbtn.red{border-color:rgba(196,40,40,.45);color:#ff7070}
+.qbtn.red:hover{background:rgba(196,40,40,.12)}
+
+/* Botão operação */
+.btn-op{width:100%;padding:13px;border-radius:14px;border:none;font-family:var(--fu);
+  font-size:13px;font-weight:800;cursor:pointer;transition:all .3s;
+  display:flex;align-items:center;justify-content:center;gap:9px;letter-spacing:.03em}
+.btn-op.start{background:linear-gradient(135deg,var(--g7),var(--g5));color:white;
+  box-shadow:0 3px 16px rgba(22,46,30,.5)}
+.btn-op.stop{background:linear-gradient(135deg,#6a1414,var(--red));color:white;
+  animation:stopPulse 2s ease-in-out infinite}
+@keyframes stopPulse{0%,100%{box-shadow:0 3px 16px rgba(196,40,40,.4)}50%{box-shadow:0 3px 28px rgba(196,40,40,.7)}}
+.btn-op:hover{transform:translateY(-1px)}
+.btn-op:active{transform:scale(.98)}
+
+/* Ranking */
+.rank-list{display:flex;flex-direction:column;gap:5px;max-height:185px;overflow-y:auto;scrollbar-width:none}
+.rank-list::-webkit-scrollbar{display:none}
+.rank-item{display:flex;align-items:center;gap:9px;padding:8px 11px;
+  background:rgba(7,15,9,.9);border:1px solid var(--bd);border-radius:10px;backdrop-filter:blur(8px)}
+.rank-pos{font-family:var(--fm);font-size:11px;font-weight:700;min-width:22px;color:var(--mt)}
+.rank-pos.gold{color:#d4a820}.rank-pos.silver{color:#a0a0a0}.rank-pos.bronze{color:#b07830}
+.rank-name{flex:1;font-size:11px;font-weight:700;color:var(--tx)}
+.rank-sub{font-size:9px;color:var(--mt);margin-top:1px}
+.rank-score{font-family:var(--fm);font-size:11px;color:var(--g2);font-weight:500}
+
+/* ══════════════════════════════
+   SHEETS / OVERLAYS
+══════════════════════════════ */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:500;
+  opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(3px)}
+.overlay.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;bottom:0;left:0;right:0;z-index:501;background:var(--s1);
+  border-radius:20px 20px 0 0;border-top:1px solid var(--bdm);padding:0 0 34px;
+  transform:translateY(100%);transition:transform .4s cubic-bezier(.34,1.15,.64,1);
+  max-height:90vh;overflow-y:auto}
+.sheet.on{transform:translateY(0)}
+.sh-handle{width:32px;height:3px;border-radius:2px;background:rgba(45,107,64,.25);margin:11px auto 16px}
+.sh-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--mt);
+  padding:0 18px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.sh-close-btn{background:none;border:none;color:var(--mt);font-size:18px;cursor:pointer;
+  padding:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.sh-close-btn:hover{background:rgba(255,255,255,.06);color:var(--red)}
+
+/* Perfil */
+.pf-hero{display:flex;align-items:center;gap:13px;padding:0 18px 14px;
+  border-bottom:1px solid var(--bd);margin-bottom:14px}
+.pf-av{width:50px;height:50px;border-radius:50%;overflow:hidden;flex-shrink:0;
+  background:var(--g6);display:flex;align-items:center;justify-content:center;font-size:24px;
+  cursor:pointer;transition:all .2s}
+.pf-av img{width:100%;height:100%;object-fit:cover}
+.pf-name{font-size:16px;font-weight:800;color:var(--tx)}
+.pf-city{font-size:10px;color:var(--mt);margin-top:2px}
+.pf-drone{font-size:10px;color:var(--tx2);margin-top:2px}
+.pf-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:0 18px;margin-bottom:12px}
+.pstat{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:10px;text-align:center}
+.pstat-v{font-family:var(--fm);font-size:18px;font-weight:500;color:var(--g2)}
+.pstat-l{font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:var(--mt);margin-top:2px}
+
+/* Inputs */
+.inp-g{padding:0 18px;margin-bottom:10px}
+.inp-l{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mt);
+  margin-bottom:4px;display:block}
+.inp{width:100%;padding:10px 13px;background:var(--s2);border:1px solid var(--bdm);
+  border-radius:10px;font-family:var(--fu);font-size:13px;color:var(--tx);outline:none;transition:border .2s}
+.inp:focus{border-color:var(--bdh)}
+select.inp{cursor:pointer}
+
+/* Plan badge */
+.plan-b{margin:0 18px 12px;padding:10px 13px;border-radius:10px;border:1px solid;display:flex;align-items:center;gap:9px}
+.plan-b.trial{background:rgba(196,120,0,.07);border-color:rgba(196,120,0,.28)}
+.plan-b.paid{background:rgba(45,107,64,.07);border-color:rgba(45,107,64,.28)}
+.plan-b.exp{background:rgba(196,40,40,.07);border-color:rgba(196,40,40,.28)}
+.plan-icon{font-size:18px}
+.plan-title{font-size:12px;font-weight:700}
+.plan-sub{font-size:9px;color:var(--mt);margin-top:1px}
+.plan-note{margin:0 18px 12px;padding:8px 12px;border-radius:8px;
+  background:rgba(45,107,64,.04);border:1px solid rgba(45,107,64,.1);
+  font-size:10px;color:var(--mt);text-align:center;line-height:1.5}
+
+/* Vis */
+.vis-row{padding:0 18px;margin-bottom:12px}
+.vis-opts{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.vis-opt{padding:5px 12px;border-radius:20px;font-size:10px;font-weight:700;border:1px solid var(--bdm);
+  background:var(--s2);color:var(--tx2);cursor:pointer;transition:all .2s}
+.vis-opt.on{background:var(--g6);border-color:var(--bdh);color:white}
+
+/* Op chips */
+.op-chip-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.op-chip{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid var(--bdm);
+  background:var(--s2);color:var(--tx2);cursor:pointer;transition:all .2s}
+.op-chip.on{background:var(--g6);border-color:var(--bdh);color:white}
+.op-chip:hover{border-color:var(--bdh)}
+
+/* Op result */
+.op-result{margin:0 18px 12px;padding:12px;border-radius:12px;background:var(--s2);border:1px solid var(--bdm)}
+.op-stat-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+.op-stat{background:var(--s1);border-radius:8px;padding:9px;text-align:center}
+.op-stat-v{font-family:var(--fm);font-size:16px;color:var(--g2);font-weight:500}
+.op-stat-l{font-size:8px;color:var(--mt);text-transform:uppercase;letter-spacing:.07em;margin-top:2px}
+
+/* Buttons */
+.btn-prim{width:calc(100% - 36px);margin:0 18px 9px;padding:12px;border-radius:12px;
+  background:linear-gradient(135deg,var(--g7),var(--g5));color:white;border:none;
+  font-family:var(--fu);font-size:13px;font-weight:800;cursor:pointer;
+  box-shadow:0 3px 16px rgba(22,46,30,.4);transition:all .2s;display:block;text-align:center}
+.btn-prim:hover{transform:translateY(-1px)}
+.btn-sec{width:calc(100% - 36px);margin:0 18px;padding:10px;border-radius:12px;
+  background:transparent;border:1px solid var(--bdm);color:var(--mt);
+  font-family:var(--fu);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;display:block}
+.btn-sec:hover{border-color:rgba(196,40,40,.5);color:#f07070}
+
+/* Req items */
+.req-item{background:var(--s2);border-radius:10px;padding:11px;margin:0 18px 7px;border:1px solid var(--bd)}
+.req-item.sos-req{border-left:3px solid var(--red);animation:reqPulse 1.5s ease-in-out infinite}
+@keyframes reqPulse{0%,100%{border-left-color:var(--red)}50%{border-left-color:rgba(196,40,40,.3)}}
+
+/* Chat */
+.chat-msgs{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:10px;
+  max-height:48vh;min-height:160px;overflow-y:auto;margin:0 14px 8px;
+  display:flex;flex-direction:column;gap:3px;scrollbar-width:thin;scrollbar-color:var(--bdm) transparent}
+.message{display:flex;width:100%;margin:3px 0}
+.message.mine{justify-content:flex-end}.message.theirs{justify-content:flex-start}
+.bubble{max-width:80%;padding:7px 11px;border-radius:14px;word-break:break-word;
+  font-size:12px;line-height:1.4;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.message.mine .bubble{background:linear-gradient(135deg,var(--g6),var(--g5));color:#fff;border-bottom-right-radius:3px}
+.message.theirs .bubble{background:var(--s3);color:var(--tx);border-bottom-left-radius:3px;border:1px solid var(--bd)}
+.chat-msg-name{font-size:9px;font-weight:800;color:var(--g1);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em}
+.message .time{font-size:8px;margin-top:3px;text-align:right;opacity:.5}
+.chat-empty{text-align:center;color:var(--mt);font-size:11px;padding:24px 16px;line-height:1.6}
+.chat-input-row{display:flex;gap:7px;padding:0 14px}
+.chat-inp{flex:1;padding:10px 13px;background:var(--s2);border:1px solid var(--bdm);border-radius:12px;
+  font-family:var(--fu);font-size:12px;color:var(--tx);outline:none;transition:border .2s}
+.chat-inp:focus{border-color:var(--bdh)}
+.chat-send{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--g6),var(--g4));
+  border:none;color:white;font-size:14px;cursor:pointer;flex-shrink:0;transition:all .2s}
+.chat-send:hover{transform:scale(1.08)}
+.chat-header-info{display:flex;align-items:center;gap:11px;padding:0 18px 10px;
+  border-bottom:1px solid var(--bd);margin-bottom:8px}
+.chat-header-av{width:38px;height:38px;border-radius:50%;background:var(--g6);
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;border:1px solid var(--bdm)}
+.chat-header-name{font-size:14px;font-weight:800;color:var(--tx)}
+.chat-header-status{font-size:9px;color:var(--g2);margin-top:2px;display:flex;align-items:center;gap:3px}
+.chat-header-status::before{content:'';width:5px;height:5px;background:var(--g2);border-radius:50%}
+.chat-list-item{padding:12px 18px;border-bottom:1px solid var(--bd);cursor:pointer;
+  display:flex;align-items:center;gap:12px;transition:all .2s}
+.chat-list-item:hover{background:rgba(45,107,64,.04)}
+.chat-list-av{width:42px;height:42px;border-radius:50%;background:var(--s2);
+  border:1px solid var(--bdm);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.chat-list-name{font-size:13px;font-weight:700;color:var(--tx);margin-bottom:2px}
+.chat-list-last{font-size:10px;color:var(--mt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Paywall */
+.pw-wrap{padding:0 18px;text-align:center}
+.pw-icon{font-size:44px;margin-bottom:10px}
+.pw-title{font-family:var(--fd);font-size:22px;margin-bottom:5px}
+.pw-sub{font-size:12px;color:var(--mt);line-height:1.6;margin-bottom:16px}
+.pw-feats{display:flex;flex-direction:column;gap:7px;margin-bottom:16px;text-align:left}
+.pw-feat{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--tx2)}
+.pw-price{background:var(--s2);border:1px solid var(--bdm);border-radius:14px;padding:14px;margin-bottom:14px}
+.pw-price-v{font-family:var(--fd);font-size:32px;color:var(--g2);line-height:1}
+.pw-price-p{font-size:10px;color:var(--mt);margin-top:2px}
+.pw-price-n{font-size:10px;color:var(--mt);margin-top:5px}
+
+/* Toast */
+.toast{position:fixed;top:68px;left:50%;transform:translateX(-50%) translateY(-8px);
+  background:rgba(9,19,11,.96);border:1px solid var(--bdm);border-radius:12px;
+  padding:9px 18px;font-size:11px;color:var(--tx);backdrop-filter:blur(12px);z-index:900;
+  opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.45)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Modal chamado */
+@keyframes modalIn{from{opacity:0;transform:translate(-50%,-50%) scale(.88)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.modal-chamado{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;
+  background:var(--s1);border:1px solid var(--bdm);border-radius:18px;padding:22px;
+  width:calc(100% - 36px);max-width:320px;text-align:center;
+  box-shadow:0 24px 60px rgba(0,0,0,.7);display:none}
+.modal-chamado.on{display:block;animation:modalIn .3s cubic-bezier(.34,1.3,.64,1)}
+.modal-chamado-icon{font-size:46px;margin-bottom:9px;display:block}
+.modal-chamado-title{font-size:16px;font-weight:800;margin-bottom:5px}
+.modal-chamado-msg{font-size:12px;color:var(--tx2);margin-bottom:6px;line-height:1.5}
+.modal-chamado-timer{font-size:10px;color:var(--mt);margin-bottom:14px;font-family:var(--fm)}
+.modal-chamado-buttons{display:flex;gap:9px}
+.modal-chamado-btn{flex:1;padding:12px;border-radius:14px;border:none;font-weight:800;
+  cursor:pointer;font-family:var(--fu);font-size:12px;transition:all .2s}
+.modal-chamado-btn.accept{background:linear-gradient(135deg,var(--g6),var(--g4));color:white;box-shadow:0 3px 14px rgba(22,46,30,.4)}
+.modal-chamado-btn.ignore{background:var(--s3);border:1px solid var(--bdm);color:var(--tx2)}
+.modal-chamado-btn.ignore:hover{background:rgba(196,40,40,.1);border-color:rgba(196,40,40,.4);color:#f07070}
+
+.clear-hist-btn{background:rgba(196,40,40,.12);border:1px solid rgba(196,40,40,.3);color:#f07070;
+  margin:0 18px 14px;padding:7px 14px;border-radius:20px;font-size:10px;font-weight:700;
+  cursor:pointer;transition:all .2s;width:calc(100% - 36px);font-family:var(--fu)}
+.clear-hist-btn:hover{background:rgba(196,40,40,.22)}
+
+/* ══════════════════════════════
+   BEACONS SVG — SISTEMA DE ÁREAS
+══════════════════════════════ */
+.beacon-svg{overflow:visible!important}
+
+/* Popup card premium */
+.p-card{display:flex;flex-direction:column;gap:7px}
+.p-card-hdr{display:flex;align-items:center;gap:9px}
+.p-card-av{width:30px;height:30px;border-radius:50%;background:var(--g6);
+  display:flex;align-items:center;justify-content:center;font-size:15px;overflow:hidden;flex-shrink:0}
+.p-card-av img{width:100%;height:100%;object-fit:cover}
+.p-card-name{font-size:13px;font-weight:800;color:var(--tx)}
+.p-card-tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase}
+.p-card-tag.online{background:rgba(45,107,64,.2);color:var(--g1)}
+.p-card-tag.op{background:rgba(26,125,196,.2);color:#60b8e8}
+.p-card-tag.sos{background:rgba(196,40,40,.2);color:#f07070}
+.p-card-tag.area{background:rgba(196,120,0,.2);color:#e09c30}
+.p-card-info{font-size:10px;color:var(--tx2);display:flex;align-items:center;gap:3px}
+.p-card-btn{margin-top:3px;width:100%;padding:7px;border-radius:7px;background:var(--g6);
+  color:white;border:none;font-family:var(--fu);font-size:10px;font-weight:800;cursor:pointer;transition:all .2s}
+.p-card-btn:hover{background:var(--g5)}
+
+/* Legenda de áreas dominadas */
+.area-legend{position:fixed;bottom:0;right:14px;z-index:50;display:flex;flex-direction:column;gap:5px;
+  padding-bottom:165px;pointer-events:none}
+.area-leg-item{display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:20px;
+  background:rgba(5,12,7,.85);border:1px solid rgba(196,120,0,.2);backdrop-filter:blur(8px)}
+.area-leg-dot{width:6px;height:6px;border-radius:50%;background:var(--amb);opacity:.8}
+.area-leg-txt{font-size:8px;color:var(--tx2);font-family:var(--fm);letter-spacing:.04em}
+
+</style>
+</head>
+<body>
+
+<div class="screen" id="sSplash">
+  <div class="sp-ambient"></div>
+  <div class="sp-grid"></div>
+  <div class="sp-scan-line"></div>
+  <div class="sp-wrap">
+    <div class="sp-wordmark">
+      <span class="sp-wordmark-a">Agro</span><span class="sp-wordmark-m">Metrix</span>
+    </div>
+    <div class="sp-sub">Radar Operacional Agrícola</div>
+
+    <div class="sp-radar-wrap">
+      <div class="sp-radar">
+        <div class="sp-ring"></div><div class="sp-ring"></div><div class="sp-ring"></div><div class="sp-ring"></div>
+        <div class="sp-cross"></div>
+        <div class="sp-sweep-trail"></div>
+        <div class="sp-sweep"></div>
+        <div class="sp-dot d1"></div>
+        <div class="sp-dot d2"></div>
+        <div class="sp-dot d3"></div>
+      </div>
+    </div>
+
+    <div class="sp-trial">
+      <div class="sp-trial-lbl">🎁 7 dias grátis · depois R$ 19,90/mês</div>
+      <div class="sp-trial-pills">
+        <span>🗺️ Radar ao vivo</span><span>📊 AMX Score</span>
+        <span>🚨 SOS</span><span>💬 Chat</span><span>🏆 Ranking</span>
+      </div>
+    </div>
+
+    <button class="btn-cta" id="btnEntrar">🚀 Começar 7 dias grátis</button>
+    <div class="sp-divider"><span>já tenho conta</span></div>
+    <button class="btn-google" id="btnGoogle">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Entrar com Google
+    </button>
+    <div class="sp-terms">Ao entrar você concorda com os Termos de Uso · Cancele quando quiser</div>
+  </div>
+</div>
+
+<div class="screen off" id="sRadar">
+  <div id="mapEl"></div>
+
+  <div class="r-hdr">
+    <div class="r-wordmark">Agro<span>Metrix</span><small>RADAR</small></div>
+    <div class="r-status-row">
+      <div class="status-badge"><div class="dot"></div><span id="pilotCount">— pilotos</span></div>
+      <div class="status-badge"><div class="dot area"></div><span id="areaCount">— áreas</span></div>
+    </div>
+    <button class="ico-btn" onclick="window.centerOnUser()" title="Minha Localização" style="font-size:13px">📍</button>
+    <div style="position:relative">
+      <button class="ico-btn" id="btnChatIco" onclick="window.onChatIconClick()" title="Chat">💬</button>
+      <div class="notif-dot" id="chatDot">!</div>
+    </div>
+    <div style="position:relative">
+      <button class="ico-btn" onclick="window.openSheet('shReq')" title="Pedidos">🔧</button>
+      <div class="notif-dot" id="reqDot">!</div>
+    </div>
+    <button class="ico-btn" onclick="window.openSheet('shProfile')" title="Perfil">👤</button>
+  </div>
+
+  <div class="sos-bar" id="sosBar">
+    <span style="font-size:16px">🚨</span>
+    <div class="sos-txt">SOS ATIVO — Aguardando pilotos próximos…</div>
+    <button class="sos-cancel" onclick="window.cancelSOS()">Cancelar</button>
+  </div>
+
+  <div class="area-legend" id="areaLegend"></div>
+
+  <div class="r-nav">
+    <div class="nav-tabs">
+      <button class="nav-tab act" id="tab-radar" onclick="window.switchTab('radar')">📡 Radar</button>
+      <button class="nav-tab" id="tab-clima" onclick="window.switchTab('clima')">🌡️ Clima</button>
+      <button class="nav-tab" id="tab-ops" onclick="window.switchTab('ops')">🚁 Ops</button>
+      <button class="nav-tab" id="tab-rank" onclick="window.switchTab('rank')">🏆 Rank</button>
+    </div>
+
+    <div class="panel act" id="pRadar">
+      <div class="amx-card">
+        <div>
+          <div style="font-size:8px;text-transform:uppercase;letter-spacing:.12em;color:var(--mt)">AMX</div>
+          <div class="amx-num" id="amxNum" style="color:var(--g2)">—</div>
+        </div>
+        <div class="amx-info">
+          <div class="amx-desc" id="amxDesc">Calculando condições…</div>
+          <div class="amx-lbl" id="amxLbl">AMX/100</div>
+          <div class="amx-bar"><div class="amx-fill" id="amxFill" style="width:0%;background:var(--g2)"></div></div>
+        </div>
+      </div>
+      <button class="btn-op start" id="btnOp" onclick="window.handleOp()">🚁 Iniciar Operação</button>
+    </div>
+
+    <div class="panel" id="pClima">
+      <div class="clima-row" id="climaChips">
+        <div class="wchip">🌡️ —°C</div><div class="wchip">💨 — km/h</div>
+        <div class="wchip">💧 —%</div><div class="wchip">ΔT —°C</div>
+      </div>
+      <div class="amx-card">
+        <div><div style="font-size:8px;text-transform:uppercase;letter-spacing:.12em;color:var(--mt)">AMX</div>
+          <div class="amx-num" id="amxNum2" style="color:var(--g2)">—</div></div>
+        <div class="amx-info">
+          <div class="amx-desc" id="amxDesc2">—</div>
+          <div class="amx-bar"><div class="amx-fill" id="amxFill2" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="pOps">
+      <div class="quick-row">
+        <div class="qbtn red" onclick="window.activateSOS()">🚨 SOS</div>
+        <div class="qbtn" onclick="window.sendReq('battery','🔋 Preciso de bateria')">🔋 Bateria</div>
+        <div class="qbtn" onclick="window.sendReq('helice','🚁 Preciso de hélice')">🚁 Hélice</div>
+        <div class="qbtn" onclick="window.sendReq('part','🔧 Preciso de peça')">🔧 Peça</div>
+        <div class="qbtn" onclick="window.sendReq('support','🛠️ Suporte')">🛠️ Suporte</div>
+        <div class="qbtn" onclick="window.sendReq('fuel','⛽ Abastecimento')">⛽ Combustível</div>
+        <div class="qbtn" onclick="window.sendReq('tow','🚜 Atolamento')">🚜 Atolamento</div>
+      </div>
+      <button class="btn-op start" id="btnOp2" onclick="window.handleOp()">🚁 Iniciar Operação</button>
+    </div>
+
+    <div class="panel" id="pRank">
+      <div class="rank-list" id="rankList">
+        <div style="text-align:center;color:var(--mt);font-size:11px;padding:14px">Carregando ranking…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ovProfile" onclick="window.closeSheet('shProfile')"></div>
+<div class="sheet" id="shProfile">
+  <div class="sh-handle"></div>
+  <div class="sh-title">Meu Perfil<button class="sh-close-btn" onclick="window.closeSheet('shProfile')">✕</button></div>
+  <div id="profileContent"></div>
+</div>
+
+<div class="overlay" id="ovOpConfig" onclick="window.closeSheet('shOpConfig')"></div>
+<div class="sheet" id="shOpConfig">
+  <div class="sh-handle"></div>
+  <div class="sh-title">⚙️ Configurar Operação<button class="sh-close-btn" onclick="window.closeSheet('shOpConfig')">✕</button></div>
+  <div class="inp-g"><label class="inp-l">Drone utilizado</label>
+    <div class="op-chip-row" id="droneChips">
+      <div class="op-chip" onclick="window.selChip(this,'drone','DJI T25')">DJI T25</div>
+      <div class="op-chip" onclick="window.selChip(this,'drone','DJI T40')">DJI T40</div>
+      <div class="op-chip" onclick="window.selChip(this,'drone','DJI T50')">DJI T50</div>
+      <div class="op-chip" onclick="window.selChip(this,'drone','XAG P100')">XAG P100</div>
+      <div class="op-chip" onclick="window.selChip(this,'drone','XAG V40')">XAG V40</div>
+      <div class="op-chip" onclick="window.selChip(this,'drone','EAVision')">EAVision</div>
+      <div class="op-chip" onclick="window.showDroneInput(this)">Outro</div>
+    </div>
+    <input type="text" id="customDroneInput" class="inp" placeholder="Modelo do drone" style="display:none;margin-top:7px">
+  </div>
+  <div class="inp-g"><label class="inp-l">Faixa de aplicação</label>
+    <div class="op-chip-row" id="faixaChips">
+      <div class="op-chip" onclick="window.selChip(this,'faixa','7')">7 m</div>
+      <div class="op-chip" onclick="window.selChip(this,'faixa','9')">9 m</div>
+      <div class="op-chip" onclick="window.selChip(this,'faixa','11')">11 m</div>
+      <div class="op-chip" onclick="window.selChip(this,'faixa','13')">13 m</div>
+    </div>
+  </div>
+  <div class="inp-g"><label class="inp-l">Vazão média</label>
+    <div class="op-chip-row" id="vazaoChips">
+      <div class="op-chip" onclick="window.selChip(this,'vazao','5')">5 L/ha</div>
+      <div class="op-chip" onclick="window.selChip(this,'vazao','10')">10 L/ha</div>
+      <div class="op-chip" onclick="window.selChip(this,'vazao','15')">15 L/ha</div>
+      <div class="op-chip" onclick="window.selChip(this,'vazao','20')">20 L/ha</div>
+      <div class="op-chip" onclick="window.selChip(this,'vazao','30')">30 L/ha</div>
+    </div>
+  </div>
+  <div class="inp-g"><label class="inp-l">Média operacional estimada</label>
+    <div class="op-chip-row" id="haChips">
+      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','15')">15 ha/h</div>
+      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','20')">20 ha/h</div>
+      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','25')">25 ha/h</div>
+      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','30')">30 ha/h</div>
+      <div class="op-chip" onclick="window.selChip(this,'avgHaPerH','40')">40 ha/h</div>
+    </div>
+  </div>
+  <div style="padding:0 18px 6px;font-size:9px;color:var(--mt);line-height:1.5">
+    ⚠️ Estimativa com base no tempo operacional e configuração. Vazões extremas reduzem confiabilidade.
+  </div>
+  <button class="btn-prim" onclick="window.confirmOp()" style="margin-top:12px">🚁 Iniciar Operação</button>
+  <button class="btn-sec" onclick="window.closeSheet('shOpConfig')" style="margin-top:7px">Cancelar</button>
+</div>
+
+<div class="overlay" id="ovOpResult" onclick="window.closeSheet('shOpResult')"></div>
+<div class="sheet" id="shOpResult">
+  <div class="sh-handle"></div>
+  <div class="sh-title">📊 Resultado da Operação<button class="sh-close-btn" onclick="window.closeSheet('shOpResult')">✕</button></div>
+  <div id="opResultContent"></div>
+  <button class="btn-prim" onclick="window.closeSheet('shOpResult')" style="margin-top:9px">Fechar</button>
+</div>
+
+<div class="overlay" id="ovReq" onclick="window.closeSheet('shReq')"></div>
+<div class="sheet" id="shReq">
+  <div class="sh-handle"></div>
+  <div class="sh-title">📢 Pedidos Ativos<button class="sh-close-btn" onclick="window.closeSheet('shReq')">✕</button></div>
+  <button class="clear-hist-btn" onclick="window.clearHistory()">🗑️ Limpar histórico</button>
+  <div id="reqList"></div>
+</div>
+
+<div class="overlay" id="ovChat" onclick="window.closeSheet('shChat')"></div>
+<div class="sheet" id="shChat" style="z-index:503">
+  <div class="sh-handle"></div>
+  <div class="sh-title">💬 Conversa<button class="sh-close-btn" onclick="window.closeSheet('shChat')">✕</button></div>
+  <div class="chat-header-info" id="chatHeaderInfo">
+    <div class="chat-header-av" id="chatHeaderAv">👨‍✈️</div>
+    <div>
+      <div class="chat-header-name" id="chatName">—</div>
+      <div class="chat-header-status" id="chatStatus">Online</div>
+    </div>
+  </div>
+  <div class="chat-msgs" id="chatMsgs">
+    <div class="chat-empty">💬 Inicie a conversa!</div>
+  </div>
+  <div class="chat-input-row" style="margin-bottom:7px">
+    <input class="chat-inp" id="chatInp" placeholder="Digite uma mensagem…" onkeydown="if(event.key==='Enter')window.sendMsg()" autocomplete="off">
+    <button class="chat-send" onclick="window.sendMsg()">➤</button>
+  </div>
+  <div style="text-align:center;padding:3px 14px 8px;border-top:1px solid var(--bd);margin-top:3px">
+    <button onclick="window.closeSheet('shChat');setTimeout(window.toggleChatDrawer,300)"
+      style="font-size:11px;font-weight:700;color:var(--g1);background:rgba(45,107,64,.08);
+      border:1px solid var(--bdm);border-radius:20px;cursor:pointer;font-family:var(--fu);
+      padding:7px 14px;width:100%;transition:all .2s">💬 Ver Minhas Conversas</button>
+  </div>
+</div>
+
+<div class="overlay" id="ovPaywall"></div>
+<div class="sheet" id="shPaywall">
+  <div class="sh-handle"></div>
+  <div class="pw-wrap">
+    <div class="pw-icon">🚁</div>
+    <div class="pw-title">Acesse o Radar</div>
+    <div class="pw-sub">Veja pilotos próximos, registre operações e acompanhe seu AMX Score em tempo real.</div>
+    <div class="pw-feats">
+      <div class="pw-feat">🗺️ Radar ao vivo com pilotos próximos</div>
+      <div class="pw-feat">📊 AMX Score operacional</div>
+      <div class="pw-feat">🚨 SOS e pedidos de suporte</div>
+      <div class="pw-feat">🏆 Ranking de pilotos</div>
+      <div class="pw-feat">💬 Chat operacional</div>
+    </div>
+    <div class="pw-price">
+      <div class="pw-price-v">R$ 19,90</div>
+      <div class="pw-price-p">por mês · cancele quando quiser</div>
+      <div class="pw-price-n">🎁 7 dias grátis para testar</div>
+    </div>
+    <button class="btn-prim" onclick="window.startTrial()" style="margin-bottom:7px">🚀 Começar 7 dias grátis</button>
+    <button onclick="window.closeSheet('shPaywall')" style="width:100%;padding:9px;background:none;border:none;color:var(--mt);font-family:var(--fu);font-size:12px;cursor:pointer">Agora não</button>
+  </div>
+</div>
+
+<div class="overlay" id="ovChatDrawer" onclick="window.closeChatDrawer()"></div>
+<div class="sheet" id="shChatDrawer" style="z-index:502">
+  <div class="sh-handle"></div>
+  <div class="sh-title">💬 Minhas Conversas<button class="sh-close-btn" onclick="window.closeChatDrawer()">✕</button></div>
+  <div id="chatList" style="max-height:55vh;overflow-y:auto">
+    <div style="text-align:center;color:var(--mt);padding:24px 18px;font-size:11px">💭 Nenhuma conversa ativa.</div>
+  </div>
+  <button class="btn-sec" onclick="window.closeChatDrawer()" style="margin-top:9px;width:calc(100% - 36px)">Fechar</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div style="position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.65);display:none;backdrop-filter:blur(3px)"
+  id="modalChamadoOverlay" onclick="window.modalIgnore()"></div>
+<div class="modal-chamado" id="modalChamado">
+  <span class="modal-chamado-icon" id="modalIcon">🔧</span>
+  <div class="modal-chamado-title" id="modalTitle">Novo Chamado</div>
+  <div class="modal-chamado-msg" id="modalMsg">Alguém precisa de ajuda!</div>
+  <div class="modal-chamado-timer" id="modalTimer">Expira em 30s</div>
+  <div class="modal-chamado-buttons">
+    <button class="modal-chamado-btn accept" onclick="window.modalAccept()">✅ Aceitar</button>
+    <button class="modal-chamado-btn ignore" onclick="window.modalIgnore()">❌ Ignorar</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// AGROMETRIX RADAR — Sistema Operacional Completo v2.0
+// ══════════════════════════════════════════════════════
+
+// ── ESTADO GLOBAL ──
+const R = window.AgroRadar = {
+  user:null, profile:null, plan:null,
+  lat:null, lon:null, map:null, weather:null,
+  opCfg:{}, chatTarget:null, currentChatId:null, sosActive:false,
+  hiddenRequests:new Set(),
+  isOperating:false, opStartTime:null, opStartLat:null, opStartLon:null,
+  markers:{}, beacons:{}, botData:{},
+  areas:{},
+  pilotIds:new Set(),
+  activeBots:[]
+};
+
+const $=id=>document.getElementById(id);
+const ov=id=>id.replace('sh','ov');
+
+// ── HELPERS ──
+window.showToast=(msg,dur=3200)=>{
+  const t=$('toast');t.textContent=msg;t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'),dur);
+};
+window.openSheet=id=>{$(ov(id)).classList.add('on');$(id).classList.add('on');
+  if(id==='shProfile')renderProfile();if(id==='shReq')loadRequests();};
+window.closeSheet=id=>{$(ov(id)).classList.remove('on');$(id).classList.remove('on');};
+window.switchTab=tab=>{
+  ['radar','clima','ops','rank'].forEach(t=>{
+    const tb=$('tab-'+t);if(tb)tb.classList.remove('act');
+    const pn=$('p'+t[0].toUpperCase()+t.slice(1));if(pn)pn.classList.remove('act');
+  });
+  const at=$('tab-'+tab);if(at)at.classList.add('act');
+  const ap=$('p'+tab[0].toUpperCase()+tab.slice(1));if(ap)ap.classList.add('act');
+  if(tab==='rank')loadRanking();
+};
+window.selChip=(el,field,val)=>{
+  el.closest('.op-chip-row').querySelectorAll('.op-chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');R.opCfg[field]=val;
+};
+window.showDroneInput=el=>{
+  window.selChip(el,'drone','Outro');
+  const inp=$('customDroneInput');inp.style.display='block';inp.focus();
+  inp.onblur=()=>{if(inp.value.trim())R.opCfg.drone=inp.value.trim();inp.style.display='none';};
+};
+window.centerOnUser=()=>{
+  if(R.map&&R.lat&&R.lon){R.map.setView([R.lat,R.lon],13);showToast('📍 Centralizado');}
+  else showToast('⚠️ Localização indisponível');
+};
+
+function fixPhoto(url){
+  if(!url||typeof url!=='string'||url.length>400&&!url.startsWith('http'))return null;
+  if(url.includes('googleusercontent.com'))return url.split('?')[0]+'?sz=150';
+  return url;
+}
+function cleanName(name,user){
+  let n=String(name||'').trim();
+  if(!n||n.startsWith('http')||n.includes('googleusercontent.com'))
+    n=user?.displayName||user?.email?.split('@')[0]||'Piloto';
+  if(n.length>24)n=n.substring(0,21)+'…';
+  return n||'Piloto';
+}
+
+// ── DADOS DOS BOTS ──
+const REGIOES_AGRO = [
+  // Mato Grosso (foco principal)
+  {n:'Sorriso, MT',lat:-12.55,lon:-55.72},{n:'Lucas do Rio Verde, MT',lat:-13.06,lon:-55.91},
+  {n:'Nova Mutum, MT',lat:-13.83,lon:-56.08},{n:'Sinop, MT',lat:-11.86,lon:-55.50},
+  {n:'Querência, MT',lat:-12.61,lon:-52.17},{n:'Rondonópolis, MT',lat:-16.47,lon:-54.64},
+  {n:'Campo Verde, MT',lat:-15.55,lon:-55.17},{n:'Primavera do Leste, MT',lat:-15.56,lon:-54.28},
+  // Goiás
+  {n:'Rio Verde, GO',lat:-17.80,lon:-50.93},{n:'Jataí, GO',lat:-17.88,lon:-51.72},
+  {n:'Cristalina, GO',lat:-16.77,lon:-47.61},{n:'Mineiros, GO',lat:-17.57,lon:-52.55},
+  // Mato Grosso do Sul
+  {n:'Dourados, MS',lat:-22.22,lon:-54.81},{n:'Maracaju, MS',lat:-21.61,lon:-55.17},
+  {n:'Sidrolândia, MS',lat:-20.93,lon:-54.96},
+  // Oeste Bahia / MATOPIBA
+  {n:'Barreiras, BA',lat:-12.15,lon:-44.99},{n:'Luís Eduardo Magalhães, BA',lat:-12.10,lon:-45.79},
+  {n:'Correntina, BA',lat:-13.34,lon:-44.64},{n:'Balsas, MA',lat:-7.53,lon:-46.04},
+  {n:'Uruçuí, PI',lat:-7.23,lon:-44.56},
+  // Paraná
+  {n:'Cascavel, PR',lat:-24.96,lon:-53.46},{n:'Maringá, PR',lat:-23.42,lon:-51.93},
+  {n:'Londrina, PR',lat:-23.31,lon:-51.16},{n:'Pato Branco, PR',lat:-26.23,lon:-52.67},
+  // Triângulo Mineiro
+  {n:'Uberlândia, MG',lat:-18.92,lon:-48.28},{n:'Uberaba, MG',lat:-19.75,lon:-47.94},
+  {n:'Patos de Minas, MG',lat:-18.58,lon:-46.52},
+  // Interior SP
+  {n:'Ribeirão Preto, SP',lat:-21.18,lon:-47.81},{n:'Sertãozinho, SP',lat:-21.13,lon:-47.99},
+  {n:'São José do Rio Preto, SP',lat:-20.82,lon:-49.37},
+  // RS
+  {n:'Passo Fundo, RS',lat:-28.26,lon:-52.41},{n:'Cruz Alta, RS',lat:-28.64,lon:-53.61},
+];
+
+const NOMES_M=['João Silva','Pedro Oliveira','Lucas Lima','Rafael Alves','Gustavo Pereira',
+  'Bruno Ferreira','Rodrigo Gomes','Thiago Monteiro','Felipe Nogueira','Marcelo Batista',
+  'Daniel Martins','Leonardo Teixeira','Ricardo Farias','Eduardo Santos','Marcos Rocha',
+  'André Costa','Paulo Souza','Diego Almeida','Vinicius Nunes','Carlos Moreira',
+  'Henrique Pinto','Gabriel Cardoso','Mateus Araújo','Leandro Vieira','Roberto Lima'];
+const NOMES_F=['Maria Santos','Ana Costa','Fernanda Souza','Patrícia Rocha','Carla Mendes'];
+const DRONES=['DJI Agras T40','DJI Agras T50','XAG P100 Pro','XAG V40','EAVision U10','DJI Agras T25'];
+const AVATARES_M=['👨‍✈️','🧑‍✈️','👨‍🚀','👨‍🌾'];
+const AVATARES_F=['👩‍✈️','👩‍🚀','👩‍🌾'];
+
+function gerarBots(){
+  const bots=[];
+  const regioes=[...REGIOES_AGRO].sort(()=>Math.random()-.5).slice(0,30);
+  for(let i=0;i<30;i++){
+    const fem=i<5;
+    const nomes=fem?NOMES_F:NOMES_M;
+    const avats=fem?AVATARES_F:AVATARES_M;
+    const idx=fem?i:(i-5);
+    const regiao=regioes[i%regioes.length];
+    // Hectares: maioria 10-60ha, poucos até 100ha (nunca acima de 100)
+    const ha=Math.random()<0.15?70+Math.floor(Math.random()*30):10+Math.floor(Math.random()*50);
+    const score=50+Math.floor(Math.random()*45);
+    const opsTotal=5+Math.floor(Math.random()*150);
+    const r=Math.random();
+    const status=r<0.3?'operating':r<0.7?'online':'offline';
+    bots.push({
+      id:`bot_${i}_${Date.now()}`,
+      name:nomes[idx%nomes.length],
+      city:regiao.n,
+      drone:DRONES[Math.floor(Math.random()*DRONES.length)],
+      score,amxScore:score,
+      photo:avats[Math.floor(Math.random()*avats.length)],
+      hoursTotal:10+Math.floor(Math.random()*600),
+      opsTotal,hectares:ha,
+      // Posição: dentro de 0.2 graus da cidade (cidade fixa)
+      baseLat:regiao.lat,baseLon:regiao.lon,
+      lat:regiao.lat+(Math.random()-.5)*.2,
+      lon:regiao.lon+(Math.random()-.5)*.2,
+      status,
+      lastOp:new Date(Date.now()-Math.floor(Math.random()*14)*86400000).toISOString()
+    });
+  }
+  return bots;
+}
+
+// ── MAPA ──
+function initMap(lat,lon){
+  if(R.map)return;
+  R.map=L.map('mapEl',{zoomControl:true,attributionControl:false}).setView([lat,lon],7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(R.map);
+
+  // Debounce zoom para performance
+  let zoomTimer=null;
+  R.map.on('zoomend',()=>{
+    clearTimeout(zoomTimer);
+    zoomTimer=setTimeout(()=>refreshBeaconLabels(),200);
+  });
+  R.map.on('moveend',()=>updatePilotCount());
+}
+
+// ── BEACONS PREMIUM ──
+function createBeaconIcon(status,isArea=false,score=70,areaOwner=false){
+  const colors={
+    online:'#3d8a52', operating:'#1a7dc4',
+    sos:'#c42828', offline:'#3d5c44',
+    request:'#c47800'
+  };
+  const col=isArea?(areaOwner?'#c47800':'#2a6b40'):colors[status]||colors.online;
+  const size=isArea?14:10;
+  const pulseOp=status==='operating'||status==='sos'?.6:.35;
+  const pulseSize=status==='sos'?22:18;
+  const anim=status==='offline'?'none':`beacon-pulse-${Math.round(Math.random()*100)} 2.8s ease-in-out infinite`;
+
+  const svg=`<svg class="beacon-svg" width="${pulseSize*2}" height="${pulseSize*2}" viewBox="0 0 ${pulseSize*2} ${pulseSize*2}" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      @keyframes beacon-pulse-${Math.round(Math.random()*100)}{
+        0%,100%{r:${size+3}px;opacity:${pulseOp}}
+        50%{r:${size+6}px;opacity:.1}
+      }
+    </style>
+    <circle cx="${pulseSize}" cy="${pulseSize}" r="${size+3}" fill="${col}" opacity="${pulseOp}">
+      <animate attributeName="r" values="${size+2};${size+7};${size+2}" dur="2.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="${pulseOp};.05;${pulseOp}" dur="2.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="${pulseSize}" cy="${pulseSize}" r="${size}" fill="${col}" opacity=".95"/>
+    <circle cx="${pulseSize}" cy="${pulseSize}" r="${size-2}" fill="none" stroke="rgba(255,255,255,.25)" stroke-width=".5"/>
+    ${areaOwner?`<text x="${pulseSize}" y="${pulseSize+3}" text-anchor="middle" font-size="6" fill="rgba(255,255,255,.9)" font-family="JetBrains Mono">▲</text>`:''}
+  </svg>`;
+
+  return L.divIcon({
+    html:svg,
+    className:'',
+    iconSize:[pulseSize*2,pulseSize*2],
+    iconAnchor:[pulseSize,pulseSize]
+  });
+}
+
+function upsertPilot(data){
+  if(!R.map||!data||!data.id||!data.lat||!data.lon)return;
+  const pid=data.id;
+
+  // Sanitizar nome
+  let name=String(data.name||data.nickname||'');
+  if(!name||name.startsWith('http')||name.includes('googleusercontent'))name='Piloto';
+  if(name.length>24)name=name.substring(0,21)+'…';
+  data.name=name;
+
+  // Calcular grid key (0.5 graus)
+  const gk=`${Math.floor(data.lat/0.5)}_${Math.floor(data.lon/0.5)}`;
+  if(!R.areas[gk]||R.areas[gk].hectares<(data.hectares||0)){
+    R.areas[gk]={pilot:data,hectares:data.hectares||0,gk};
+  }
+
+  const zoom=R.map.getZoom();
+  const showLabel=data.isCurrentUser||zoom>=11;
+
+  // Popup HTML
+  const statusLabels={online:'Online',operating:'Em Operação',sos:'SOS',offline:'Offline',request:'Pedido'};
+  const statusClass={online:'online',operating:'op',sos:'sos',offline:'online',request:'area'};
+  const popupHtml=`<div class="p-card">
+    <div class="p-card-hdr">
+      <div class="p-card-av">${data.photo&&!data.photo.startsWith('http')&&data.photo.length<5?data.photo:`<img src="${fixPhoto(data.photo)||data.photo}" onerror="this.outerHTML='👨‍✈️'" style="width:100%;height:100%;object-fit:cover">`}</div>
+      <div><div class="p-card-name">${data.name}</div>
+        <span class="p-card-tag ${statusClass[data.status]||'online'}">${statusLabels[data.status]||'Online'}</span>
+      </div>
+    </div>
+    <div>
+      <div class="p-card-info">📍 ${data.city||'—'}</div>
+      <div class="p-card-info">🚁 ${data.drone||'—'}</div>
+      <div class="p-card-info">📐 ${data.hectares||0} ha · AMX ${data.amxScore||data.score||0}</div>
+    </div>
+    <button class="p-card-btn" onclick="window.openChatWith('${pid}','${data.name.replace(/'/g,"\\'")}')">💬 Abrir Chat</button>
+  </div>`;
+
+  if(R.markers[pid]){
+    R.markers[pid].setLatLng([data.lat,data.lon]);
+    R.markers[pid].setIcon(createBeaconIcon(data.status||'online',false,data.amxScore||data.score||70,false));
+    R.markers[pid].getPopup()?.setContent(popupHtml);
+  } else {
+    const icon=createBeaconIcon(data.status||'online',false,data.amxScore||data.score||70,false);
+    const marker=L.marker([data.lat,data.lon],{icon}).addTo(R.map);
+    marker.bindPopup(popupHtml,{maxWidth:220,className:'premium-popup'});
+    R.markers[pid]=marker;
+    R.pilotIds.add(pid);
+  }
+
+  R.botData[pid]=data;
+  updatePilotCount();
+  updateAreaMarkers();
+}
+
+// Marcadores de áreas dominadas (separados dos beacons)
+let areaMarkers={};
+function updateAreaMarkers(){
+  // Limpar markers antigos de área
+  Object.values(areaMarkers).forEach(m=>m.remove());
+  areaMarkers={};
+
+  const topAreas=Object.values(R.areas)
+    .filter(a=>a.hectares>30)
+    .sort((a,b)=>b.hectares-a.hectares)
+    .slice(0,12);
+
+  topAreas.forEach(area=>{
+    const p=area.pilot;
+    const gk=area.gk;
+    // Centro da grid
+    const [gy,gx]=gk.split('_').map(Number);
+    const clat=(gy+0.5)*0.5,clon=(gx+0.5)*0.5;
+
+    const icon=createBeaconIcon('online',true,p.amxScore||70,true);
+    const m=L.marker([clat,clon],{icon,zIndexOffset:-100}).addTo(R.map);
+    const popupHtml=`<div class="p-card">
+      <div class="p-card-hdr">
+        <div class="p-card-av">${p.photo&&p.photo.length<5?p.photo:'🏆'}</div>
+        <div><div class="p-card-name">${p.name}</div><span class="p-card-tag area">Dono da Área</span></div>
+      </div>
+      <div>
+        <div class="p-card-info">📍 ${p.city||'—'}</div>
+        <div class="p-card-info">📐 ${area.hectares} ha nesta grade</div>
+      </div>
+    </div>`;
+    m.bindPopup(popupHtml,{maxWidth:200});
+    areaMarkers[gk]=m;
+  });
+
+  $('areaCount').textContent=`${topAreas.length} áreas`;
+}
+
+function updatePilotCount(){
+  const n=R.pilotIds.size;
+  $('pilotCount').textContent=`${n} pilotos`;
+}
+
+function refreshBeaconLabels(){
+  // Beacons respondem ao zoom naturalmente pelo tamanho do SVG
+}
+
+// ── MOVIMENTO DOS BOTS (micro-drift na cidade base) ──
+let botMoveInterval=null;
+function startBotMovement(){
+  if(botMoveInterval)clearInterval(botMoveInterval);
+  botMoveInterval=setInterval(()=>{
+    // Apenas 20% dos bots se movem por ciclo (performance)
+    const sample=R.activeBots.filter(()=>Math.random()<0.2);
+    sample.forEach(bot=>{
+      // Drift pequeno em torno da cidade base
+      bot.lat=bot.baseLat+(Math.random()-.5)*.18;
+      bot.lon=bot.baseLon+(Math.random()-.5)*.18;
+      // Crescimento gradual de hectares: +10 a +20 por dia (simulado em ms)
+      if(Math.random()<0.05)bot.hectares=Math.min(100,bot.hectares+Math.floor(Math.random()*2));
+      upsertPilot(bot);
+    });
+  },90000); // a cada 90s (não 60s)
+}
+
+// ── CLIMA (simulado realístico) ──
+function getWeather(){
+  return window._weatherState||
+    JSON.parse(localStorage.getItem('agrometrix_weather')||'null')||
+    {temp:24,humidity:65,wind:8,deltaT:5.2,rainProb:10,cloud:20,condition:'Parcialmente nublado'};
+}
+
+// ── AMX SCORE ──
+function calcAMX(w){
+  let s=100;
+  if(w.wind>20)s-=30; else if(w.wind>15)s-=15; else if(w.wind>10)s-=8;
+  if(w.deltaT<2||w.deltaT>10)s-=20; else if(w.deltaT<3||w.deltaT>8)s-=10;
+  if(w.rainProb>50)s-=25; else if(w.rainProb>30)s-=12;
+  if(w.humidity>85)s-=10; else if(w.humidity<40)s-=8;
+  if(w.cloud>80)s-=8;
+  return Math.max(10,Math.min(100,Math.round(s)));
+}
+function amxLabel(s){
+  if(s>=85)return{label:'Excelente',color:'#5aad70'};
+  if(s>=70)return{label:'Bom',color:'#82cd96'};
+  if(s>=55)return{label:'Moderado',color:'#e09c30'};
+  if(s>=40)return{label:'Limitado',color:'#d0742a'};
+  return{label:'Crítico',color:'#c42828'};
+}
+
+function updateAMX(w){
+  const score=calcAMX(w);
+  const{label,color}=amxLabel(score);
+  ['amxNum','amxNum2'].forEach(id=>{const el=$(id);if(el){el.textContent=score;el.style.color=color;}});
+  $('amxDesc').textContent=`${label} · ${w.condition||'Clima atual'}`;
+  $('amxDesc2').textContent=`${label} · ${w.condition||'—'}`;
+  $('amxLbl').textContent=`AMX ${score}/100`;
+  $('amxFill').style.width=score+'%';$('amxFill').style.background=color;
+  $('amxFill2').style.width=score+'%';$('amxFill2').style.background=color;
+}
+
+function updateClima(w){
+  const dt=w.deltaT>=2&&w.deltaT<=8?'g':w.deltaT>10?'b':'w';
+  const wd=w.wind<=10?'g':w.wind<=18?'w':'b';
+  $('climaChips').innerHTML=`
+    <div class="wchip g">🌡️ ${w.temp||'—'}°C</div>
+    <div class="wchip ${wd}">💨 ${w.wind||'—'} km/h</div>
+    <div class="wchip">💧 ${w.humidity||'—'}%</div>
+    <div class="wchip ${dt}">ΔT ${w.deltaT||'—'}°C</div>
+    ${w.rainProb>30?`<div class="wchip w">🌧️ ${w.rainProb}%</div>`:''}`;
+}
+
+// ── OPERAÇÃO ──
+window.handleOp=()=>R.isOperating?endOp():window.openSheet('shOpConfig');
+window.confirmOp=()=>{
+  const c=R.opCfg;
+  if(!c.drone||!c.faixa||!c.vazao||!c.avgHaPerH){showToast('⚠️ Preencha todos os campos');return;}
+  window.closeSheet('shOpConfig');
+  R.isOperating=true;R.opStartTime=Date.now();R.opStartLat=R.lat;R.opStartLon=R.lon;
+  setBtn(true);showToast('🚁 Operação iniciada!');
+  publishSelf('operating');
+};
+
+function setBtn(active){
+  ['btnOp','btnOp2'].forEach(id=>{
+    const b=$(id);if(!b)return;
+    b.className='btn-op '+(active?'stop':'start');
+    b.innerHTML=active?'🛑 Finalizar Operação':'🚁 Iniciar Operação';
+  });
+}
+
+function endOp(){
+  const dur=Math.round((Date.now()-R.opStartTime)/60000)||1;
+  const c=R.opCfg;
+  const avgHa=parseFloat(c.avgHaPerH)||20;
+  const estHa=Math.round(avgHa*(dur/60));
+  const score=calcAMX(getWeather());
+  const{label,color}=amxLabel(score);
+  R.isOperating=false;setBtn(false);publishSelf('online');
+
+  // Atualizar hectares do usuário nas áreas
+  if(R.user&&R.lat&&R.lon){
+    const gk=`${Math.floor(R.lat/0.5)}_${Math.floor(R.lon/0.5)}`;
+    const prev=R.areas[gk]?.hectares||0;
+    R.areas[gk]={pilot:{...R.profile,name:cleanName(R.profile?.nickname||R.profile?.name,R.user),
+      hectares:prev+estHa,amxScore:score},hectares:prev+estHa,gk};
+    updateAreaMarkers();
+  }
+
+  $('opResultContent').innerHTML=`
+    <div class="op-result">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mt);margin-bottom:2px">Resumo</div>
+      <div style="font-size:11px;color:var(--tx2);margin-bottom:9px">${c.drone||''} · ${c.avgHaPerH||'—'} ha/h</div>
+      <div class="op-stat-row">
+        <div class="op-stat"><div class="op-stat-v" style="color:${color}">${score}</div><div class="op-stat-l">AMX Score</div></div>
+        <div class="op-stat"><div class="op-stat-v">${dur} min</div><div class="op-stat-l">Duração</div></div>
+        <div class="op-stat"><div class="op-stat-v">~${estHa} ha</div><div class="op-stat-l">Estimativa</div></div>
+        <div class="op-stat"><div class="op-stat-v">${label}</div><div class="op-stat-l">Classificação</div></div>
+      </div>
+    </div>`;
+  window.openSheet('shOpResult');
+  updateAMX(getWeather());
+}
+
+// ── SOS / PEDIDOS ──
+window.activateSOS=async()=>{
+  if(R.sosActive){window.cancelSOS();return;}
+  R.sosActive=true;$('sosBar').classList.add('on');
+  publishSelf('sos');showToast('🚨 SOS ativado!',5000);
+  await saveRequest('sos','🚨 SOS — Preciso de ajuda urgente!');
+};
+window.cancelSOS=async()=>{
+  R.sosActive=false;$('sosBar').classList.remove('on');
+  publishSelf(R.isOperating?'operating':'online');showToast('✅ SOS cancelado');
+};
+window.sendReq=async(type,msg)=>{
+  publishSelf('request');
+  await saveRequest(type,msg);
+  showToast(`${msg} — Pilotos notificados! 🟢`,4000);
+  setTimeout(()=>{if(!R.sosActive)publishSelf(R.isOperating?'operating':'online');},300000);
+};
+
+async function saveRequest(type,message){
+  const db=window._firebaseDB;if(!db)return;
+  try{
+    const{collection,addDoc}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await addDoc(collection(db,'requests'),{
+      uid:R.user?.uid,type,message,
+      pilotName:R.profile?.nickname||R.profile?.name||'Piloto',
+      lat:R.lat,lon:R.lon,status:'open',createdAt:window._fsTimestamp?.()
+    });
+  }catch(e){console.warn('saveRequest:',e);}
+}
+
+// ── LOCALIZAÇÃO ──
+function publishSelf(status='online'){
+  if(!R.user||!R.profile)return;
+  const p=R.profile;
+  const name=cleanName(p.nickname||p.name,R.user);
+  let photo=fixPhoto(p.photo);
+  if(!photo&&R.user?.photoURL)photo=fixPhoto(R.user.photoURL);
+  upsertPilot({
+    id:R.user.uid,name,photo:photo||'👨‍✈️',city:p.city||'',drone:p.drone||'',
+    score:p.amxScore||0,amxScore:p.amxScore||0,hoursTotal:p.hoursTotal||0,
+    opsTotal:p.opsTotal||0,hectares:p.hectares||0,
+    lat:R.lat||(-15.78),lon:R.lon||(-47.93),status,isCurrentUser:true
+  });
+  // Atualizar Firestore de forma assíncrona
+  window._updateProfileFn?.(R.user.uid,{lat:R.lat,lon:R.lon,status,nickname:name,lastSeen:window._fsTimestamp?.()})
+    .catch(()=>{});
+}
+
+// ── PEDIDOS ──
+const _shownReqs=new Set();
+function loadHiddenFromStorage(){
+  if(!R.user)return;
+  const s=localStorage.getItem(`hr_${R.user.uid}`);
+  if(s)try{R.hiddenRequests=new Set(JSON.parse(s));}catch(e){}
+}
+function saveHiddenToStorage(){
+  if(!R.user)return;
+  localStorage.setItem(`hr_${R.user.uid}`,JSON.stringify([...R.hiddenRequests]));
+}
+
+async function loadRequests(){
+  const db=window._firebaseDB;
+  if(!db){$('reqList').innerHTML='<div style="padding:16px;color:var(--mt);font-size:11px;text-align:center">Nenhum pedido ativo</div>';return;}
+  try{
+    const{collection,query,where,limit,getDocs}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const q=query(collection(db,'requests'),where('status','==','open'),limit(50));
+    const snap=await getDocs(q);
+    const reqs=snap.docs.map(d=>({id:d.id,...d.data()}))
+      .filter(r=>r.uid!==R.user?.uid&&!R.hiddenRequests.has(r.id))
+      // Filtrar pedidos com mais de 48h
+      .filter(r=>{
+        if(!r.createdAt?.toMillis)return true;
+        return(Date.now()-r.createdAt.toMillis())<172800000;
+      });
+    if(!reqs.length){
+      $('reqList').innerHTML='<div style="padding:14px 18px;text-align:center;color:var(--mt);font-size:11px">Nenhum pedido ativo 🟢</div>';
+      return;
+    }
+    const icons={sos:'🚨',helice:'🚁',battery:'🔋',fuel:'⛽',part:'🔧',support:'🛠️',tow:'🚜'};
+    $('reqList').innerHTML=reqs.map(r=>`
+      <div class="req-item ${r.type==='sos'?'sos-req':''}" data-rid="${r.id}">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">
+          <span style="font-size:18px">${icons[r.type]||'🔧'}</span>
+          <div>
+            <div style="font-size:12px;font-weight:800;color:var(--tx)">${r.pilotName||'Piloto'}</div>
+            <div style="font-size:10px;color:${r.type==='sos'?'#f07070':'var(--mt)'}">${r.message}</div>
+          </div>
+        </div>
+        <button onclick="window.acceptReq('${r.uid}','${(r.pilotName||'').replace(/'/g,"\\'")}','${(r.message||'').replace(/'/g,"\\'")}')"
+          style="width:100%;padding:7px;border-radius:8px;border:none;background:${r.type==='sos'?'var(--red)':'var(--g5)'};color:white;font-family:var(--fu);font-size:11px;font-weight:800;cursor:pointer">
+          ${r.type==='sos'?'🚨 Responder SOS':'✅ Aceitar chamado'}
+        </button>
+      </div>`).join('');
+  }catch(e){console.warn('loadRequests:',e);}
+}
+
+window.clearHistory=()=>{
+  const items=document.querySelectorAll('#reqList .req-item');
+  if(!items.length){showToast('📭 Nenhum chamado para limpar');return;}
+  items.forEach(item=>{const id=item.getAttribute('data-rid');if(id)R.hiddenRequests.add(id);});
+  saveHiddenToStorage();loadRequests();showToast(`🗑️ ${items.length} chamado(s) removido(s)`);
+};
+
+async function listenRequests(){
+  const db=window._firebaseDB;if(!db)return;
+  try{
+    const{collection,query,where,limit,onSnapshot}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const q=query(collection(db,'requests'),where('status','==','open'),limit(50));
+    onSnapshot(q,snap=>{
+      // 1. Contar ativos para o badge
+      let count=0;
+      snap.forEach(doc=>{
+        const r=doc.data();
+        if(r.uid!==R.user?.uid&&!R.hiddenRequests.has(doc.id))count++;
+      });
+      const dot=$('reqDot');
+      if(count>0){dot.classList.add('on');dot.textContent=count>9?'9+':count;}
+      else{dot.classList.remove('on');dot.textContent='!';}
+
+      // 2. Disparar modal APENAS para docs recém adicionados
+      snap.docChanges().forEach(ch=>{
+        if(ch.type!=='added')return;
+        const r={id:ch.doc.id,...ch.doc.data()};
+        if(r.uid===R.user?.uid||R.hiddenRequests.has(r.id))return;
+        if(_shownReqs.has(r.id))return;
+        _shownReqs.add(r.id);
+        // Filtro de distância (120 km)
+        if(R.lat&&R.lon&&r.lat&&r.lon){
+          if(calcDist(R.lat,R.lon,r.lat,r.lon)>120)return;
+        }
+        showRequestModal(r);
+      });
+    });
+  }catch(e){console.warn('listenRequests:',e);}
+}
+
+function calcDist(lat1,lon1,lat2,lon2){
+  const R2=6371,dL=(lat2-lat1)*Math.PI/180,dO=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dL/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dO/2)**2;
+  return R2*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+// ── MODAL CHAMADO ──
+let pendingReq=null,modalTimer=null;
+function showRequestModal(req){
+  pendingReq=req;
+  const isSOS=req.type==='sos';
+  $('modalIcon').textContent=isSOS?'🚨':'🔧';
+  $('modalTitle').textContent=isSOS?'SOS URGENTE!':'Novo Pedido';
+  $('modalMsg').textContent=`${req.pilotName}: ${req.message}`;
+  $('modalChamadoOverlay').style.display='block';
+  $('modalChamado').classList.add('on');
+  if(modalTimer)clearInterval(modalTimer);
+  let s=30;$('modalTimer').textContent=`Expira em ${s}s`;
+  modalTimer=setInterval(()=>{
+    s--;$('modalTimer').textContent=`Expira em ${s}s`;
+    if(s<=0){clearInterval(modalTimer);modalTimer=null;window.modalIgnore();}
+  },1000);
+}
+
+window.modalAccept=async()=>{
+  if(pendingReq){
+    const req=pendingReq;pendingReq=null;
+    if(modalTimer){clearInterval(modalTimer);modalTimer=null;}
+    $('modalChamado').classList.remove('on');
+    $('modalChamadoOverlay').style.display='none';
+    await window.acceptReq(req.uid,req.pilotName,req.message);
+  }
+};
+window.modalIgnore=()=>{
+  if(modalTimer){clearInterval(modalTimer);modalTimer=null;}
+  $('modalChamado').classList.remove('on');
+  $('modalChamadoOverlay').style.display='none';
+  pendingReq=null;showToast('❌ Chamado ignorado');
+};
+
+// ==========================================
+// FUNÇÃO DE ACEITE BILATERAL INTEGRADA
+// ==========================================
+window.acceptReq=async(uid,name,message)=>{
+  const db=window._firebaseDB;
+  const myName=cleanName(R.profile?.nickname||R.profile?.name,R.user);
+  const nowMs=Date.now();
+  const nowStr=new Date().toISOString();
+  const chatId=[R.user?.uid,uid].sort().join('_');
+
+  if(db&&R.user){
+    try{
+      const{collection,query,where,getDocs,updateDoc,addDoc}=
+        await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+      // 1. Marcar pedido como aceito
+      const q=query(collection(db,'requests'),where('uid','==',uid),where('status','==','open'));
+      const snap=await getDocs(q);
+      snap.forEach(d=>{
+        updateDoc(d.ref,{status:'accepted',acceptedBy:R.user.uid,acceptedAt:nowStr}).catch(()=>{});
+        R.hiddenRequests.add(d.id);
+      });
+      saveHiddenToStorage();
+
+      // 2. Mensagem automática no chat compartilhado
+      await addDoc(collection(db,`chats/${chatId}/messages`),{
+        from:R.user.uid, fromName:myName,
+        text:`✅ Olá! Aceitei seu chamado: "${message}". Como posso ajudar?`,
+        ts:nowStr, createdAtMs:nowMs
+      });
+
+      // 3. Notificação para o AUTOR do pedido (ele recebe e abre o chat)
+      await addDoc(collection(db,'notifications'),{
+        to:uid, from:R.user.uid, fromName:myName,
+        type:'accept', message:`${myName} aceitou seu chamado!`,
+        read:false, createdAt:nowStr, createdAtMs:nowMs
+      });
+
+      // 4. Notificação espelho para VOCÊ (aparece no drawer)
+      await addDoc(collection(db,'notifications'),{
+        to:R.user.uid, from:uid, fromName:name||'Piloto',
+        type:'accept', message:`Você aceitou o chamado de ${name||'Piloto'}`,
+        read:true, createdAt:nowStr, createdAtMs:nowMs
+      });
+
+    }catch(e){console.warn('acceptReq:',e);}
+  }
+
+  // Fechar modal se aberto
+  $('modalChamado').classList.remove('on');
+  $('modalChamadoOverlay').style.display='none';
+  showToast(`✅ ${name||'Piloto'} notificado! Abrindo chat…`);
+
+  // Abrir chat para quem aceitou
+  await window.openChatWith(uid, name, chatId);
+};
+// ==========================================
+
+// ── NOTIFICAÇÕES BILATERAIS (escuta para o autor do pedido) ──
+async function listenNotifications(){
+  const db=window._firebaseDB;if(!db||!R.user)return;
+  try{
+    const{collection,query,where,onSnapshot,updateDoc,doc}=
+      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+    const q=query(collection(db,'notifications'),
+      where('to','==',R.user.uid),
+      where('read','==',false)
+    );
+
+    onSnapshot(q,snapshot=>{
+      snapshot.docChanges().forEach(async change=>{
+        if(change.type!=='added')return;
+        const notif={id:change.doc.id,...change.doc.data()};
+
+        // Marcar como lida imediatamente para não reprocessar
+        updateDoc(doc(db,'notifications',notif.id),{read:true}).catch(()=>{});
+
+        if(notif.type==='accept'){
+          // === BILATERAL: autor do pedido recebe e abre o chat automaticamente ===
+          const accepterUid=notif.from;
+          const accepterName=notif.fromName||'Piloto';
+          const chatId=[R.user.uid,accepterUid].sort().join('_');
+
+          // Não reabrir se já está no mesmo chat
+          if(R.chatTarget?.uid===accepterUid&&$('shChat').classList.contains('on'))return;
+
+          showToast(`🎉 ${accepterName} aceitou seu chamado! Abrindo chat…`,5000);
+          const chatIconEl=$('chatDot');
+          if(chatIconEl){chatIconEl.classList.add('on');chatIconEl.textContent='!';}
+
+          setTimeout(async()=>{
+            await window.openChatWith(accepterUid, accepterName, chatId);
+          },1200);
+
+        } else if(notif.type==='new_message'){
+          // Notificação de nova mensagem
+          const senderUid=notif.from;
+          const senderName=notif.fromName||'Piloto';
+          const preview=notif.message||'';
+          const chatAberto=$('shChat').classList.contains('on')&&R.chatTarget?.uid===senderUid;
+          if(!chatAberto){
+            $('chatDot').classList.add('on');
+            showToast(`💬 ${senderName}: ${preview.substring(0,35)}`,3500);
+          }
+        }
+      });
+    });
+  }catch(e){console.warn('listenNotifications:',e);}
+}
+
+// ── ESCAPE HTML ──
+function escapeHtml(str){
+  const d=document.createElement('div');d.textContent=String(str??'');return d.innerHTML;
+}
+
+// ── CARREGAR HISTÓRICO DO CHAT DO FIRESTORE ──
+async function loadChatHistory(otherUid){
+  const db=window._firebaseDB;if(!db||!R.user)return;
+  try{
+    const{collection,query,orderBy,limit,getDocs}=
+      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const chatId=R.currentChatId||[R.user.uid,otherUid].sort().join('_');
+    const q=query(collection(db,`chats/${chatId}/messages`),orderBy('createdAtMs','asc'),limit(80));
+    const snap=await getDocs(q);
+    const el=$('chatMsgs');
+    el.innerHTML='';
+    if(snap.empty){
+      el.innerHTML='<div class="chat-empty">💬 Inicie a conversa!</div>';
+    } else {
+      snap.forEach(d=>{
+        const msg=d.data();
+        const isMine=msg.from===R.user.uid;
+        const ts=msg.ts?new Date(msg.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'';
+        const div=document.createElement('div');
+        div.className=`message ${isMine?'mine':'theirs'}`;
+        div.innerHTML=`<div class="bubble">${escapeHtml(msg.text||'')}${!isMine&&msg.fromName?`<div class="chat-msg-name" style="font-size:9px;color:var(--g1);margin-bottom:2px">${escapeHtml(msg.fromName)}</div>`:''}${isMine?'':''}
+          <div class="time">${ts}</div></div>`;
+        el.appendChild(div);
+      });
+      el.scrollTop=el.scrollHeight;
+    }
+    // Escutar novas mensagens em tempo real
+    listenChatMessages(otherUid);
+  }catch(e){console.warn('loadChatHistory:',e);}
+}
+
+// ── ESCUTA EM TEMPO REAL DAS MENSAGENS ──
+let _chatUnsub=null;
+function listenChatMessages(otherUid){
+  if(_chatUnsub){_chatUnsub();_chatUnsub=null;}
+  const db=window._firebaseDB;if(!db||!R.user)return;
+  import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js').then(
+    ({collection,query,orderBy,onSnapshot,limit})=>{
+      const chatId=R.currentChatId||[R.user.uid,otherUid].sort().join('_');
+      const q=query(collection(db,`chats/${chatId}/messages`),orderBy('createdAtMs','asc'),limit(80));
+      let firstLoad=true;
+      _chatUnsub=onSnapshot(q,snap=>{
+        if(firstLoad){firstLoad=false;return;}
+        snap.docChanges().forEach(ch=>{
+          if(ch.type!=='added')return;
+          const msg=ch.doc.data();
+          if(msg.from===R.user.uid)return; // própria mensagem já renderizada
+          const el=$('chatMsgs');
+          const ts=msg.ts?new Date(msg.ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'';
+          const div=document.createElement('div');
+          div.className='message theirs';
+          div.innerHTML=`<div class="bubble">${msg.fromName?`<div class="chat-msg-name">${escapeHtml(msg.fromName)}</div>`:''}${escapeHtml(msg.text||'')}<div class="time">${ts}</div></div>`;
+          el.appendChild(div);el.scrollTop=el.scrollHeight;
+          if(!$('shChat').classList.contains('on')){
+            $('chatDot').classList.add('on');
+            showToast(`💬 Nova mensagem de ${msg.fromName||'Piloto'}`,3000);
+          }
+        });
+      });
+    }
+  ).catch(()=>{});
+}
+
+// ── CHAT ──
+window.onChatIconClick=async()=>{
+  if(R.chatTarget?.uid){
+    await window.openChatWith(R.chatTarget.uid,R.chatTarget.name||'Piloto');
+    $('chatDot').classList.remove('on');
+  } else window.toggleChatDrawer();
+};
+window.toggleChatDrawer=()=>{
+  const d=$('shChatDrawer'),o=$('ovChatDrawer');
+  if(d.classList.contains('on')){window.closeChatDrawer();}
+  else{o.classList.add('on');d.classList.add('on');$('chatDot').classList.remove('on');}
+};
+window.closeChatDrawer=()=>{
+  $('ovChatDrawer').classList.remove('on');$('shChatDrawer').classList.remove('on');
+};
+
+window.openChatWith=async(uid, name, prebuiltChatId)=>{
+  if(!uid)return;
+  window.closeChatDrawer();window.closeSheet('shReq');
+  $('modalChamado').classList.remove('on');$('modalChamadoOverlay').style.display='none';
+
+  R.chatTarget={uid, name:name||'Piloto'};
+  R.currentChatId=prebuiltChatId||([R.user?.uid,uid].sort().join('_'));
+
+  $('chatName').textContent=name||'Piloto';
+  $('chatHeaderAv').innerHTML='👨‍✈️';
+  $('chatMsgs').innerHTML='<div class="chat-empty">🔄 Carregando…</div>';
+  window.openSheet('shChat');
+
+  await loadChatHistory(uid);
+  setTimeout(()=>{$('chatMsgs').scrollTop=$('chatMsgs').scrollHeight;$('chatInp').focus();},300);
+};
+
+window.sendMsg=async()=>{
+  const inp=$('chatInp'),txt=inp.value.trim();
+  if(!txt||!R.chatTarget||!R.user)return;
+  inp.value='';inp.focus();
+
+  const db=window._firebaseDB;
+  const myName=cleanName(R.profile?.nickname||R.profile?.name,R.user);
+  const nowMs=Date.now();
+  const nowStr=new Date().toISOString();
+  const chatId=R.currentChatId||([R.user.uid,R.chatTarget.uid].sort().join('_'));
+
+  // Mostrar localmente imediatamente
+  const el=$('chatMsgs');
+  const now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const div=document.createElement('div');div.className='message mine';
+  div.innerHTML=`<div class="bubble">${escapeHtml(txt)}<div class="time">${now}</div></div>`;
+  el.appendChild(div);el.scrollTop=el.scrollHeight;
+
+  if(db){
+    try{
+      const{collection,addDoc}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await addDoc(collection(db,`chats/${chatId}/messages`),{
+        from:R.user.uid, fromName:myName,
+        text:txt, ts:nowStr, createdAtMs:nowMs
+      });
+      // Notificar destinatário
+      await addDoc(collection(db,'notifications'),{
+        to:R.chatTarget.uid, from:R.user.uid, fromName:myName,
+        type:'new_message', message:txt.substring(0,60),
+        read:false, createdAt:nowStr, createdAtMs:nowMs
+      });
+    }catch(e){console.warn('sendMsg:',e);}
+  }
+};
+
+// ── PERFIL ──
+function renderProfile(){
+  const p=R.profile,plan=R.plan;if(!p)return;
+  const name=cleanName(p.nickname||p.name,R.user);
+  let fotoUrl=fixPhoto(p.photo)||fixPhoto(R.user?.photoURL);
+  const fotoHtml=fotoUrl?`<img src="${fotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.outerHTML='👨‍✈️'">`:'👨‍✈️';
+  const pCls=plan?.plan==='paid'?'paid':plan?.plan==='trial'?'trial':'exp';
+  const pIcon=plan?.plan==='paid'?'✅':plan?.plan==='trial'?'⏳':'🔒';
+  const pTitle=plan?.plan==='paid'?'Plano Ativo':plan?.plan==='trial'?`Trial — ${plan.daysLeft} dias restantes`:'Trial expirado';
+  const isPro=plan?.plan==='paid';
+
+  $('profileContent').innerHTML=`
+    <div class="pf-hero">
+      <div class="pf-av">${fotoHtml}</div>
+      <div>
+        <div class="pf-name">${name}</div>
+        <div class="pf-city">📍 ${p.city||'Cidade não informada'}</div>
+        <div class="pf-drone">🚁 ${p.drone||'Drone não informado'}</div>
+      </div>
+    </div>
+    <div class="pf-stats">
+      <div class="pstat"><div class="pstat-v">${p.amxScore||0}</div><div class="pstat-l">AMX Score</div></div>
+      <div class="pstat"><div class="pstat-v">${(p.hoursTotal||0).toFixed(0)}h</div><div class="pstat-l">Horas</div></div>
+      <div class="pstat"><div class="pstat-v">${p.opsTotal||0}</div><div class="pstat-l">Operações</div></div>
+    </div>
+    <div class="inp-g"><label class="inp-l">Nome / Apelido</label>
+      <input class="inp" id="pfNick" value="${p.nickname||p.name||''}" placeholder="Como quer ser chamado?"></div>
+    <div class="inp-g"><label class="inp-l">Cidade</label>
+      <input class="inp" id="pfCity" value="${p.city||''}" placeholder="Sua cidade"></div>
+    <div class="inp-g"><label class="inp-l">Drone principal</label>
+      <select class="inp" id="pfDrone">
+        <option value="">Selecione…</option>
+        ${['DJI T25','DJI T40','DJI T50','XAG P100','XAG V40','EAVision','Pegasus Agri','Outro']
+          .map(d=>`<option ${p.drone===d?'selected':''}>${d}</option>`).join('')}
+      </select>
+    </div>
+    ${isPro?`<div class="inp-g"><label class="inp-l">Foto de Perfil (URL)</label><input class="inp" id="pfPhoto" placeholder="URL da foto" value="${p.photo||''}"></div>`:''}
+    <div class="plan-b ${pCls}">
+      <div class="plan-icon">${pIcon}</div>
+      <div><div class="plan-title">${pTitle}</div>
+        <div class="plan-sub">${plan?.plan==='trial'?'Aproveite o período gratuito':plan?.plan==='paid'?'Acesso completo':'Trial encerrado'}</div>
+      </div>
+    </div>
+    ${!isPro?'<div class="plan-note">Para renovar, saia e entre novamente pela tela inicial.</div>':''}
+    <div class="vis-row"><label class="inp-l">Visibilidade no radar</label>
+      <div class="vis-opts">
+        <div class="vis-opt ${p.visibility==='online'?'on':''}" onclick="window.setVis('online')">🟢 Online</div>
+        <div class="vis-opt ${p.visibility==='invisible'?'on':''}" onclick="window.setVis('invisible')">⚫ Invisível</div>
+        <div class="vis-opt ${p.visibility==='sos'?'on':''}" onclick="window.setVis('sos')">🚨 SOS</div>
+      </div>
+    </div>
+    <button class="btn-prim" onclick="window.saveProfile()" style="margin-top:10px">💾 Salvar perfil</button>
+    <button class="btn-sec" onclick="window.doLogout()" style="margin-top:7px">Sair da conta</button>`;
+}
+
+window.saveProfile=async()=>{
+  const uid=R.user?.uid;if(!uid)return;
+  let nick=$('pfNick')?.value.trim();nick=cleanName(nick,R.user);
+  const city=$('pfCity')?.value.trim();
+  const drone=$('pfDrone')?.value;
+  const photo=R.plan?.plan==='paid'?$('pfPhoto')?.value.trim():null;
+  const upd={nickname:nick,city,drone};if(photo)upd.photo=photo;
+  if(window._updateProfileFn)await window._updateProfileFn(uid,upd);
+  Object.assign(R.profile,upd);
+  publishSelf(R.isOperating?'operating':'online');
+  showToast('✅ Perfil salvo!');window.closeSheet('shProfile');
+};
+window.setVis=async vis=>{
+  if(!R.user)return;
+  if(window._updateProfileFn)await window._updateProfileFn(R.user.uid,{visibility:vis});
+  R.profile.visibility=vis;renderProfile();
+};
+window.doLogout=async()=>{
+  if(window._logoutFn)await window._logoutFn();
+  window.closeSheet('shProfile');
+  $('sRadar').classList.add('off');$('sSplash').classList.remove('off');
+};
+
+// ── RANKING ──
+async function loadRanking(){
+  const db=window._firebaseDB;
+  let firestorePilots=[];
+  if(db){
+    try{
+      const{collection,query,orderBy,limit,getDocs}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap=await getDocs(query(collection(db,'pilots'),orderBy('amxScore','desc'),limit(20)));
+      firestorePilots=snap.docs.map(d=>d.data());
+    }catch(e){}
+  }
+  const all=[...firestorePilots,...R.activeBots]
+    .sort((a,b)=>(b.amxScore||b.score||0)-(a.amxScore||a.score||0))
+    .slice(0,20);
+  const medals=['🥇','🥈','🥉'];
+  const pcls=['gold','silver','bronze'];
+  $('rankList').innerHTML=all.map((p,i)=>`
+    <div class="rank-item">
+      <div class="rank-pos ${pcls[i]||''}">${medals[i]||'#'+(i+1)}</div>
+      <div style="flex:1">
+        <div class="rank-name">${p.nickname||p.name||'Piloto'}</div>
+        <div class="rank-sub">${p.city||''} · ${p.opsTotal||0} ops</div>
+      </div>
+      <div class="rank-score">AMX ${p.amxScore||p.score||0}</div>
+    </div>`).join('');
+}
+
+// ── ENTRADA DO RADAR ──
+async function showRadar(){
+  $('sSplash').classList.add('off');$('sRadar').classList.remove('off');
+  await new Promise(r=>setTimeout(r,150));
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      pos=>{R.lat=pos.coords.latitude;R.lon=pos.coords.longitude;setupMap(R.lat,R.lon);},
+      ()=>setupMap(-15.78,-47.93),
+      {timeout:8000,enableHighAccuracy:true,maximumAge:60000}
+    );
+  } else setupMap(-15.78,-47.93);
+  setTimeout(()=>{if(!R.map)setupMap(-15.78,-47.93);},6000);
+}
+
+function setupMap(lat,lon){
+  initMap(lat,lon);
+  R.weather=getWeather();
+  setTimeout(()=>R.map?.invalidateSize(),350);
+
+  // Spawnar bots
+  R.activeBots=gerarBots();
+  // Spawn escalonado para não travar
+  R.activeBots.forEach((bot,i)=>setTimeout(()=>upsertPilot(bot),i*80));
+
+  // Localização contínua
+  if(navigator.geolocation){
+    navigator.geolocation.watchPosition(pos=>{
+      R.lat=pos.coords.latitude;R.lon=pos.coords.longitude;
+      publishSelf(R.isOperating?'operating':R.sosActive?'sos':'online');
+    },{enableHighAccuracy:true,maximumAge:30000,timeout:15000});
+  }
+
+  publishSelf('online');
+  listenRequests().catch(()=>{});
+  listenNotifications().catch(()=>{});
+  updateAMX(R.weather);updateClima(R.weather);
+  startBotMovement();
+
+  // Atualizar clima a cada 10 min
+  setInterval(()=>{R.weather=getWeather();updateAMX(R.weather);updateClima(R.weather);},600000);
+}
+
+// ── INIT FIREBASE ──
+async function init(){
+  let isConfigured=false;
+  try{
+    const cfg=await import('./firebase-config.js');
+    isConfigured=cfg.isFirebaseConfigured?.()??false;
+  }catch(e){}
+
+  if(!isConfigured){
+    // Modo demo — permite navegar sem Firebase
+    console.log('[AgroMetrix] Modo demo — Firebase não configurado');
+    window._updateProfileFn=async()=>{};
+    window._logoutFn=async()=>{};
+    return;
+  }
+
+  try{
+    const{initFirebase,loginGoogle,logout,onAuthChange,getProfile,updateProfile,getPlanStatus}=
+      await import('./auth.js');
+    window._updateProfileFn=updateProfile;
+    window._logoutFn=logout;
+
+    await initFirebase();
+    onAuthChange(async(user,profile)=>{
+      if(user&&profile){
+        R.user=user;R.profile=profile;R.plan=getPlanStatus(profile);
+        loadHiddenFromStorage();
+        if(R.plan.active)showRadar();else window.openSheet('shPaywall');
+      }
+    });
+  }catch(e){console.warn('Firebase auth error:',e);}
+}
+
+// ── ENTRADA ──
+window.enterRadar=async()=>{
+  const btn=$('btnEntrar');
+  let isConfigured=false;
+  try{const cfg=await import('./firebase-config.js');isConfigured=cfg.isFirebaseConfigured?.()??false;}catch(e){}
+
+  if(!isConfigured){
+    // Demo mode
+    R.user={uid:'demo_user',displayName:'Piloto Demo',email:'demo@agrometrix.com'};
+    R.profile={nickname:'Piloto Demo',name:'Piloto Demo',city:'Ribeirão Preto, SP',
+      drone:'DJI T40',amxScore:78,hoursTotal:120,opsTotal:45,photo:'👨‍✈️'};
+    R.plan={active:true,plan:'trial',daysLeft:7};
+    showRadar();return;
+  }
+
+  btn.textContent='🔄 Conectando…';btn.disabled=true;
+  try{
+    const{loginGoogle,getProfile,updateProfile,getPlanStatus}=await import('./auth.js');
+    const user=await loginGoogle();
+    btn.textContent='🚀 Começar 7 dias grátis';btn.disabled=false;
+    if(!user)return;
+    const profile=await getProfile(user.uid);
+    const safeName=cleanName(profile.nickname||profile.name,user);
+    if(profile.nickname!==safeName){
+      await updateProfile(user.uid,{name:safeName,nickname:safeName});
+      profile.name=safeName;profile.nickname=safeName;
+    }
+    R.user=user;R.profile=profile;R.plan=getPlanStatus(profile);
+    window._updateProfileFn=updateProfile;
+    if(R.plan.active)showRadar();else await window.startTrial();
+  }catch(e){
+    btn.textContent='🚀 Começar 7 dias grátis';btn.disabled=false;
+    showToast('❌ Erro ao conectar');
+  }
+};
+
+window.startTrial=async()=>{
+  if(!R.user)return;
+  const te=new Date();te.setDate(te.getDate()+7);
+  if(window._updateProfileFn)
+    await window._updateProfileFn(R.user.uid,{plan:'trial',trialEnd:te.toISOString()});
+  R.plan={active:true,plan:'trial',daysLeft:7};
+  window.closeSheet('shPaywall');showRadar();
+};
+
+$('btnEntrar')?.addEventListener('click',window.enterRadar);
+$('btnGoogle')?.addEventListener('click',window.enterRadar);
+
+init();
+</script>
+</body>
+</html>
