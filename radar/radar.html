@@ -82,8 +82,23 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 
 /* ══ RADAR ══ */
 #sRadar{background:var(--bg)}
+#sRadar::before{content:'';position:fixed;left:0;right:0;top:-12%;height:28%;z-index:80;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(104,225,170,.045),transparent);
+  filter:blur(10px);animation:liveEarthScan 18s cubic-bezier(.45,0,.2,1) infinite}
+#sRadar::after{content:'';position:fixed;left:50%;top:46%;width:min(110vw,920px);height:min(110vw,920px);z-index:79;pointer-events:none;
+  border-radius:50%;transform:translate(-50%,-50%);
+  background:repeating-radial-gradient(circle,transparent 0 15%,rgba(94,200,128,.018) 15.3% 15.6%,transparent 16%),
+    conic-gradient(from 20deg,transparent 0 68%,rgba(105,230,180,.025) 74%,transparent 82%);
+  filter:blur(.4px);opacity:.62;animation:atmoRadar 34s linear infinite}
+@keyframes liveEarthScan{0%{transform:translateY(-20vh);opacity:0}22%,70%{opacity:.82}100%{transform:translateY(120vh);opacity:0}}
+@keyframes atmoRadar{to{transform:translate(-50%,-50%) rotate(360deg)}}
 #mapEl{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
-.leaflet-tile{filter:brightness(.34) saturate(.28) hue-rotate(95deg) contrast(1.1)}
+#mapEl::after{content:'';position:absolute;inset:0;z-index:450;pointer-events:none;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 45%,transparent 35%,rgba(3,8,5,.34) 100%),
+    linear-gradient(180deg,rgba(5,12,7,.18),transparent 24%,transparent 72%,rgba(5,12,7,.3));
+  mix-blend-mode:multiply}
+.leaflet-tile{filter:brightness(.43) saturate(.34) hue-rotate(82deg) contrast(1.05)}
 .leaflet-container{background:var(--bg)!important}
 .leaflet-control-zoom a{background:rgba(5,12,7,.92)!important;color:var(--tx2)!important;
   border:1px solid var(--bdm)!important;border-radius:6px!important;margin-bottom:3px!important;display:block!important}
@@ -92,29 +107,92 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
   backdrop-filter:blur(16px)!important}
 .leaflet-popup-tip-container{display:none}
 .leaflet-popup-content{margin:10px!important;min-width:180px}
+.leaflet-marker-pane,.leaflet-overlay-pane{will-change:transform}
+.agro-influence{position:relative;border-radius:50%;pointer-events:none;mix-blend-mode:screen;filter:blur(.25px);opacity:.62;transition:opacity .35s,filter .35s}
+.agro-influence::before{content:'';position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle,rgba(92,210,137,.18) 0%,rgba(58,168,96,.1) 30%,rgba(37,128,82,.045) 55%,rgba(37,128,82,.015) 67%,transparent 76%);
+  mask-image:radial-gradient(circle,#000 0 50%,rgba(0,0,0,.8) 60%,transparent 80%);
+  animation:territoryBreath 12s cubic-bezier(.45,0,.2,1) infinite}
+.agro-influence::after{content:'';position:absolute;inset:18%;border-radius:50%;border:1px solid rgba(94,200,128,.09);
+  box-shadow:0 0 34px rgba(80,210,160,.09);animation:territoryScan 13s linear infinite}
+.agro-influence .scan{position:absolute;inset:12%;height:auto;border-radius:50%;border:1px solid rgba(123,244,188,.11);background:conic-gradient(from 0deg,transparent 0 68%,rgba(123,244,188,.16) 74%,transparent 84%);box-shadow:inset 0 0 24px rgba(123,244,188,.045);animation:territoryScan 14s linear infinite}
+.agro-influence.dominant{opacity:1;filter:blur(.04px) drop-shadow(0 0 30px rgba(245,184,76,.36));mix-blend-mode:screen}
+.agro-influence.dominant::before{background:radial-gradient(circle,rgba(255,207,96,.34) 0%,rgba(222,158,44,.2) 28%,rgba(180,112,24,.09) 55%,rgba(180,112,24,.035) 72%,transparent 83%)}
+.agro-influence.dominant::after{inset:8%;border:1.5px solid rgba(255,221,126,.4);box-shadow:0 0 78px rgba(255,186,70,.34),inset 0 0 34px rgba(255,213,112,.14);animation:territoryScan 16s linear infinite,dominantPulse 5.8s ease-in-out infinite}
+@keyframes dominantPulse{0%,100%{opacity:.68;transform:scale(.985)}50%{opacity:1;transform:scale(1.035)}}
+.agro-influence.operating .scan{border-color:rgba(104,220,240,.16);background:conic-gradient(from 0deg,transparent 0 66%,rgba(104,220,240,.18) 74%,transparent 84%)}
+.agro-influence.dominant .scan{border-color:rgba(255,221,126,.22);background:conic-gradient(from 0deg,transparent 0 62%,rgba(255,207,96,.24) 72%,transparent 85%);box-shadow:inset 0 0 34px rgba(255,207,96,.08)}
+@keyframes territoryBreath{0%,100%{transform:scale(.96);opacity:.6}50%{transform:scale(1.04);opacity:.95}}
+@keyframes territoryScan{to{transform:rotate(360deg)}}
+@keyframes territoryLine{0%,100%{transform:translateY(-34px);opacity:0}45%,55%{opacity:.8}50%{transform:translateY(34px)}}
+.agro-trail{stroke-linecap:round;filter:drop-shadow(0 0 5px rgba(94,200,128,.35));animation:trailFade 42s linear forwards}
+@keyframes trailFade{0%{opacity:.58}70%{opacity:.28}100%{opacity:0}}
+.pilot-beacon{position:relative;width:28px;height:28px;display:grid;place-items:center;transform:translateZ(0);transition:opacity .3s,filter .3s,transform .3s}
+.pilot-beacon .halo{position:absolute;inset:3px;border-radius:50%;border:1px solid var(--bc);opacity:.24;animation:beaconPulse 3.8s ease-in-out infinite}
+.pilot-beacon .scan{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 300deg,rgba(255,255,255,.16),transparent 342deg);animation:beaconSweep 5.6s linear infinite;opacity:.38}
+.pilot-beacon .core{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--bc);box-shadow:0 0 12px var(--bc),0 0 24px rgba(94,200,128,.18);animation:beaconBreathe 4.2s ease-in-out infinite}
+.pilot-beacon.status-operating .core{width:9px;height:9px;box-shadow:0 0 15px var(--bc),0 0 34px rgba(94,200,128,.22)}
+.pilot-beacon.status-operating .halo{animation-duration:2.9s;opacity:.34}
+.pilot-beacon.bot{opacity:.72}.pilot-beacon.bot .pilot-label{opacity:.56}
+.pilot-beacon.real{filter:drop-shadow(0 0 10px rgba(91,199,232,.24))}.pilot-beacon.real .core{width:9px;height:9px;box-shadow:0 0 16px #5bc7e8,0 0 34px rgba(91,199,232,.26)}
+.pilot-beacon.real .halo{opacity:.38;animation-duration:2.7s}.pilot-beacon.real .scan{opacity:.52;animation-duration:4.4s}
+.pilot-beacon.is-user.loc-pulse .halo,.locating .pilot-beacon.is-user .halo{border-width:2px;animation-duration:1.1s}
+.pilot-beacon .glyph{position:absolute;font-size:8px;line-height:1;opacity:.84;transform:translateY(-11px);filter:drop-shadow(0 1px 4px rgba(0,0,0,.65))}
+.pilot-label{display:none}
+.zoom-far .pilot-beacon{transform:scale(.78)}
+body.legend-filter-operating .pilot-beacon.status-operating,body.legend-filter-online .pilot-beacon.status-online,body.legend-filter-request .pilot-beacon.status-request,body.legend-filter-sos .pilot-beacon.status-sos{filter:drop-shadow(0 0 14px var(--bc)) brightness(1.12);transform:scale(1.08)}
+body.legend-filter-operating .agro-influence.operating,body.legend-filter-sos .agro-influence.sos{opacity:.9;filter:drop-shadow(0 0 24px rgba(104,220,240,.22))}
+body.legend-filter-dominant .agro-influence.dominant{opacity:1;filter:drop-shadow(0 0 38px rgba(255,199,82,.52))}
+@keyframes beaconPulse{0%,100%{transform:scale(.72);opacity:.22}50%{transform:scale(1.55);opacity:.04}}
+@keyframes beaconSweep{to{transform:rotate(360deg)}}
+@keyframes beaconBreathe{0%,100%{transform:scale(.88);opacity:.88}50%{transform:scale(1.12);opacity:1}}
+@media (prefers-reduced-motion:reduce){#sRadar::before,#sRadar::after,.agro-influence::before,.agro-influence::after,.agro-influence .scan,.pilot-beacon .halo,.pilot-beacon .scan,.pilot-beacon .core,.agro-trail{animation:none}}
 .leaflet-popup-close-button{color:var(--mt)!important;top:8px!important;right:8px!important}
 
 /* Header */
-.r-hdr{position:fixed;top:0;left:0;right:0;z-index:100;padding:10px 14px;
-  background:linear-gradient(to bottom,rgba(5,12,7,.96) 0%,rgba(5,12,7,.6) 70%,transparent);
-  display:flex;align-items:center;gap:7px}
-.r-wordmark{font-size:14px;font-weight:800;flex:1;color:var(--tx)}
+.r-hdr{position:fixed;top:0;left:0;right:0;z-index:120;padding:7px 10px 14px;
+  background:linear-gradient(to bottom,rgba(5,12,7,.9) 0%,rgba(5,12,7,.42) 72%,transparent);
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:7px;min-height:46px}
+.r-wordmark{font-size:12px;font-weight:800;color:var(--tx);white-space:nowrap}
 .r-wordmark span{color:var(--g2)}
 .r-wordmark small{font-size:8px;color:var(--mt);font-weight:400;margin-left:4px;letter-spacing:.1em}
-.r-status-row{display:flex;gap:5px;align-items:center}
-.status-badge{display:flex;align-items:center;gap:4px;padding:4px 9px;border-radius:20px;
-  background:rgba(5,12,7,.88);border:1px solid var(--bdm);font-family:var(--fm);font-size:9px;
-  color:var(--tx2);letter-spacing:.05em;backdrop-filter:blur(8px)}
-.status-badge .dot{width:5px;height:5px;border-radius:50%;background:var(--g2);animation:ldotP 2.5s infinite}
+.r-status-row{display:flex;gap:4px;align-items:center;justify-content:center;min-width:0}
+.status-badge{display:flex;align-items:center;gap:3px;padding:3px 6px;border-radius:20px;
+  background:rgba(5,12,7,.54);border:1px solid rgba(90,173,112,.14);font-family:var(--fm);font-size:8px;
+  color:rgba(223,240,227,.7);letter-spacing:.03em;backdrop-filter:blur(10px);white-space:nowrap}
+.status-badge .dot{width:4px;height:4px;border-radius:50%;background:var(--g2);animation:ldotP 2.5s infinite}
 @keyframes ldotP{0%,100%{opacity:1}50%{opacity:.25}}
 .ico-btn{width:34px;height:34px;border-radius:50%;background:rgba(5,12,7,.88);
   border:1px solid var(--bdm);display:flex;align-items:center;justify-content:center;
   font-size:14px;cursor:pointer;transition:all .2s;flex-shrink:0;backdrop-filter:blur(8px);position:relative}
 .ico-btn:hover{border-color:var(--bdh);background:var(--s3)}
+.user-chip{height:32px;min-width:112px;max-width:148px;margin-right:16px;border-radius:18px;border:1px solid rgba(90,173,112,.16);background:rgba(5,12,7,.56);backdrop-filter:blur(16px);display:flex;align-items:center;gap:7px;padding:3px 8px 3px 3px;color:var(--tx);cursor:pointer;box-shadow:0 10px 26px rgba(0,0,0,.18);transition:all .22s ease}
+.user-chip:hover,.user-chip.on{border-color:rgba(130,205,150,.36);background:rgba(11,22,13,.64)}
+.user-chip-av{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:rgba(47,107,64,.7);font-size:13px;flex-shrink:0;box-shadow:0 0 14px rgba(91,199,232,.16)}
+.user-chip-av img{width:100%;height:100%;object-fit:cover}
+.user-chip-meta{min-width:0;line-height:1.05;text-align:left}.user-chip-name{font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:86px}.user-chip-status{font:500 7px var(--fm);color:rgba(130,205,150,.78);letter-spacing:.04em;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-menu{position:fixed;top:45px;right:10px;z-index:320;width:min(230px,calc(100vw - 20px));padding:8px;border-radius:18px;background:rgba(5,12,7,.76);border:1px solid rgba(120,220,160,.14);backdrop-filter:blur(20px);box-shadow:0 22px 60px rgba(0,0,0,.42);opacity:0;transform:translateY(-8px) scale(.98);pointer-events:none;transition:all .22s ease}.user-menu.on{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}.user-menu-head{display:flex;align-items:center;gap:8px;padding:7px;border-radius:13px;background:rgba(255,255,255,.03);margin-bottom:6px}.user-menu-title{font-size:12px;font-weight:800;color:var(--tx)}.user-menu-sub{font:500 8px var(--fm);color:var(--tx2);margin-top:2px}.user-menu-item{width:100%;border:0;background:transparent;color:rgba(223,240,227,.82);font:700 11px var(--fu);display:flex;align-items:center;justify-content:space-between;padding:9px 8px;border-radius:12px;cursor:pointer;text-align:left}.user-menu-item:hover{background:rgba(90,173,112,.1);color:var(--g1)}.user-menu-item .notif-dot{position:static;width:14px;height:14px;font-size:7px;flex-shrink:0}
 .notif-dot{position:absolute;top:-2px;right:-2px;width:13px;height:13px;border-radius:50%;
   background:var(--red2);color:white;font-size:7px;font-weight:700;display:none;
   align-items:center;justify-content:center}
 .notif-dot.on{display:flex}
+.notif-dot.pulse{animation:notifPulse 1.05s ease-in-out infinite}
+@keyframes notifPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 rgba(224,53,53,0)}50%{transform:scale(1.16);box-shadow:0 0 18px rgba(224,53,53,.45)}}
+
+
+/* Live legend + map actions */
+.live-legend{position:fixed;left:10px;top:52px;z-index:95;display:flex;gap:4px;max-width:calc(100vw - 20px);overflow-x:auto;scrollbar-width:none;padding:15px 5px 5px;border-radius:17px;background:rgba(5,12,7,.38);border:1px solid rgba(120,220,160,.1);backdrop-filter:blur(16px);box-shadow:0 12px 34px rgba(0,0,0,.16)}
+.live-legend::before{content:'pressione para filtrar';position:absolute;left:10px;top:4px;font:600 7px var(--fm);letter-spacing:.08em;text-transform:uppercase;color:rgba(138,184,150,.52)}
+.live-legend::-webkit-scrollbar{display:none}
+.legend-pill{display:flex;align-items:center;gap:4px;white-space:nowrap;padding:5px 7px;border-radius:999px;border:1px solid transparent;background:rgba(7,15,9,.42);color:rgba(223,240,227,.74);font:600 8px var(--fm);letter-spacing:.01em;cursor:pointer;transition:all .24s ease}
+.legend-pill i{width:7px;height:7px;border-radius:50%;display:block;background:var(--lc);box-shadow:0 0 10px var(--lc);animation:legendBreath 3.8s ease-in-out infinite}
+.legend-pill.dom i{width:10px;height:10px;border-radius:3px;background:linear-gradient(135deg,#ffe39a,#d69a2d);box-shadow:0 0 16px rgba(255,190,72,.48)}
+@keyframes legendBreath{0%,100%{opacity:.72;transform:scale(.92)}50%{opacity:1;transform:scale(1.12)}}
+.legend-pill:hover,.legend-pill.on{border-color:rgba(140,235,175,.22);color:var(--tx);background:rgba(22,46,30,.56);transform:translateY(-1px)}
+.map-actions{position:fixed;right:12px;bottom:164px;z-index:110;display:flex;flex-direction:column;gap:7px;width:42px}
+.map-action{width:42px;height:42px;border-radius:16px;border:1px solid rgba(90,173,112,.18);background:rgba(5,12,7,.5);backdrop-filter:blur(16px);box-shadow:0 10px 28px rgba(0,0,0,.2),0 0 18px rgba(91,199,232,.06);color:rgba(223,240,227,.82);font:800 15px var(--fu);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s ease}
+.map-action span{display:none}.map-action:hover{border-color:rgba(130,205,150,.38);color:var(--g1);transform:translateY(-1px)}
+.map-particles{position:fixed;inset:0;z-index:82;pointer-events:none;overflow:hidden}.map-particles span{position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(120,240,170,.22);box-shadow:0 0 10px rgba(120,240,170,.18);animation:particleDrift 18s linear infinite}.map-particles span:nth-child(1){left:18%;top:38%;animation-duration:21s}.map-particles span:nth-child(2){left:76%;top:31%;animation-duration:24s;animation-delay:-6s}.map-particles span:nth-child(3){left:52%;top:68%;animation-duration:19s;animation-delay:-11s}.map-particles span:nth-child(4){left:34%;top:77%;animation-duration:26s;animation-delay:-3s}@keyframes particleDrift{0%{transform:translate3d(0,18px,0);opacity:0}20%,70%{opacity:.72}100%{transform:translate3d(18px,-48px,0);opacity:0}}
+@media (max-width:520px){.r-hdr{padding:6px 8px 13px;grid-template-columns:auto minmax(72px,1fr) auto}.r-wordmark{font-size:11px}.r-wordmark small{display:none}.status-badge{font-size:7px;padding:3px 5px}.status-badge span{max-width:70px;overflow:hidden;text-overflow:ellipsis}.live-legend{top:50px;left:8px;right:8px}.legend-pill{padding:5px 6px;font-size:7.5px}.map-actions{right:10px;bottom:158px;width:40px}.map-action{width:40px;height:40px}.user-chip{min-width:104px;max-width:124px;margin-right:12px}.user-chip-name{max-width:68px}}
 
 /* SOS Bar */
 .sos-bar{position:fixed;top:54px;left:0;right:0;z-index:200;padding:8px 14px;display:none;
@@ -353,20 +431,29 @@ select.inp{cursor:pointer}
 .modal-chamado-btn.ignore:hover{background:rgba(196,40,40,.1);border-color:rgba(196,40,40,.4);color:#f07070}
 
 /* Popup card */
-.p-card{display:flex;flex-direction:column;gap:7px}
+.p-card{display:flex;flex-direction:column;gap:8px;padding:2px;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);animation:contextIn .28s ease-out both}
+.p-card-kicker{font:700 7px var(--fm);letter-spacing:.12em;text-transform:uppercase;color:rgba(130,205,150,.68);margin-bottom:-2px}
+@keyframes contextIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .p-card-hdr{display:flex;align-items:center;gap:9px}
 .p-card-av{width:30px;height:30px;border-radius:50%;background:var(--g6);
   display:flex;align-items:center;justify-content:center;font-size:15px;overflow:hidden;flex-shrink:0}
 .p-card-av img{width:100%;height:100%;object-fit:cover}
 .p-card-name{font-size:13px;font-weight:800;color:var(--tx)}
-.p-card-tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase}
+.p-card-tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:999px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
 .p-card-tag.online{background:rgba(45,107,64,.2);color:var(--g1)}
 .p-card-tag.op{background:rgba(26,125,196,.2);color:#60b8e8}
 .p-card-tag.sos{background:rgba(196,40,40,.2);color:#f07070}
 .p-card-info{font-size:10px;color:var(--tx2);display:flex;align-items:center;gap:3px}
-.p-card-btn{margin-top:3px;width:100%;padding:7px;border-radius:7px;background:var(--g6);
+.p-card-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:2px}
+.p-card-metric{padding:6px 5px;border:1px solid rgba(90,173,112,.12);border-radius:10px;background:rgba(7,15,9,.48);text-align:center}
+.p-card-metric strong{display:block;font:500 11px var(--fm);color:var(--g1)}
+.p-card-metric span{display:block;margin-top:1px;font-size:7px;color:var(--mt);text-transform:uppercase;letter-spacing:.08em}
+.p-card-intel{display:flex;flex-direction:column;gap:4px;padding:7px;border-radius:11px;background:rgba(255,255,255,.025);border:1px solid rgba(90,173,112,.1)}
+.p-card-intel div{display:flex;justify-content:space-between;gap:10px;font-size:9px;color:var(--tx2)}
+.p-card-intel b{color:rgba(223,240,227,.88);font-weight:700;text-align:right}
+.p-card-btn{margin-top:3px;width:100%;padding:8px;border-radius:10px;background:linear-gradient(135deg,rgba(30,64,41,.92),rgba(47,107,64,.88));
   color:white;border:none;font-family:var(--fu);font-size:10px;font-weight:800;cursor:pointer;transition:all .2s}
-.p-card-btn:hover{background:var(--g5)}
+.p-card-btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
 
 .clear-hist-btn{background:rgba(196,40,40,.12);border:1px solid rgba(196,40,40,.3);color:#f07070;
   margin:0 18px 14px;padding:7px 14px;border-radius:20px;font-size:10px;font-weight:700;
@@ -420,28 +507,47 @@ select.inp{cursor:pointer}
 <!-- ══ RADAR ══ -->
 <div class="screen off" id="sRadar">
   <div id="mapEl"></div>
+  <div class="map-particles"><span></span><span></span><span></span><span></span></div>
 
   <div class="r-hdr">
     <div class="r-wordmark">Agro<span>Metrix</span><small>RADAR</small></div>
     <div class="r-status-row">
-      <div class="status-badge"><div class="dot"></div><span id="pilotCount">— pilotos</span></div>
+      <div class="status-badge"><div class="dot"></div><span id="pilotCount">— online</span></div>
+      <div class="status-badge"><div class="dot"></div><span id="domainCount">— áreas</span></div>
     </div>
-    <button class="ico-btn" onclick="window.centerOnUser()" style="font-size:13px">📍</button>
-    <div style="position:relative">
-      <button class="ico-btn" id="btnChatIco" onclick="window.onChatIconClick()">💬</button>
-      <div class="notif-dot" id="chatDot">!</div>
+    <button class="user-chip" id="userChip" onclick="window.toggleUserMenu()">
+      <span class="user-chip-av" id="userChipAv">👨‍✈️</span>
+      <span class="user-chip-meta"><span class="user-chip-name" id="userChipName">Piloto</span><span class="user-chip-status" id="userChipStatus">ONLINE · AMX —</span></span>
+    </button>
+  </div>
+  <div class="user-menu" id="userMenu">
+    <div class="user-menu-head">
+      <div class="user-chip-av" id="userMenuAv">👨‍✈️</div>
+      <div><div class="user-menu-title" id="userMenuName">Piloto</div><div class="user-menu-sub" id="userMenuSub">Radar operacional</div></div>
     </div>
-    <div style="position:relative">
-      <button class="ico-btn" onclick="window.openSheet('shReq')">🔧</button>
-      <div class="notif-dot" id="reqDot">!</div>
-    </div>
-    <button class="ico-btn" onclick="window.openSheet('shProfile')">👤</button>
+    <button class="user-menu-item" onclick="window.openUserMenuSheet('shProfile')"><span>👤 Perfil e configurações</span><span>›</span></button>
+    <button class="user-menu-item" onclick="window.onChatIconClick()"><span>💬 Chat</span><span class="notif-dot" id="chatDot">!</span></button>
+    <button class="user-menu-item" onclick="window.openUserMenuSheet('shReq')"><span>🔧 Suporte</span><span class="notif-dot" id="reqDot">!</span></button>
+    <button class="user-menu-item" onclick="window.openUserMenuSheet('shOpConfig')"><span>⚙️ Ferramentas</span><span>›</span></button>
+    <button class="user-menu-item" onclick="window.doLogout()"><span>↩ Sair</span><span>›</span></button>
   </div>
 
   <div class="sos-bar" id="sosBar">
     <span style="font-size:16px">🚨</span>
     <div class="sos-txt">SOS ATIVO — Aguardando pilotos próximos…</div>
     <button class="sos-cancel" onclick="window.cancelSOS()">Cancelar</button>
+  </div>
+
+  <div class="live-legend" id="liveLegend" aria-label="Legenda viva do radar">
+    <button class="legend-pill" data-filter="operating" onclick="window.setLegendFilter('operating')"><i style="--lc:#5ec880"></i>🟢 Operando</button>
+    <button class="legend-pill" data-filter="online" onclick="window.setLegendFilter('online')"><i style="--lc:#5bc7e8"></i>🔵 Online</button>
+    <button class="legend-pill" data-filter="request" onclick="window.setLegendFilter('request')"><i style="--lc:#e0a13a"></i>🟠 Assist.</button>
+    <button class="legend-pill" data-filter="sos" onclick="window.setLegendFilter('sos')"><i style="--lc:#ff5f5f"></i>🔴 SOS</button>
+    <button class="legend-pill dom" data-filter="dominant" onclick="window.setLegendFilter('dominant')"><i></i>🟨 Área</button>
+  </div>
+
+  <div class="map-actions">
+    <button class="map-action" onclick="window.centerOnUser()" title="Minha localização" aria-label="Minha localização">📍<span>Minha localização</span></button>
   </div>
 
   <div class="r-nav">
@@ -653,6 +759,7 @@ select.inp{cursor:pointer}
 // ══════════════════════════════════════════════════════════════════════
 
 import { chat } from './chat.js';
+import { audio } from './audio.js';
 
 // ── ESTADO GLOBAL ──
 const R = window.AgroRadar = {
@@ -660,12 +767,16 @@ const R = window.AgroRadar = {
   lat: null, lon: null, map: null, weather: null,
   opCfg: {}, sosActive: false, isOperating: false, opStartTime: null,
   hiddenRequests: new Set(),
-  markers: {}, botData: {}, activeBots: [],
+  markers: {}, domainLayers: {}, trailLayers: {}, botData: {}, activeBots: [], pilotsUnsub:null, presenceBound:false,
   chatTarget: null, // { uid, name, photo } — alvo atual do chat aberto
+  isSetup:false, weatherTimer:null,
+  timeline:{mode:'live', windowHours:24, layers:[], future:['replay-24h','heatmap-operacional','historico-operacoes','crescimento-territorial']},
 };
 
 const $ = id => document.getElementById(id);
 const ov = id => id.replace('sh', 'ov');
+window._markers = R.markers;
+window._beaconMarkers = R.domainLayers;
 
 // ── UI HELPERS ──
 window.showToast = (msg, dur = 3200) => {
@@ -673,6 +784,14 @@ window.showToast = (msg, dur = 3200) => {
   clearTimeout(window._toastTimer);
   window._toastTimer = setTimeout(() => t.classList.remove('on'), dur);
 };
+function haptic(pattern = 45) { if (navigator.vibrate) navigator.vibrate(pattern); }
+function playFeedback(type) { audio?.play?.(type); haptic(type === 'sos' ? [90, 45, 90] : type === 'message' ? 35 : 55); }
+function pulseNotif(id, duration = 4200) {
+  const el = $(id); if (!el) return;
+  el.classList.add('on','pulse');
+  clearTimeout(el._pulseTimer);
+  el._pulseTimer = setTimeout(() => el.classList.remove('pulse'), duration);
+}
 window.openSheet = id => {
   $(ov(id)).classList.add('on'); $(id).classList.add('on');
   if (id === 'shProfile') renderProfile();
@@ -681,6 +800,37 @@ window.openSheet = id => {
 window.closeSheet = id => {
   $(ov(id)).classList.remove('on'); $(id).classList.remove('on');
 };
+function renderHeaderProfile() {
+  const p = R.profile || {};
+  const name = cleanName(p.nickname || p.name, R.user);
+  const photo = fixPhoto(p.photo) || fixPhoto(R.user?.photoURL);
+  const avatar = photo ? `<img src="${photo}" onerror="this.outerHTML='👨‍✈️'">` : '👨‍✈️';
+  const status = R.sosActive ? 'SOS' : R.isOperating ? 'OPERANDO' : (p.visibility === 'invisible' ? 'INVISÍVEL' : 'ONLINE');
+  const score = p.amxScore || p.score || 0;
+  ['userChipAv','userMenuAv'].forEach(id => { const el = $(id); if (el) el.innerHTML = avatar; });
+  if ($('userChipName')) $('userChipName').textContent = name;
+  if ($('userChipStatus')) $('userChipStatus').textContent = `${status} · AMX ${score || '—'}`;
+  if ($('userMenuName')) $('userMenuName').textContent = name;
+  if ($('userMenuSub')) $('userMenuSub').textContent = `${status} · ${p.city || 'cidade não informada'}`;
+}
+window.toggleUserMenu = () => {
+  renderHeaderProfile();
+  $('userMenu')?.classList.toggle('on');
+  $('userChip')?.classList.toggle('on', $('userMenu')?.classList.contains('on'));
+};
+window.closeUserMenu = () => {
+  $('userMenu')?.classList.remove('on');
+  $('userChip')?.classList.remove('on');
+};
+window.openUserMenuSheet = id => {
+  window.closeUserMenu();
+  window.openSheet(id);
+};
+document.addEventListener('click', (ev) => {
+  if (!$('userMenu')?.classList.contains('on')) return;
+  if (ev.target.closest('#userMenu') || ev.target.closest('#userChip')) return;
+  window.closeUserMenu();
+});
 window.switchTab = tab => {
   ['radar','clima','ops','rank'].forEach(t => {
     $('tab-'+t)?.classList.remove('act');
@@ -700,9 +850,36 @@ window.showDroneInput = el => {
   inp.onblur = () => { if (inp.value.trim()) R.opCfg.drone = inp.value.trim(); inp.style.display = 'none'; };
 };
 window.centerOnUser = () => {
-  if (R.map && R.lat && R.lon) { R.map.setView([R.lat, R.lon], 13); showToast('📍 Centralizado'); }
-  else showToast('⚠️ Localização indisponível');
+  if (R.map && R.lat && R.lon) {
+    R.map.flyTo([R.lat, R.lon], Math.max(R.map.getZoom(), 13), {duration:1.15, easeLinearity:.18});
+    document.body.classList.add('locating');
+    setTimeout(() => document.body.classList.remove('locating'), 1500);
+    if (R.markers[R.user?.uid]) {
+      R.markers[R.user.uid].setIcon(createBeaconIcon(R.isOperating ? 'operating' : R.sosActive ? 'sos' : 'online', {...R.botData[R.user.uid], isCurrentUser:true, locPulse:true}));
+      setTimeout(() => R.botData[R.user?.uid] && R.markers[R.user.uid]?.setIcon(createBeaconIcon(R.botData[R.user.uid].status || 'online', R.botData[R.user.uid])), 1500);
+    }
+    showToast('📍 Minha localização centralizada');
+  } else showToast('⚠️ Localização indisponível');
 };
+function applyLegendFilter(filter) {
+  document.body.className = document.body.className.replace(/\blegend-filter-\w+\b/g, '').trim();
+  if (filter) document.body.classList.add(`legend-filter-${filter}`);
+  document.querySelectorAll('.legend-pill').forEach(btn => btn.classList.toggle('on', btn.dataset.filter === filter));
+}
+window.setLegendFilter = (filter) => {
+  const current = R.legendFilter === filter ? null : filter;
+  R.legendFilter = current;
+  applyLegendFilter(current);
+};
+function wireLegendPreview() {
+  if (R.legendWired) return;
+  R.legendWired = true;
+  document.querySelectorAll('.legend-pill').forEach(btn => {
+    const filter = btn.dataset.filter;
+    btn.addEventListener('pointerenter', () => { if (!R.legendFilter) applyLegendFilter(filter); });
+    btn.addEventListener('pointerleave', () => { if (!R.legendFilter) applyLegendFilter(null); });
+  });
+}
 
 // ── UTILITÁRIOS ──
 function fixPhoto(url) {
@@ -717,6 +894,11 @@ function cleanName(name, user) {
     n = user?.displayName || user?.email?.split('@')[0] || 'Piloto';
   if (n.length > 24) n = n.substring(0, 21) + '…';
   return n || 'Piloto';
+}
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = String(str ?? '');
+  return div.innerHTML;
 }
 
 // Cache Firestore
@@ -770,10 +952,15 @@ function gerarBots() {
       score:50+Math.floor(Math.random()*45), amxScore:50+Math.floor(Math.random()*45),
       hoursTotal:10+Math.floor(Math.random()*600), opsTotal:5+Math.floor(Math.random()*150),
       hectares:10+Math.floor(Math.random()*80),
+      growthPerDay:10+Math.floor(Math.random()*11),
+      presenceDays:18+Math.floor(Math.random()*120),
+      recentOps:1+Math.floor(Math.random()*9),
       baseLat:reg.lat, baseLon:reg.lon,
       lat:reg.lat+(Math.random()-.5)*.2, lon:reg.lon+(Math.random()-.5)*.2,
       status:r<0.3?'operating':r<0.7?'online':'offline',
+      isBot:true,
     });
+    console.debug('[BOT SPAWNED]', bots[bots.length - 1].id, bots[bots.length - 1].city);
   }
   return bots;
 }
@@ -781,25 +968,92 @@ function gerarBots() {
 // ── MAPA ──
 function initMap(lat, lon) {
   if (R.map) return;
-  R.map = L.map('mapEl',{zoomControl:true,attributionControl:false}).setView([lat,lon],7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(R.map);
+  R.map = L.map('mapEl',{zoomControl:true,attributionControl:false,preferCanvas:true}).setView([lat,lon],7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,updateWhenIdle:true,keepBuffer:2}).addTo(R.map);
+  const syncZoomClass = () => document.body.classList.toggle('zoom-far', R.map.getZoom() < 10);
+  R.map.on('zoomend', syncZoomClass);
+  syncZoomClass();
 }
-function createBeaconIcon(status) {
-  const colors={online:'#3d8a52',operating:'#1a7dc4',sos:'#c42828',offline:'#3d5c44',request:'#c47800'};
+function createBeaconIcon(status, data = {}) {
+  const colors={online:'#5bc7e8',operating:'#5ec880',sos:'#ff5f5f',offline:'#3d5c44',request:'#e0a13a'};
+  const glyphs={online:'●',operating:'⌁',sos:'!',offline:'·',request:'+'};
   const col = colors[status] || colors.online;
-  const s = 10;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28" overflow="visible">
-    <circle cx="14" cy="14" r="${s+3}" fill="${col}" opacity=".35">
-      <animate attributeName="r" values="${s+2};${s+7};${s+2}" dur="2.8s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values=".35;.05;.35" dur="2.8s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="14" cy="14" r="${s}" fill="${col}" opacity=".95"/>
-    <circle cx="14" cy="14" r="${s-2}" fill="none" stroke="rgba(255,255,255,.25)" stroke-width=".5"/>
-  </svg>`;
-  return L.divIcon({html:svg,className:'',iconSize:[28,28],iconAnchor:[14,14]});
+  const cls = `pilot-beacon status-${status}${data.isCurrentUser ? ' is-user' : ''}${data.isRealUser ? ' real' : ''}${data.isBot ? ' bot' : ''}${data.locPulse ? ' loc-pulse' : ''}`;
+  const html = `<div class="${cls}" style="--bc:${col}">
+    <i class="halo"></i><i class="scan"></i><i class="core"></i><span class="glyph">${glyphs[status]||'●'}</span>
+  </div>`;
+  return L.divIcon({html,className:'',iconSize:[28,28],iconAnchor:[14,14]});
+}
+function updateCounters() {
+  const pilots = Object.values(R.botData).filter(p => p.status !== 'offline').length;
+  const areas = Object.keys(R.domainLayers).length;
+  $('pilotCount').textContent = `${pilots} online`;
+  $('domainCount').textContent = `${areas} áreas`;
+}
+function hectaresNow(data) {
+  const base = Math.min(99, Number(data.hectares || 0));
+  if (!data.growthPerDay || data.isCurrentUser) return base;
+  const day = Math.floor(Date.now() / 86400000);
+  const seed = Array.from(String(data.id)).reduce((a,c)=>a+c.charCodeAt(0),0) % 7;
+  return Math.min(99, base + Math.max(0, day - 20590 + seed) * data.growthPerDay);
+}
+function influenceSize(hectares) {
+  return Math.max(90, Math.min(270, 84 + Math.sqrt(Math.max(1, hectares)) * 17));
+}
+function areaIntel(data) {
+  const days = Number(data.presenceDays || Math.max(14, Math.round((data.opsTotal || 20) / 2)));
+  const sinceDate = new Date(Date.now() - days * 86400000);
+  const since = sinceDate.toLocaleDateString('pt-BR');
+  const score = data.amxScore || data.score || 0;
+  const reputation = score >= 82 ? 'Elite' : score >= 68 ? 'Alta' : 'Estável';
+  const recentOps = Number(data.recentOps || Math.max(1, Math.round((data.opsTotal || 5) % 8) + 1));
+  return { days, since, reputation, recentOps };
+}
+function distanceLabel(data) {
+  if (!R.lat || !R.lon || !data.lat || !data.lon) return '—';
+  const Rkm = 6371;
+  const dLat = (data.lat - R.lat) * Math.PI / 180;
+  const dLon = (data.lon - R.lon) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(R.lat*Math.PI/180) * Math.cos(data.lat*Math.PI/180) * Math.sin(dLon/2)**2;
+  const km = Rkm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(km < 10 ? 1 : 0)} km`;
+}
+function upsertInfluence(data, popupHtml = '') {
+  if (!R.map) return;
+  const removeInfluence = () => {
+    if (R.domainLayers[data.id]) { R.domainLayers[data.id].remove(); delete R.domainLayers[data.id]; }
+  };
+  if (data.status === 'offline') { removeInfluence(); return; }
+  const hectares = hectaresNow(data);
+  if (hectares < 18 && data.status !== 'operating') { removeInfluence(); return; }
+  const size = influenceSize(hectares);
+  const influenceClass = `agro-influence${hectares >= 70 ? ' dominant' : ''}${data.status === 'operating' ? ' operating' : ''}${data.status === 'sos' ? ' sos' : ''}`;
+  const icon = L.divIcon({
+    className:'',
+    html:`<div class="${influenceClass}"><span class="scan"></span></div>`,
+    iconSize:[size,size],
+    iconAnchor:[size/2,size/2],
+  });
+  if (R.domainLayers[data.id]) {
+    R.domainLayers[data.id].setLatLng([data.lat,data.lon]);
+    R.domainLayers[data.id].setIcon(icon);
+    if (popupHtml) R.domainLayers[data.id].bindPopup(popupHtml,{maxWidth:235});
+  } else {
+    R.domainLayers[data.id] = L.marker([data.lat,data.lon],{icon,interactive:true,zIndexOffset:-1000}).addTo(R.map);
+    if (popupHtml) R.domainLayers[data.id].bindPopup(popupHtml,{maxWidth:235});
+  }
+}
+function addOperationTrail(pid, fromLatLng, toLatLng, status) {
+  if (!R.map || !fromLatLng || status === 'offline') return;
+  const dist = R.map.distance(fromLatLng, toLatLng);
+  if (dist < 120 || dist > 70000) return;
+  const color = status === 'operating' ? '#6dd8ef' : '#5ec880';
+  const line = L.polyline([fromLatLng, toLatLng],{className:'agro-trail',color,weight:1.25,opacity:.55,interactive:false}).addTo(R.map);
+  setTimeout(()=>line.remove(), 43000);
 }
 function upsertPilot(data) {
   if (!R.map || !data?.id || !data.lat || !data.lon) return;
+  data.hectares = hectaresNow(data);
   let name = String(data.name||'');
   if (!name || name.startsWith('http') || name.includes('googleusercontent')) name = 'Piloto';
   if (name.length > 24) name = name.substring(0,21)+'…';
@@ -812,34 +1066,124 @@ function upsertPilot(data) {
     ? `<img src="${fixPhoto(data.photo)||data.photo}" onerror="this.outerHTML='👨‍✈️'" style="width:100%;height:100%;object-fit:cover">`
     : (data.photo || '👨‍✈️');
 
+  const safeName = escapeHtml(data.name);
+  const intel = areaIntel(data);
+  const distance = distanceLabel(data);
   const popupHtml = `<div class="p-card">
+    <div class="p-card-kicker">🏆 Domina a área desde ${intel.since}</div>
     <div class="p-card-hdr">
       <div class="p-card-av">${photoHtml}</div>
       <div>
-        <div class="p-card-name">${data.name}</div>
+        <div class="p-card-name">${safeName}</div>
         <span class="p-card-tag ${statusClass[data.status]||'online'}">${statusLabels[data.status]||'Online'}</span>
       </div>
     </div>
-    <div class="p-card-info">📍 ${data.city||'—'}</div>
-    <div class="p-card-info">🚁 ${data.drone||'—'}</div>
-    <div class="p-card-info">AMX ${data.amxScore||data.score||0} · ${data.hectares||0} ha</div>
+    <div class="p-card-info">📍 ${escapeHtml(data.city||'—')}</div>
+    <div class="p-card-info">🚁 ${escapeHtml(data.drone||'—')}</div>
+    <div class="p-card-metrics">
+      <div class="p-card-metric"><strong>${data.hectares||0}</strong><span>hectares</span></div>
+      <div class="p-card-metric"><strong>${data.opsTotal||0}</strong><span>operações</span></div>
+      <div class="p-card-metric"><strong>${distance}</strong><span>distância</span></div>
+    </div>
+    <div class="p-card-intel">
+      <div><span>Conquista territorial</span><b>desde ${intel.since}</b></div>
+      <div><span>Presença contínua</span><b>${intel.days} dias</b></div>
+      <div><span>Últimas operações</span><b>${intel.recentOps} recentes</b></div>
+      <div><span>Status</span><b>${statusLabels[data.status]||'Online'}</b></div>
+      <div><span>Reputação / Rank</span><b>${intel.reputation} · AMX ${data.amxScore||data.score||0}</b></div>
+      <div><span>Drone favorito</span><b>${escapeHtml(data.drone||'—')}</b></div>
+    </div>
     <button class="p-card-btn" onclick="window.openChatWith('${pid}','${data.name.replace(/'/g,"\\'")}','${(data.photo||'👨‍✈️').replace(/'/g,"\\'")}')">💬 Iniciar Chat</button>
   </div>`;
 
   if (R.markers[pid]) {
+    const prev = R.markers[pid].getLatLng();
     R.markers[pid].setLatLng([data.lat,data.lon]);
-    R.markers[pid].setIcon(createBeaconIcon(data.status||'online'));
+    R.markers[pid].setIcon(createBeaconIcon(data.status||'online', data));
+    R.markers[pid].setZIndexOffset?.(data.isRealUser?800:data.isCurrentUser?900:data.isBot?0:200);
+    addOperationTrail(pid, prev, [data.lat,data.lon], data.status);
     R.markers[pid].getPopup()?.setContent(popupHtml);
   } else {
-    const marker = L.marker([data.lat,data.lon],{icon:createBeaconIcon(data.status||'online')}).addTo(R.map);
+    const marker = L.marker([data.lat,data.lon],{icon:createBeaconIcon(data.status||'online', data),riseOnHover:true,zIndexOffset:data.isRealUser?800:data.isCurrentUser?900:data.isBot?0:200}).addTo(R.map);
     marker.bindPopup(popupHtml,{maxWidth:220});
     R.markers[pid] = marker;
   }
   R.botData[pid] = data;
-  $('pilotCount').textContent = `${Object.keys(R.markers).length} pilotos`;
+  upsertInfluence(data, popupHtml);
+  updateCounters();
+  console.debug('[PILOT UPSERT OK]', { id: pid, real: !!data.isRealUser, bot: !!data.isBot, status: data.status, lat: data.lat, lon: data.lon });
 }
+
+function removePilot(pid) {
+  if (!pid) return;
+  if (R.markers[pid]) { R.markers[pid].remove(); delete R.markers[pid]; }
+  if (R.domainLayers[pid]) { R.domainLayers[pid].remove(); delete R.domainLayers[pid]; }
+  delete R.botData[pid];
+  updateCounters();
+}
+function normalizePilotDoc(docSnap) {
+  const d = docSnap.data() || {};
+  const uid = d.uid || docSnap.id;
+  const lat = Number(d.lat);
+  const lon = Number(d.lon);
+  return {
+    id: uid, uid,
+    name: d.nickname || d.name || d.displayName || 'Piloto',
+    photo: fixPhoto(d.photo) || d.photo || '👨‍✈️',
+    city: d.city || '', drone: d.drone || '',
+    score: d.amxScore || d.score || 0, amxScore: d.amxScore || d.score || 0,
+    hoursTotal: d.hoursTotal || 0, opsTotal: d.opsTotal || 0,
+    hectares: d.hectares || 0, presenceDays: d.presenceDays || 0, recentOps: d.recentOps || 0,
+    lat, lon, status: d.status || 'online', visibility: d.visibility || 'online',
+    isRealUser:true, isBot:false, isCurrentUser: uid === R.user?.uid,
+    updatedAt: d.updatedAt, lastSeen: d.lastSeen,
+  };
+}
+function shouldRenderRealPilot(pilot) {
+  if (!pilot.id || pilot.id === R.user?.uid) return false;
+  if (pilot.visibility === 'invisible' || pilot.status === 'offline') return false;
+  return Number.isFinite(pilot.lat) && Number.isFinite(pilot.lon);
+}
+async function listenPilots() {
+  const db = window._firebaseDB;
+  if (!db || !R.user) return;
+  if (R.pilotsUnsub) { R.pilotsUnsub(); R.pilotsUnsub = null; }
+  try {
+    const { collection, onSnapshot } = await importFirestore();
+    R.pilotsUnsub = onSnapshot(collection(db, 'pilots'), snap => {
+      console.debug('[FIRESTORE SNAPSHOT]', { size: snap.size, changes: snap.docChanges().length });
+      snap.docChanges().forEach(change => {
+        const pilot = normalizePilotDoc(change.doc);
+        if (pilot.id === R.user?.uid) return;
+        if (change.type === 'removed' || !shouldRenderRealPilot(pilot)) {
+          removePilot(pilot.id);
+          return;
+        }
+        console.debug('[REAL PILOT RECEIVED]', pilot.id, pilot);
+        upsertPilot(pilot);
+      });
+    }, err => console.warn('[FIRESTORE SNAPSHOT]', err));
+  } catch (e) { console.warn('listenPilots:', e); }
+}
+function markSelfOffline() {
+  if (!R.user || !window._updateProfileFn) return;
+  window._updateProfileFn(R.user.uid, { status:'offline', lastSeen:new Date().toISOString() }).catch(()=>{});
+}
+function bindPresenceLifecycle() {
+  if (R.presenceBound) return;
+  R.presenceBound = true;
+  window.addEventListener('pagehide', markSelfOffline);
+  window.addEventListener('beforeunload', markSelfOffline);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') markSelfOffline();
+    else publishSelf(R.isOperating ? 'operating' : R.sosActive ? 'sos' : 'online');
+  });
+}
+
 function publishSelf(status='online') {
   if (!R.user || !R.profile) return;
+  const visibility = R.profile.visibility || 'online';
+  if (visibility === 'invisible') { removePilot(R.user.uid); markSelfOffline(); return; }
   const p = R.profile;
   const name  = cleanName(p.nickname||p.name, R.user);
   const photo = fixPhoto(p.photo) || fixPhoto(R.user?.photoURL) || '👨‍✈️';
@@ -847,10 +1191,11 @@ function publishSelf(status='online') {
     id:R.user.uid, name, photo, city:p.city||'', drone:p.drone||'',
     score:p.amxScore||0, amxScore:p.amxScore||0,
     hoursTotal:p.hoursTotal||0, opsTotal:p.opsTotal||0, hectares:p.hectares||0,
-    lat:R.lat||(-15.78), lon:R.lon||(-47.93), status, isCurrentUser:true,
+    lat:R.lat||(-15.78), lon:R.lon||(-47.93), status: R.sosActive ? 'sos' : status, isCurrentUser:true, isRealUser:true,
   });
+  renderHeaderProfile();
   if (window._updateProfileFn)
-    window._updateProfileFn(R.user.uid,{lat:R.lat,lon:R.lon,status,nickname:name}).catch(()=>{});
+    window._updateProfileFn(R.user.uid,{lat:R.lat,lon:R.lon,status:R.sosActive?'sos':status,nickname:name,visibility,lastSeen:new Date().toISOString()}).catch(()=>{});
 }
 let botMoveInterval = null;
 function startBotMovement() {
@@ -859,6 +1204,7 @@ function startBotMovement() {
     R.activeBots.filter(()=>Math.random()<0.15).forEach(bot=>{
       bot.lat = bot.baseLat+(Math.random()-.5)*.18;
       bot.lon = bot.baseLon+(Math.random()-.5)*.18;
+      bot.status = Math.random() < .38 ? 'operating' : 'online';
       upsertPilot(bot);
     });
   }, 90000);
@@ -1034,6 +1380,7 @@ window.sendMsg = async () => {
 
 // Abrir/fechar drawer de conversas (lista vem do chat.js via #chatList)
 window.onChatIconClick = async () => {
+  window.closeUserMenu?.();
   if (R.chatTarget?.uid) {
     await window.openChatWith(R.chatTarget.uid, R.chatTarget.name, R.chatTarget.photo);
     $('chatDot').classList.remove('on');
@@ -1080,7 +1427,8 @@ async function listenAcceptNotifications() {
       if (R.chatTarget?.uid === accepterUid && $('shChat').classList.contains('on')) return;
 
       showToast(`🎉 ${accepterName} aceitou seu chamado! Abrindo chat…`, 5000);
-      $('chatDot').classList.add('on');
+      playFeedback('accept');
+      pulseNotif('chatDot', 5200);
 
       // Abre o chat após 1.2s (deixa o toast aparecer)
       setTimeout(() => window.openChatWith(accepterUid, accepterName, '👨‍✈️'), 1200);
@@ -1198,6 +1546,8 @@ let pendingReq = null;
 function showRequestModal(req) {
   pendingReq = req;
   const isSOS = req.type==='sos';
+  playFeedback(isSOS ? 'sos' : 'request');
+  pulseNotif('reqDot', isSOS ? 9000 : 5200);
   $('modalIcon').textContent  = isSOS?'🚨':'🔧';
   $('modalTitle').textContent = isSOS?'SOS URGENTE!':'Novo Pedido';
   $('modalMsg').textContent   = `${req.pilotName}: ${req.message}`;
@@ -1292,6 +1642,7 @@ window.saveProfile = async () => {
   const upd={nickname:nick,city,drone};if(photo)upd.photo=photo;
   if(window._updateProfileFn)await window._updateProfileFn(uid,upd);
   Object.assign(R.profile,upd);
+  renderHeaderProfile();
   // Atualiza perfil no chat.js também
   chat.currentProfile = R.profile;
   publishSelf(R.isOperating?'operating':'online');
@@ -1303,6 +1654,8 @@ window.setVis = async vis => {
   R.profile.visibility=vis;renderProfile();
 };
 window.doLogout = async () => {
+  markSelfOffline();
+  R.pilotsUnsub?.(); R.pilotsUnsub = null;
   if(window._logoutFn)await window._logoutFn();
   window.closeSheet('shProfile');
   $('sRadar').classList.add('off');$('sSplash').classList.remove('off');
@@ -1350,6 +1703,9 @@ async function showRadar() {
 }
 
 function setupMap(lat,lon) {
+  if (R.isSetup) return;
+  R.isSetup = true;
+  wireLegendPreview();
   initMap(lat,lon);
   R.weather=getWeather();
   setTimeout(()=>R.map?.invalidateSize(),350);
@@ -1365,7 +1721,10 @@ function setupMap(lat,lon) {
     },null,{enableHighAccuracy:true,maximumAge:30000,timeout:15000});
   }
 
+  renderHeaderProfile();
   publishSelf('online');
+  bindPresenceLifecycle();
+  listenPilots().catch(()=>{});
 
   // Inicializar chat.js v17 — passa db, user, profile
   chat.init(window._firebaseDB, R.user, R.profile);
@@ -1374,7 +1733,8 @@ function setupMap(lat,lon) {
   listenAcceptNotifications().catch(()=>{}); // escuta 'accept' para abrir chat automaticamente
   updateAMX(R.weather);updateClima(R.weather);
 
-  setInterval(()=>{R.weather=getWeather();updateAMX(R.weather);updateClima(R.weather);},600000);
+  clearInterval(R.weatherTimer);
+  R.weatherTimer = setInterval(()=>{R.weather=getWeather();updateAMX(R.weather);updateClima(R.weather);},600000);
 }
 
 async function init() {
