@@ -110,16 +110,16 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .leaflet-marker-pane,.leaflet-overlay-pane{will-change:transform}
 .agro-influence{position:relative;border-radius:50%;pointer-events:none;mix-blend-mode:screen;filter:blur(.25px);opacity:.62;transition:opacity .35s,filter .35s}
 .agro-influence::before{content:'';position:absolute;inset:0;border-radius:50%;
-  background:radial-gradient(circle,rgba(92,210,137,.16) 0%,rgba(58,168,96,.085) 30%,rgba(37,128,82,.04) 55%,rgba(37,128,82,.012) 67%,transparent 76%);
-  mask-image:radial-gradient(circle,#000 0 48%,rgba(0,0,0,.78) 58%,transparent 78%);
+  background:radial-gradient(circle,rgba(92,210,137,.18) 0%,rgba(58,168,96,.1) 30%,rgba(37,128,82,.045) 55%,rgba(37,128,82,.015) 67%,transparent 76%);
+  mask-image:radial-gradient(circle,#000 0 50%,rgba(0,0,0,.8) 60%,transparent 80%);
   animation:territoryBreath 12s cubic-bezier(.45,0,.2,1) infinite}
-.agro-influence::after{content:'';position:absolute;inset:18%;border-radius:50%;border:1px solid rgba(94,200,128,.075);
-  box-shadow:0 0 32px rgba(80,210,160,.075);animation:territoryScan 13s linear infinite}
-.agro-influence .scan{position:absolute;left:14%;right:14%;top:50%;height:1px;background:linear-gradient(90deg,transparent,rgba(123,244,188,.18),transparent);animation:territoryLine 9s ease-in-out infinite}
-.agro-influence.dominant{opacity:.96;filter:blur(.08px) drop-shadow(0 0 26px rgba(86,255,154,.24))}
-.agro-influence.dominant::before{background:radial-gradient(circle,rgba(95,255,152,.24) 0%,rgba(85,215,118,.13) 30%,rgba(76,180,96,.06) 55%,rgba(76,180,96,.02) 70%,transparent 80%)}
-.agro-influence.dominant::after{inset:10%;border-color:rgba(176,255,190,.24);box-shadow:0 0 68px rgba(90,255,150,.22),inset 0 0 28px rgba(95,255,152,.08);animation:territoryScan 16s linear infinite,dominantPulse 5.8s ease-in-out infinite}
-@keyframes dominantPulse{0%,100%{opacity:.55;transform:scale(.98)}50%{opacity:1;transform:scale(1.03)}}
+.agro-influence::after{content:'';position:absolute;inset:18%;border-radius:50%;border:1px solid rgba(94,200,128,.09);
+  box-shadow:0 0 34px rgba(80,210,160,.09);animation:territoryScan 13s linear infinite}
+.agro-influence .scan{position:absolute;left:14%;right:14%;top:50%;height:1px;background:linear-gradient(90deg,transparent,rgba(123,244,188,.2),transparent);animation:territoryLine 9s ease-in-out infinite}
+.agro-influence.dominant{opacity:1;filter:blur(.04px) drop-shadow(0 0 30px rgba(245,184,76,.36));mix-blend-mode:screen}
+.agro-influence.dominant::before{background:radial-gradient(circle,rgba(255,207,96,.34) 0%,rgba(222,158,44,.2) 28%,rgba(180,112,24,.09) 55%,rgba(180,112,24,.035) 72%,transparent 83%)}
+.agro-influence.dominant::after{inset:8%;border:1.5px solid rgba(255,221,126,.4);box-shadow:0 0 78px rgba(255,186,70,.34),inset 0 0 34px rgba(255,213,112,.14);animation:territoryScan 16s linear infinite,dominantPulse 5.8s ease-in-out infinite}
+@keyframes dominantPulse{0%,100%{opacity:.68;transform:scale(.985)}50%{opacity:1;transform:scale(1.035)}}
 .agro-influence.operating .scan{background:linear-gradient(90deg,transparent,rgba(104,220,240,.22),transparent)}
 @keyframes territoryBreath{0%,100%{transform:scale(.96);opacity:.6}50%{transform:scale(1.04);opacity:.95}}
 @keyframes territoryScan{to{transform:rotate(360deg)}}
@@ -139,11 +139,11 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .pilot-beacon .glyph{position:absolute;font-size:8px;line-height:1;opacity:.84;transform:translateY(-11px);filter:drop-shadow(0 1px 4px rgba(0,0,0,.65))}
 .pilot-label{position:absolute;left:19px;top:7px;white-space:nowrap;padding:2px 7px;border-radius:999px;background:rgba(5,12,7,.62);border:1px solid rgba(120,220,160,.12);backdrop-filter:blur(8px);font:500 9px var(--fm);letter-spacing:.03em;color:rgba(216,244,225,.74);opacity:.72;transform:translateX(-4px);transition:opacity .25s,transform .25s}
 .zoom-far .pilot-label{opacity:0;transform:translateX(-10px);pointer-events:none}.zoom-far .pilot-beacon{transform:scale(.78)}
-body.legend-filter-operating .pilot-beacon:not(.status-operating),body.legend-filter-online .pilot-beacon:not(.status-online),body.legend-filter-request .pilot-beacon:not(.status-request),body.legend-filter-sos .pilot-beacon:not(.status-sos){opacity:.18;filter:saturate(.25)}
-body.legend-filter-operating .agro-influence:not(.operating),body.legend-filter-online .agro-influence,body.legend-filter-request .agro-influence,body.legend-filter-sos .agro-influence:not(.sos){opacity:.12}
-body.legend-filter-dominant .pilot-beacon{opacity:.16;filter:saturate(.25)}
-body.legend-filter-dominant .agro-influence:not(.dominant){opacity:.1}
-body.legend-filter-dominant .agro-influence.dominant{opacity:1;filter:drop-shadow(0 0 22px rgba(115,245,170,.22))}
+body.legend-filter-operating .pilot-beacon:not(.status-operating),body.legend-filter-online .pilot-beacon:not(.status-online),body.legend-filter-request .pilot-beacon:not(.status-request),body.legend-filter-sos .pilot-beacon:not(.status-sos){opacity:.58;filter:saturate(.72) brightness(.86)}
+body.legend-filter-operating .agro-influence:not(.operating),body.legend-filter-online .agro-influence,body.legend-filter-request .agro-influence,body.legend-filter-sos .agro-influence:not(.sos){opacity:.45;filter:saturate(.82) brightness(.9)}
+body.legend-filter-dominant .pilot-beacon{opacity:.55;filter:saturate(.72) brightness(.86)}
+body.legend-filter-dominant .agro-influence:not(.dominant){opacity:.42;filter:saturate(.78) brightness(.86)}
+body.legend-filter-dominant .agro-influence.dominant{opacity:1;filter:drop-shadow(0 0 34px rgba(255,199,82,.44))}
 @keyframes beaconPulse{0%,100%{transform:scale(.72);opacity:.22}50%{transform:scale(1.55);opacity:.04}}
 @keyframes beaconSweep{to{transform:rotate(360deg)}}
 @keyframes beaconBreathe{0%,100%{transform:scale(.88);opacity:.88}50%{transform:scale(1.12);opacity:1}}
@@ -167,7 +167,7 @@ body.legend-filter-dominant .agro-influence.dominant{opacity:1;filter:drop-shado
   border:1px solid var(--bdm);display:flex;align-items:center;justify-content:center;
   font-size:14px;cursor:pointer;transition:all .2s;flex-shrink:0;backdrop-filter:blur(8px);position:relative}
 .ico-btn:hover{border-color:var(--bdh);background:var(--s3)}
-.user-chip{height:32px;min-width:112px;max-width:148px;border-radius:18px;border:1px solid rgba(90,173,112,.16);background:rgba(5,12,7,.56);backdrop-filter:blur(16px);display:flex;align-items:center;gap:7px;padding:3px 8px 3px 3px;color:var(--tx);cursor:pointer;box-shadow:0 10px 26px rgba(0,0,0,.18);transition:all .22s ease}
+.user-chip{height:32px;min-width:112px;max-width:148px;margin-right:8px;border-radius:18px;border:1px solid rgba(90,173,112,.16);background:rgba(5,12,7,.56);backdrop-filter:blur(16px);display:flex;align-items:center;gap:7px;padding:3px 8px 3px 3px;color:var(--tx);cursor:pointer;box-shadow:0 10px 26px rgba(0,0,0,.18);transition:all .22s ease}
 .user-chip:hover,.user-chip.on{border-color:rgba(130,205,150,.36);background:rgba(11,22,13,.64)}
 .user-chip-av{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:rgba(47,107,64,.7);font-size:13px;flex-shrink:0;box-shadow:0 0 14px rgba(91,199,232,.16)}
 .user-chip-av img{width:100%;height:100%;object-fit:cover}
@@ -176,6 +176,24 @@ body.legend-filter-dominant .agro-influence.dominant{opacity:1;filter:drop-shado
   background:var(--red2);color:white;font-size:7px;font-weight:700;display:none;
   align-items:center;justify-content:center}
 .notif-dot.on{display:flex}
+.notif-dot.pulse{animation:notifPulse 1.05s ease-in-out infinite}
+@keyframes notifPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 rgba(224,53,53,0)}50%{transform:scale(1.16);box-shadow:0 0 18px rgba(224,53,53,.45)}}
+
+
+/* Live legend + map actions */
+.live-legend{position:fixed;left:10px;top:52px;z-index:95;display:flex;gap:4px;max-width:calc(100vw - 20px);overflow-x:auto;scrollbar-width:none;padding:15px 5px 5px;border-radius:17px;background:rgba(5,12,7,.38);border:1px solid rgba(120,220,160,.1);backdrop-filter:blur(16px);box-shadow:0 12px 34px rgba(0,0,0,.16)}
+.live-legend::before{content:'pressione para filtrar';position:absolute;left:10px;top:4px;font:600 7px var(--fm);letter-spacing:.08em;text-transform:uppercase;color:rgba(138,184,150,.52)}
+.live-legend::-webkit-scrollbar{display:none}
+.legend-pill{display:flex;align-items:center;gap:4px;white-space:nowrap;padding:5px 7px;border-radius:999px;border:1px solid transparent;background:rgba(7,15,9,.42);color:rgba(223,240,227,.74);font:600 8px var(--fm);letter-spacing:.01em;cursor:pointer;transition:all .24s ease}
+.legend-pill i{width:7px;height:7px;border-radius:50%;display:block;background:var(--lc);box-shadow:0 0 10px var(--lc);animation:legendBreath 3.8s ease-in-out infinite}
+.legend-pill.dom i{width:10px;height:10px;border-radius:3px;background:linear-gradient(135deg,#ffe39a,#d69a2d);box-shadow:0 0 16px rgba(255,190,72,.48)}
+@keyframes legendBreath{0%,100%{opacity:.72;transform:scale(.92)}50%{opacity:1;transform:scale(1.12)}}
+.legend-pill:hover,.legend-pill.on{border-color:rgba(140,235,175,.22);color:var(--tx);background:rgba(22,46,30,.56);transform:translateY(-1px)}
+.map-actions{position:fixed;right:12px;bottom:164px;z-index:110;display:flex;flex-direction:column;gap:7px;width:42px}
+.map-action{width:42px;height:42px;border-radius:16px;border:1px solid rgba(90,173,112,.18);background:rgba(5,12,7,.5);backdrop-filter:blur(16px);box-shadow:0 10px 28px rgba(0,0,0,.2),0 0 18px rgba(91,199,232,.06);color:rgba(223,240,227,.82);font:800 15px var(--fu);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s ease}
+.map-action span{display:none}.map-action:hover{border-color:rgba(130,205,150,.38);color:var(--g1);transform:translateY(-1px)}
+.map-particles{position:fixed;inset:0;z-index:82;pointer-events:none;overflow:hidden}.map-particles span{position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(120,240,170,.22);box-shadow:0 0 10px rgba(120,240,170,.18);animation:particleDrift 18s linear infinite}.map-particles span:nth-child(1){left:18%;top:38%;animation-duration:21s}.map-particles span:nth-child(2){left:76%;top:31%;animation-duration:24s;animation-delay:-6s}.map-particles span:nth-child(3){left:52%;top:68%;animation-duration:19s;animation-delay:-11s}.map-particles span:nth-child(4){left:34%;top:77%;animation-duration:26s;animation-delay:-3s}@keyframes particleDrift{0%{transform:translate3d(0,18px,0);opacity:0}20%,70%{opacity:.72}100%{transform:translate3d(18px,-48px,0);opacity:0}}
+@media (max-width:520px){.r-hdr{padding:6px 8px 13px;grid-template-columns:auto minmax(72px,1fr) auto}.r-wordmark{font-size:11px}.r-wordmark small{display:none}.status-badge{font-size:7px;padding:3px 5px}.status-badge span{max-width:70px;overflow:hidden;text-overflow:ellipsis}.live-legend{top:50px;left:8px;right:8px}.legend-pill{padding:5px 6px;font-size:7.5px}.map-actions{right:10px;bottom:158px;width:40px}.map-action{width:40px;height:40px}.user-chip{min-width:104px;max-width:124px}.user-chip-name{max-width:68px}}
 
 
 /* Live legend + map actions */
@@ -542,7 +560,7 @@ select.inp{cursor:pointer}
     <button class="legend-pill" data-filter="online" onclick="window.setLegendFilter('online')"><i style="--lc:#5bc7e8"></i>🔵 Online</button>
     <button class="legend-pill" data-filter="request" onclick="window.setLegendFilter('request')"><i style="--lc:#e0a13a"></i>🟠 Assist.</button>
     <button class="legend-pill" data-filter="sos" onclick="window.setLegendFilter('sos')"><i style="--lc:#ff5f5f"></i>🔴 SOS</button>
-    <button class="legend-pill dom" data-filter="dominant" onclick="window.setLegendFilter('dominant')"><i></i>🟩 Área</button>
+    <button class="legend-pill dom" data-filter="dominant" onclick="window.setLegendFilter('dominant')"><i></i>🟨 Área</button>
   </div>
 
   <div class="map-actions">
@@ -758,6 +776,7 @@ select.inp{cursor:pointer}
 // ══════════════════════════════════════════════════════════════════════
 
 import { chat } from './chat.js';
+import { audio } from './audio.js';
 
 // ── ESTADO GLOBAL ──
 const R = window.AgroRadar = {
@@ -782,6 +801,14 @@ window.showToast = (msg, dur = 3200) => {
   clearTimeout(window._toastTimer);
   window._toastTimer = setTimeout(() => t.classList.remove('on'), dur);
 };
+function haptic(pattern = 45) { if (navigator.vibrate) navigator.vibrate(pattern); }
+function playFeedback(type) { audio?.play?.(type); haptic(type === 'sos' ? [90, 45, 90] : type === 'message' ? 35 : 55); }
+function pulseNotif(id, duration = 4200) {
+  const el = $(id); if (!el) return;
+  el.classList.add('on','pulse');
+  clearTimeout(el._pulseTimer);
+  el._pulseTimer = setTimeout(() => el.classList.remove('pulse'), duration);
+}
 window.openSheet = id => {
   $(ov(id)).classList.add('on'); $(id).classList.add('on');
   if (id === 'shProfile') renderProfile();
@@ -1416,7 +1443,8 @@ async function listenAcceptNotifications() {
       if (R.chatTarget?.uid === accepterUid && $('shChat').classList.contains('on')) return;
 
       showToast(`🎉 ${accepterName} aceitou seu chamado! Abrindo chat…`, 5000);
-      $('chatDot').classList.add('on');
+      playFeedback('accept');
+      pulseNotif('chatDot', 5200);
 
       // Abre o chat após 1.2s (deixa o toast aparecer)
       setTimeout(() => window.openChatWith(accepterUid, accepterName, '👨‍✈️'), 1200);
@@ -1534,6 +1562,8 @@ let pendingReq = null;
 function showRequestModal(req) {
   pendingReq = req;
   const isSOS = req.type==='sos';
+  playFeedback(isSOS ? 'sos' : 'request');
+  pulseNotif('reqDot', isSOS ? 9000 : 5200);
   $('modalIcon').textContent  = isSOS?'🚨':'🔧';
   $('modalTitle').textContent = isSOS?'SOS URGENTE!':'Novo Pedido';
   $('modalMsg').textContent   = `${req.pilotName}: ${req.message}`;
