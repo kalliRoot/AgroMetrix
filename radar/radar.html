@@ -82,8 +82,17 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 
 /* ══ RADAR ══ */
 #sRadar{background:var(--bg)}
+#sRadar::before{content:'';position:fixed;left:0;right:0;top:-12%;height:28%;z-index:80;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(104,225,170,.045),transparent);
+  filter:blur(10px);animation:liveEarthScan 14s ease-in-out infinite}
+@keyframes liveEarthScan{0%{transform:translateY(-20vh);opacity:0}22%,70%{opacity:1}100%{transform:translateY(120vh);opacity:0}}
 #mapEl{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
-.leaflet-tile{filter:brightness(.34) saturate(.28) hue-rotate(95deg) contrast(1.1)}
+#mapEl::after{content:'';position:absolute;inset:0;z-index:450;pointer-events:none;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 45%,transparent 35%,rgba(3,8,5,.34) 100%),
+    linear-gradient(180deg,rgba(5,12,7,.18),transparent 24%,transparent 72%,rgba(5,12,7,.3));
+  mix-blend-mode:multiply}
+.leaflet-tile{filter:brightness(.43) saturate(.34) hue-rotate(82deg) contrast(1.05)}
 .leaflet-container{background:var(--bg)!important}
 .leaflet-control-zoom a{background:rgba(5,12,7,.92)!important;color:var(--tx2)!important;
   border:1px solid var(--bdm)!important;border-radius:6px!important;margin-bottom:3px!important;display:block!important}
@@ -92,6 +101,30 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
   backdrop-filter:blur(16px)!important}
 .leaflet-popup-tip-container{display:none}
 .leaflet-popup-content{margin:10px!important;min-width:180px}
+.leaflet-marker-pane,.leaflet-overlay-pane{will-change:transform}
+.agro-influence{border-radius:50%;pointer-events:none;mix-blend-mode:screen;filter:blur(.2px);opacity:.78}
+.agro-influence::before{content:'';position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle,rgba(92,210,137,.15) 0%,rgba(58,168,96,.08) 32%,rgba(37,128,82,.035) 58%,transparent 72%);
+  animation:territoryBreath 9s ease-in-out infinite}
+.agro-influence::after{content:'';position:absolute;inset:18%;border-radius:50%;border:1px solid rgba(94,200,128,.08);
+  box-shadow:0 0 32px rgba(80,210,160,.08);animation:territoryScan 7s linear infinite}
+.agro-influence .scan{position:absolute;left:16%;right:16%;top:50%;height:1px;background:linear-gradient(90deg,transparent,rgba(123,244,188,.2),transparent);animation:territoryLine 6.5s ease-in-out infinite}
+@keyframes territoryBreath{0%,100%{transform:scale(.96);opacity:.6}50%{transform:scale(1.04);opacity:.95}}
+@keyframes territoryScan{to{transform:rotate(360deg)}}
+@keyframes territoryLine{0%,100%{transform:translateY(-34px);opacity:0}45%,55%{opacity:.8}50%{transform:translateY(34px)}}
+.agro-trail{stroke-linecap:round;filter:drop-shadow(0 0 5px rgba(94,200,128,.35));animation:trailFade 42s linear forwards}
+@keyframes trailFade{0%{opacity:.58}70%{opacity:.28}100%{opacity:0}}
+.pilot-beacon{position:relative;width:28px;height:28px;display:grid;place-items:center;transform:translateZ(0)}
+.pilot-beacon .halo{position:absolute;inset:3px;border-radius:50%;border:1px solid var(--bc);opacity:.24;animation:beaconPulse 3.8s ease-in-out infinite}
+.pilot-beacon .scan{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 300deg,rgba(255,255,255,.16),transparent 342deg);animation:beaconSweep 5.6s linear infinite;opacity:.38}
+.pilot-beacon .core{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--bc);box-shadow:0 0 12px var(--bc),0 0 24px rgba(94,200,128,.18);animation:beaconBreathe 4.2s ease-in-out infinite}
+.pilot-beacon .glyph{position:absolute;font-size:8px;line-height:1;opacity:.84;transform:translateY(-11px);filter:drop-shadow(0 1px 4px rgba(0,0,0,.65))}
+.pilot-label{position:absolute;left:19px;top:7px;white-space:nowrap;padding:2px 7px;border-radius:999px;background:rgba(5,12,7,.62);border:1px solid rgba(120,220,160,.12);backdrop-filter:blur(8px);font:500 9px var(--fm);letter-spacing:.03em;color:rgba(216,244,225,.74);opacity:.72;transform:translateX(-4px);transition:opacity .25s,transform .25s}
+.zoom-far .pilot-label{opacity:0;transform:translateX(-10px);pointer-events:none}.zoom-far .pilot-beacon{transform:scale(.78)}
+@keyframes beaconPulse{0%,100%{transform:scale(.72);opacity:.22}50%{transform:scale(1.55);opacity:.04}}
+@keyframes beaconSweep{to{transform:rotate(360deg)}}
+@keyframes beaconBreathe{0%,100%{transform:scale(.88);opacity:.88}50%{transform:scale(1.12);opacity:1}}
+@media (prefers-reduced-motion:reduce){.agro-influence::before,.agro-influence::after,.agro-influence .scan,.pilot-beacon .halo,.pilot-beacon .scan,.pilot-beacon .core,.agro-trail{animation:none}}
 .leaflet-popup-close-button{color:var(--mt)!important;top:8px!important;right:8px!important}
 
 /* Header */
@@ -353,20 +386,25 @@ select.inp{cursor:pointer}
 .modal-chamado-btn.ignore:hover{background:rgba(196,40,40,.1);border-color:rgba(196,40,40,.4);color:#f07070}
 
 /* Popup card */
-.p-card{display:flex;flex-direction:column;gap:7px}
+.p-card{display:flex;flex-direction:column;gap:8px;padding:2px;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);animation:contextIn .28s ease-out both}
+@keyframes contextIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .p-card-hdr{display:flex;align-items:center;gap:9px}
 .p-card-av{width:30px;height:30px;border-radius:50%;background:var(--g6);
   display:flex;align-items:center;justify-content:center;font-size:15px;overflow:hidden;flex-shrink:0}
 .p-card-av img{width:100%;height:100%;object-fit:cover}
 .p-card-name{font-size:13px;font-weight:800;color:var(--tx)}
-.p-card-tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase}
+.p-card-tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:999px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
 .p-card-tag.online{background:rgba(45,107,64,.2);color:var(--g1)}
 .p-card-tag.op{background:rgba(26,125,196,.2);color:#60b8e8}
 .p-card-tag.sos{background:rgba(196,40,40,.2);color:#f07070}
 .p-card-info{font-size:10px;color:var(--tx2);display:flex;align-items:center;gap:3px}
-.p-card-btn{margin-top:3px;width:100%;padding:7px;border-radius:7px;background:var(--g6);
+.p-card-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:2px}
+.p-card-metric{padding:6px 5px;border:1px solid rgba(90,173,112,.12);border-radius:10px;background:rgba(7,15,9,.48);text-align:center}
+.p-card-metric strong{display:block;font:500 11px var(--fm);color:var(--g1)}
+.p-card-metric span{display:block;margin-top:1px;font-size:7px;color:var(--mt);text-transform:uppercase;letter-spacing:.08em}
+.p-card-btn{margin-top:3px;width:100%;padding:8px;border-radius:10px;background:linear-gradient(135deg,rgba(30,64,41,.92),rgba(47,107,64,.88));
   color:white;border:none;font-family:var(--fu);font-size:10px;font-weight:800;cursor:pointer;transition:all .2s}
-.p-card-btn:hover{background:var(--g5)}
+.p-card-btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
 
 .clear-hist-btn{background:rgba(196,40,40,.12);border:1px solid rgba(196,40,40,.3);color:#f07070;
   margin:0 18px 14px;padding:7px 14px;border-radius:20px;font-size:10px;font-weight:700;
@@ -424,7 +462,8 @@ select.inp{cursor:pointer}
   <div class="r-hdr">
     <div class="r-wordmark">Agro<span>Metrix</span><small>RADAR</small></div>
     <div class="r-status-row">
-      <div class="status-badge"><div class="dot"></div><span id="pilotCount">— pilotos</span></div>
+      <div class="status-badge"><div class="dot"></div><span id="pilotCount">— pilotos online</span></div>
+      <div class="status-badge"><div class="dot"></div><span id="domainCount">— áreas dominadas</span></div>
     </div>
     <button class="ico-btn" onclick="window.centerOnUser()" style="font-size:13px">📍</button>
     <div style="position:relative">
@@ -660,8 +699,10 @@ const R = window.AgroRadar = {
   lat: null, lon: null, map: null, weather: null,
   opCfg: {}, sosActive: false, isOperating: false, opStartTime: null,
   hiddenRequests: new Set(),
-  markers: {}, botData: {}, activeBots: [],
+  markers: {}, domainLayers: {}, trailLayers: {}, botData: {}, activeBots: [],
   chatTarget: null, // { uid, name, photo } — alvo atual do chat aberto
+  isSetup:false, weatherTimer:null,
+  timeline:{mode:'live', windowHours:24, layers:[], future:['replay-24h','heatmap-operacional','historico-operacoes','crescimento-territorial']},
 };
 
 const $ = id => document.getElementById(id);
@@ -718,6 +759,11 @@ function cleanName(name, user) {
   if (n.length > 24) n = n.substring(0, 21) + '…';
   return n || 'Piloto';
 }
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = String(str ?? '');
+  return div.innerHTML;
+}
 
 // Cache Firestore
 let _fs = null;
@@ -770,6 +816,7 @@ function gerarBots() {
       score:50+Math.floor(Math.random()*45), amxScore:50+Math.floor(Math.random()*45),
       hoursTotal:10+Math.floor(Math.random()*600), opsTotal:5+Math.floor(Math.random()*150),
       hectares:10+Math.floor(Math.random()*80),
+      growthPerDay:10+Math.floor(Math.random()*11),
       baseLat:reg.lat, baseLon:reg.lon,
       lat:reg.lat+(Math.random()-.5)*.2, lon:reg.lon+(Math.random()-.5)*.2,
       status:r<0.3?'operating':r<0.7?'online':'offline',
@@ -781,25 +828,72 @@ function gerarBots() {
 // ── MAPA ──
 function initMap(lat, lon) {
   if (R.map) return;
-  R.map = L.map('mapEl',{zoomControl:true,attributionControl:false}).setView([lat,lon],7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(R.map);
+  R.map = L.map('mapEl',{zoomControl:true,attributionControl:false,preferCanvas:true}).setView([lat,lon],7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,updateWhenIdle:true,keepBuffer:2}).addTo(R.map);
+  const syncZoomClass = () => document.body.classList.toggle('zoom-far', R.map.getZoom() < 10);
+  R.map.on('zoomend', syncZoomClass);
+  syncZoomClass();
 }
-function createBeaconIcon(status) {
-  const colors={online:'#3d8a52',operating:'#1a7dc4',sos:'#c42828',offline:'#3d5c44',request:'#c47800'};
+function createBeaconIcon(status, data = {}) {
+  const colors={online:'#5ec880',operating:'#5bc7e8',sos:'#ff5f5f',offline:'#3d5c44',request:'#e0a13a'};
+  const glyphs={online:'●',operating:'⌁',sos:'!',offline:'·',request:'+'};
   const col = colors[status] || colors.online;
-  const s = 10;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28" overflow="visible">
-    <circle cx="14" cy="14" r="${s+3}" fill="${col}" opacity=".35">
-      <animate attributeName="r" values="${s+2};${s+7};${s+2}" dur="2.8s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values=".35;.05;.35" dur="2.8s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="14" cy="14" r="${s}" fill="${col}" opacity=".95"/>
-    <circle cx="14" cy="14" r="${s-2}" fill="none" stroke="rgba(255,255,255,.25)" stroke-width=".5"/>
-  </svg>`;
-  return L.divIcon({html:svg,className:'',iconSize:[28,28],iconAnchor:[14,14]});
+  const label = escapeHtml(cleanName(data.name || '', null));
+  const html = `<div class="pilot-beacon" style="--bc:${col}">
+    <i class="halo"></i><i class="scan"></i><i class="core"></i><span class="glyph">${glyphs[status]||'●'}</span>
+    <span class="pilot-label">${label}</span>
+  </div>`;
+  return L.divIcon({html,className:'',iconSize:[28,28],iconAnchor:[14,14]});
+}
+function updateCounters() {
+  const pilots = Object.values(R.botData).filter(p => p.status !== 'offline').length;
+  const areas = Object.keys(R.domainLayers).length;
+  $('pilotCount').textContent = `${pilots} pilotos online`;
+  $('domainCount').textContent = `${areas} áreas dominadas`;
+}
+function hectaresNow(data) {
+  const base = Math.min(99, Number(data.hectares || 0));
+  if (!data.growthPerDay || data.isCurrentUser) return base;
+  const day = Math.floor(Date.now() / 86400000);
+  const seed = Array.from(String(data.id)).reduce((a,c)=>a+c.charCodeAt(0),0) % 7;
+  return Math.min(99, base + Math.max(0, day - 20590 + seed) * data.growthPerDay);
+}
+function influenceSize(hectares) {
+  return Math.max(90, Math.min(250, 84 + Math.sqrt(Math.max(1, hectares)) * 16));
+}
+function upsertInfluence(data) {
+  if (!R.map) return;
+  const removeInfluence = () => {
+    if (R.domainLayers[data.id]) { R.domainLayers[data.id].remove(); delete R.domainLayers[data.id]; }
+  };
+  if (data.status === 'offline') { removeInfluence(); return; }
+  const hectares = hectaresNow(data);
+  if (hectares < 18 && data.status !== 'operating') { removeInfluence(); return; }
+  const size = influenceSize(hectares);
+  const icon = L.divIcon({
+    className:'',
+    html:'<div class="agro-influence"><span class="scan"></span></div>',
+    iconSize:[size,size],
+    iconAnchor:[size/2,size/2],
+  });
+  if (R.domainLayers[data.id]) {
+    R.domainLayers[data.id].setLatLng([data.lat,data.lon]);
+    R.domainLayers[data.id].setIcon(icon);
+  } else {
+    R.domainLayers[data.id] = L.marker([data.lat,data.lon],{icon,interactive:false,zIndexOffset:-1000}).addTo(R.map);
+  }
+}
+function addOperationTrail(pid, fromLatLng, toLatLng, status) {
+  if (!R.map || !fromLatLng || status === 'offline') return;
+  const dist = R.map.distance(fromLatLng, toLatLng);
+  if (dist < 120 || dist > 70000) return;
+  const color = status === 'operating' ? '#6dd8ef' : '#5ec880';
+  const line = L.polyline([fromLatLng, toLatLng],{className:'agro-trail',color,weight:1.25,opacity:.55,interactive:false}).addTo(R.map);
+  setTimeout(()=>line.remove(), 43000);
 }
 function upsertPilot(data) {
   if (!R.map || !data?.id || !data.lat || !data.lon) return;
+  data.hectares = hectaresNow(data);
   let name = String(data.name||'');
   if (!name || name.startsWith('http') || name.includes('googleusercontent')) name = 'Piloto';
   if (name.length > 24) name = name.substring(0,21)+'…';
@@ -812,31 +906,39 @@ function upsertPilot(data) {
     ? `<img src="${fixPhoto(data.photo)||data.photo}" onerror="this.outerHTML='👨‍✈️'" style="width:100%;height:100%;object-fit:cover">`
     : (data.photo || '👨‍✈️');
 
+  const safeName = escapeHtml(data.name);
   const popupHtml = `<div class="p-card">
     <div class="p-card-hdr">
       <div class="p-card-av">${photoHtml}</div>
       <div>
-        <div class="p-card-name">${data.name}</div>
+        <div class="p-card-name">${safeName}</div>
         <span class="p-card-tag ${statusClass[data.status]||'online'}">${statusLabels[data.status]||'Online'}</span>
       </div>
     </div>
-    <div class="p-card-info">📍 ${data.city||'—'}</div>
-    <div class="p-card-info">🚁 ${data.drone||'—'}</div>
-    <div class="p-card-info">AMX ${data.amxScore||data.score||0} · ${data.hectares||0} ha</div>
+    <div class="p-card-info">📍 ${escapeHtml(data.city||'—')}</div>
+    <div class="p-card-info">🚁 ${escapeHtml(data.drone||'—')}</div>
+    <div class="p-card-metrics">
+      <div class="p-card-metric"><strong>${data.hectares||0}</strong><span>hectares</span></div>
+      <div class="p-card-metric"><strong>${data.opsTotal||0}</strong><span>operações</span></div>
+      <div class="p-card-metric"><strong>${data.amxScore||data.score||0}</strong><span>AMX</span></div>
+    </div>
     <button class="p-card-btn" onclick="window.openChatWith('${pid}','${data.name.replace(/'/g,"\\'")}','${(data.photo||'👨‍✈️').replace(/'/g,"\\'")}')">💬 Iniciar Chat</button>
   </div>`;
 
   if (R.markers[pid]) {
+    const prev = R.markers[pid].getLatLng();
     R.markers[pid].setLatLng([data.lat,data.lon]);
-    R.markers[pid].setIcon(createBeaconIcon(data.status||'online'));
+    R.markers[pid].setIcon(createBeaconIcon(data.status||'online', data));
+    addOperationTrail(pid, prev, [data.lat,data.lon], data.status);
     R.markers[pid].getPopup()?.setContent(popupHtml);
   } else {
-    const marker = L.marker([data.lat,data.lon],{icon:createBeaconIcon(data.status||'online')}).addTo(R.map);
+    const marker = L.marker([data.lat,data.lon],{icon:createBeaconIcon(data.status||'online', data),riseOnHover:true}).addTo(R.map);
     marker.bindPopup(popupHtml,{maxWidth:220});
     R.markers[pid] = marker;
   }
   R.botData[pid] = data;
-  $('pilotCount').textContent = `${Object.keys(R.markers).length} pilotos`;
+  upsertInfluence(data);
+  updateCounters();
 }
 function publishSelf(status='online') {
   if (!R.user || !R.profile) return;
@@ -859,6 +961,7 @@ function startBotMovement() {
     R.activeBots.filter(()=>Math.random()<0.15).forEach(bot=>{
       bot.lat = bot.baseLat+(Math.random()-.5)*.18;
       bot.lon = bot.baseLon+(Math.random()-.5)*.18;
+      bot.status = Math.random() < .38 ? 'operating' : 'online';
       upsertPilot(bot);
     });
   }, 90000);
@@ -1350,6 +1453,8 @@ async function showRadar() {
 }
 
 function setupMap(lat,lon) {
+  if (R.isSetup) return;
+  R.isSetup = true;
   initMap(lat,lon);
   R.weather=getWeather();
   setTimeout(()=>R.map?.invalidateSize(),350);
@@ -1374,7 +1479,8 @@ function setupMap(lat,lon) {
   listenAcceptNotifications().catch(()=>{}); // escuta 'accept' para abrir chat automaticamente
   updateAMX(R.weather);updateClima(R.weather);
 
-  setInterval(()=>{R.weather=getWeather();updateAMX(R.weather);updateClima(R.weather);},600000);
+  clearInterval(R.weatherTimer);
+  R.weatherTimer = setInterval(()=>{R.weather=getWeather();updateAMX(R.weather);updateClima(R.weather);},600000);
 }
 
 async function init() {
