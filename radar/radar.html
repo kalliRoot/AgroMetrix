@@ -354,6 +354,8 @@ select.inp{cursor:pointer}
 /* Req items */
 .req-item{background:var(--s2);border-radius:10px;padding:11px;margin:0 18px 7px;border:1px solid var(--bd)}
 .req-item.sos-req{border-left:3px solid var(--red);animation:reqPulse 1.5s ease-in-out infinite}
+.req-intel{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.req-chip{font:700 8px var(--fm);letter-spacing:.05em;text-transform:uppercase;padding:3px 6px;border-radius:999px;background:rgba(7,15,9,.65);border:1px solid rgba(120,220,160,.14);color:var(--tx2)}
+.req-chip.prio-critical{border-color:rgba(255,95,95,.36);color:#ff8585}.req-chip.prio-high{border-color:rgba(224,161,58,.36);color:#ffc76a}.req-chip.prio-medium{border-color:rgba(91,199,232,.32);color:#8bdcf5}
 @keyframes reqPulse{0%,100%{border-left-color:var(--red)}50%{border-left-color:rgba(196,40,40,.3)}}
 
 /* ══ CHAT BILATERAL ══ */
@@ -420,10 +422,12 @@ select.inp{cursor:pointer}
   width:calc(100% - 36px);max-width:320px;text-align:center;
   box-shadow:0 24px 60px rgba(0,0,0,.7);display:none}
 .modal-chamado.on{display:block;animation:modalIn .3s cubic-bezier(.34,1.3,.64,1)}
-.modal-chamado.sos-mode{border-color:rgba(196,40,40,.6)}
+.modal-chamado.sos-mode{border-color:rgba(196,40,40,.6);box-shadow:0 24px 70px rgba(196,40,40,.24),0 0 0 1px rgba(255,95,95,.12)}
+.modal-chamado.emergency-mode{border-color:rgba(196,40,40,.6);box-shadow:0 24px 70px rgba(196,40,40,.24),0 0 0 1px rgba(255,95,95,.12)}.modal-chamado.technical-mode{border-color:rgba(224,161,58,.42)}.modal-chamado.operational-mode{border-color:rgba(94,200,128,.42)}.modal-chamado.parts-mode{border-color:rgba(91,199,232,.42)}
 .modal-chamado-icon{font-size:46px;margin-bottom:9px;display:block}
 .modal-chamado-title{font-size:16px;font-weight:800;margin-bottom:5px}
 .modal-chamado-msg{font-size:12px;color:var(--tx2);margin-bottom:6px;line-height:1.5}
+.modal-intel{display:flex;justify-content:center;gap:5px;flex-wrap:wrap;margin:7px 0 8px}.modal-intel .req-chip{font-size:7.5px}.search-wave{height:28px;margin:2px auto 8px;position:relative;width:88px}.search-wave::before,.search-wave::after{content:'';position:absolute;inset:4px 34px;border-radius:50%;border:1px solid rgba(91,199,232,.34);animation:searchWave 2.2s ease-out infinite}.search-wave::after{animation-delay:.75s}@keyframes searchWave{from{transform:scale(.5);opacity:.85}to{transform:scale(3.2);opacity:0}}
 .modal-chamado-timer{font-size:10px;color:var(--mt);margin-bottom:14px;font-family:var(--fm)}
 .modal-chamado-buttons{display:flex;gap:9px}
 .modal-chamado-btn{flex:1;padding:12px;border-radius:14px;border:none;font-weight:800;
@@ -590,7 +594,7 @@ select.inp{cursor:pointer}
         <div class="qbtn" onclick="window.sendReq('battery','🔋 Preciso de bateria')">🔋 Bateria</div>
         <div class="qbtn" onclick="window.sendReq('helice','🚁 Preciso de hélice')">🚁 Hélice</div>
         <div class="qbtn" onclick="window.sendReq('part','🔧 Preciso de peça')">🔧 Peça</div>
-        <div class="qbtn" onclick="window.sendReq('support','🛠️ Suporte')">🛠️ Suporte</div>
+        <div class="qbtn" onclick="window.sendReq('technical','🛠️ Ajuda técnica')">🛠️ Ajuda técnica</div>
         <div class="qbtn" onclick="window.sendReq('fuel','⛽ Abastecimento')">⛽ Combustível</div>
         <div class="qbtn" onclick="window.sendReq('tow','🚜 Atolamento')">🚜 Atolamento</div>
       </div>
@@ -748,6 +752,7 @@ select.inp{cursor:pointer}
   <span class="modal-chamado-icon" id="modalIcon">🔧</span>
   <div class="modal-chamado-title" id="modalTitle">Novo Chamado</div>
   <div class="modal-chamado-msg" id="modalMsg">Alguém precisa de ajuda!</div>
+  <div class="modal-intel" id="modalIntel"></div>
   <div class="modal-chamado-timer" id="modalTimer">Expira em 30s</div>
   <div class="modal-chamado-buttons">
     <button class="modal-chamado-btn accept" onclick="window.modalAccept()">✅ Aceitar</button>
@@ -768,7 +773,7 @@ const R = window.AgroRadar = {
   user: null, profile: null, plan: null,
   lat: null, lon: null, map: null, weather: null,
   opCfg: {}, sosActive: false, isOperating: false, opStartTime: null,
-  hiddenRequests: new Set(),
+  hiddenRequests: new Set(), openRequests: [], requestScanTimer:null,
   markers: {}, domainLayers: {}, trailLayers: {}, botData: {}, activeBots: [], dominanceLeaders:{}, pilotsUnsub:null, presenceBound:false,
   chatTarget: null, // { uid, name, photo } — alvo atual do chat aberto
   isSetup:false, weatherTimer:null,
@@ -1367,6 +1372,112 @@ function endOp() {
   updateAMX(getWeather());
 }
 
+const REQUEST_CONFIG = {
+  sos:{category:'emergency',icon:'🚨',label:'SOS / Emergência',priority:'critical',radiusKm:150,range:'100–150 km',sound:'sos',tone:'Alerta máximo',specialties:[]},
+  technical:{category:'technical',icon:'🛠️',label:'Ajuda Técnica',priority:'high',radiusKm:Infinity,range:'Global',sound:'soft',tone:'Suporte coletivo',specialties:['dji','rtk','mapping','eletrica']},
+  support:{category:'technical',icon:'🛠️',label:'Ajuda Técnica',priority:'high',radiusKm:Infinity,range:'Global',sound:'soft',tone:'Suporte coletivo',specialties:['dji','rtk','mapping','eletrica']},
+  ops:{category:'operational',icon:'🟢',label:'Apoio Operacional',priority:'medium',radiusKm:80,range:'30–80 km',sound:'regional',tone:'Apoio regional',specialties:['pulverizacao','t40t50','mistura']},
+  tow:{category:'operational',icon:'🚜',label:'Apoio Operacional',priority:'medium',radiusKm:80,range:'30–80 km',sound:'regional',tone:'Apoio em campo',specialties:['pulverizacao']},
+  battery:{category:'parts',icon:'🔋',label:'Peças / Equipamentos',priority:'medium',radii:[50,100,200],range:'50→100→200 km',sound:'parts',tone:'Busca progressiva',specialties:['t40t50','eletrica']},
+  helice:{category:'parts',icon:'🚁',label:'Peças / Equipamentos',priority:'medium',radii:[50,100,200],range:'50→100→200 km',sound:'parts',tone:'Busca progressiva',specialties:['dji','t40t50']},
+  part:{category:'parts',icon:'🔧',label:'Peças / Equipamentos',priority:'medium',radii:[50,100,200],range:'50→100→200 km',sound:'parts',tone:'Busca progressiva',specialties:['dji','t40t50','eletrica']},
+  fuel:{category:'parts',icon:'⛽',label:'Peças / Equipamentos',priority:'medium',radii:[50,100,200],range:'50→100→200 km',sound:'parts',tone:'Busca progressiva',specialties:['mistura']},
+};
+const REQUEST_SPECIALTIES = [
+  {id:'dji',label:'🔧 Especialista DJI'}, {id:'rtk',label:'🛰️ RTK'},
+  {id:'pulverizacao',label:'🌾 Pulverização'}, {id:'t40t50',label:'🚁 T40/T50'},
+  {id:'mapping',label:'📡 Mapping'}, {id:'eletrica',label:'⚡ Elétrica'},
+  {id:'mistura',label:'🧪 Mistura/Aplicação'},
+];
+function requestConfig(type='support') { return REQUEST_CONFIG[type] || REQUEST_CONFIG.support; }
+function requestCreatedMs(req) {
+  if (Number(req.createdAtMs)) return Number(req.createdAtMs);
+  if (req.createdAt?.toMillis) return req.createdAt.toMillis();
+  if (req.createdAt?.seconds) return req.createdAt.seconds * 1000;
+  return Date.now();
+}
+function requestRadiusKm(req) {
+  const cfg = requestConfig(req.type);
+  if (cfg.category !== 'parts') return cfg.radiusKm;
+  const ageMin = (Date.now() - requestCreatedMs(req)) / 60000;
+  if (ageMin >= 5) return 200;
+  if (ageMin >= 2) return 100;
+  return 50;
+}
+function kmBetween(aLat,aLon,bLat,bLon) {
+  if (![aLat,aLon,bLat,bLon].every(Number.isFinite)) return Infinity;
+  const Rkm=6371,dLat=(bLat-aLat)*Math.PI/180,dLon=(bLon-aLon)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(aLat*Math.PI/180)*Math.cos(bLat*Math.PI/180)*Math.sin(dLon/2)**2;
+  return Rkm*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function requestDistanceKm(req) { return kmBetween(Number(R.lat),Number(R.lon),Number(req.lat),Number(req.lon)); }
+function pilotSpecialties() { return Array.isArray(R.profile?.specialties) ? R.profile.specialties : []; }
+function hasMatchingSpecialty(req) {
+  const needed = requestConfig(req.type).specialties || [];
+  if (!needed.length) return false;
+  const mine = pilotSpecialties();
+  return needed.some(s => mine.includes(s));
+}
+function isRequestInScope(req) {
+  const cfg = requestConfig(req.type);
+  if (cfg.category === 'technical') return true;
+  return requestDistanceKm(req) <= requestRadiusKm(req);
+}
+function requestPriorityScore(req) {
+  const cfg = requestConfig(req.type);
+  return (cfg.priority === 'critical' ? 400 : cfg.priority === 'high' ? 300 : 200) + (hasMatchingSpecialty(req) ? 50 : 0) - Math.min(99, requestDistanceKm(req) || 0);
+}
+function requestIntelChips(req) {
+  const cfg = requestConfig(req.type), dist = requestDistanceKm(req), radius = requestRadiusKm(req);
+  const spec = hasMatchingSpecialty(req) ? '<span class="req-chip prio-high">Especialidade compatível</span>' : '';
+  const distLabel = Number.isFinite(dist) ? `${dist.toFixed(dist < 10 ? 1 : 0)} km` : 'Global';
+  const radiusLabel = cfg.category === 'technical' ? 'Global' : `raio ${radius} km`;
+  return `<span class="req-chip prio-${cfg.priority}">${cfg.label}</span><span class="req-chip">${radiusLabel}</span><span class="req-chip">${distLabel}</span>${spec}`;
+}
+function closeRequestModal(message = '') {
+  stopOperationalAlert();
+  if (pendingReq?.timerInterval) clearInterval(pendingReq.timerInterval);
+  $('modalChamado').classList.remove('on','sos-mode','emergency-mode','technical-mode','operational-mode','parts-mode');
+  $('modalChamadoOverlay').style.display='none';
+  pendingReq=null;
+  if (message) showToast(message);
+}
+function triggerRequestFeedback(req) {
+  const cfg = requestConfig(req.type);
+  if (cfg.category === 'emergency') { startOperationalAlert('sos'); return; }
+  if (cfg.category === 'technical') { playFeedback('message'); return; }
+  if (cfg.category === 'operational') { playFeedback('request'); haptic(45); return; }
+  playFeedback('request'); haptic([35,25,35]);
+}
+function evaluateOpenRequests() {
+  let count = 0;
+  R.openRequests.forEach(r => {
+    if (r.uid === R.user?.uid || R.hiddenRequests.has(r.id) || !isRequestInScope(r)) return;
+    count++;
+    if (!_shownReqs.has(r.id)) {
+      _shownReqs.add(r.id);
+      showRequestModal(r);
+    }
+  });
+  const dot=$('reqDot');
+  if(dot){ if(count>0){dot.classList.add('on');dot.textContent=count>9?'9+':count;} else{dot.classList.remove('on');dot.textContent='!';} }
+}
+async function ensureOperationalRoom(req, requestRef, acceptedByName) {
+  if (!window._firebaseDB || !req?.id) return null;
+  const {doc,setDoc,serverTimestamp}=await importFirestore();
+  const cfg = requestConfig(req.type);
+  const roomId = `op_${req.id}`;
+  const role = hasMatchingSpecialty(req) ? '⚡ Especialista' : cfg.category === 'technical' ? '📡 Suporte Técnico' : cfg.category === 'operational' ? '🌾 Piloto Regional' : '🚁 Operador Principal';
+  const participant = {uid:R.user?.uid,name:acceptedByName,role,joinedAtMs:Date.now()};
+  await setDoc(doc(window._firebaseDB,'operationalRooms',roomId),{
+    id:roomId, requestId:req.id, status:'active', category:cfg.category, type:req.type,
+    title:`Sala Operacional — ${cfg.label}`, requesterUid:req.uid, requesterName:req.pilotName || 'Piloto',
+    leaderUid:R.user?.uid, leaderName:acceptedByName, maxSupport:3, supportParticipants:[participant],
+    createdAt:serverTimestamp(), createdAtMs:Date.now(), lastActivityMs:Date.now(), message:req.message || ''
+  },{merge:true});
+  return {roomId, role};
+}
+
 // ── SOS / PEDIDOS ──
 window.activateSOS = async () => {
   if (R.sosActive){window.cancelSOS();return;}
@@ -1388,9 +1499,10 @@ async function saveRequest(type,message) {
   const db=window._firebaseDB;if(!db)return;
   const {collection,addDoc,serverTimestamp}=await importFirestore();
   await addDoc(collection(db,'requests'),{
-    uid:R.user?.uid,type,message,
+    uid:R.user?.uid,type,message,category:requestConfig(type).category,priority:requestConfig(type).priority,
+    searchRadii:requestConfig(type).radii || null,currentRadiusKm:requestRadiusKm({type,createdAtMs:Date.now()}),
     pilotName:cleanName(R.profile?.nickname||R.profile?.name,R.user),
-    lat:R.lat,lon:R.lon,status:'open',createdAt:serverTimestamp(),
+    lat:R.lat,lon:R.lon,status:'open',acceptedBy:null,supportParticipants:[],createdAt:serverTimestamp(),createdAtMs:Date.now(),
   });
 }
 
@@ -1515,34 +1627,47 @@ async function listenAcceptNotifications() {
 }
 
 // Aceitar chamado — UI + delega ao chat.js (bilateral)
-window.acceptReq = async (uid, name, message) => {
+window.acceptReq = async (uid, name, message, requestId = '', type = 'support') => {
   const db = window._firebaseDB;
+  let accepted = false, roomInfo = null;
   if (db) {
+    const {collection,query,where,getDocs,doc,getDoc,updateDoc} = await importFirestore();
     try {
-      const {collection,query,where,getDocs,updateDoc} = await importFirestore();
-      // Marcar pedido como aceito
-      const q = query(collection(db,'requests'),where('uid','==',uid),where('status','==','open'));
-      const snap = await getDocs(q);
-      snap.forEach(d => {
-        updateDoc(d.ref,{status:'accepted',acceptedBy:R.user?.uid,acceptedAt:new Date().toISOString()}).catch(()=>{});
-        R.hiddenRequests.add(d.id);
-      });
+      const now = new Date().toISOString();
+      const acceptedByName = cleanName(R.profile?.nickname || R.profile?.name, R.user);
+      const participant = {uid:R.user?.uid,name:acceptedByName,role:'🚁 Operador Principal',joinedAt:now,joinedAtMs:Date.now()};
+      const applyAccept = async (ref, reqData, id) => {
+        if (reqData.status && reqData.status !== 'open') return false;
+        const req = {id, ...reqData, type:reqData.type || type, uid:reqData.uid || uid, pilotName:reqData.pilotName || name, message:reqData.message || message};
+        roomInfo = await ensureOperationalRoom(req, ref, acceptedByName);
+        await updateDoc(ref,{
+          status:'accepted', acceptedBy:R.user?.uid, acceptedByName, acceptedAt:now,
+          operationalRoomId:roomInfo?.roomId || `op_${id}`, supportParticipants:[participant], alertStoppedAt:now
+        });
+        R.hiddenRequests.add(id);
+        return true;
+      };
+      if (requestId) {
+        const ref = doc(db,'requests',requestId);
+        const snap = await getDoc(ref);
+        if (snap.exists()) accepted = await applyAccept(ref, snap.data(), requestId);
+      } else {
+        const q = query(collection(db,'requests'),where('uid','==',uid),where('status','==','open'));
+        const snap = await getDocs(q);
+        for (const d of snap.docs) {
+          if (!accepted) accepted = await applyAccept(d.ref, d.data(), d.id);
+          else R.hiddenRequests.add(d.id);
+        }
+      }
       saveHidden();
-
-      // Delega ao chat.js: envia msg automática + notificações espelho bilaterais
-      await chat.acceptRequest(uid, name, message);
-
+      if (accepted) await chat.acceptRequest(uid, name, message);
     } catch(e) { console.error('acceptReq:', e); }
   }
 
-  // Fechar modal
-  $('modalChamado').classList.remove('on');
-  $('modalChamadoOverlay').style.display = 'none';
-  if (pendingReq?.timerInterval) { clearInterval(pendingReq.timerInterval); pendingReq = null; }
-
-  // Abre chat para quem aceitou (lado A)
-  showToast(`✅ Chamado aceito! Abrindo chat com ${name}…`);
-  await window.openChatWith(uid, name, '👨‍✈️');
+  closeRequestModal();
+  if (!accepted && db) { showToast('⚠️ Chamado já foi assumido por outro piloto'); return; }
+  showToast(roomInfo?.roomId ? `✅ Sala Operacional criada · ${roomInfo.role}` : `✅ Chamado aceito! Abrindo chat com ${name}…`);
+  await window.openChatWith(uid, roomInfo?.roomId ? `Sala Operacional · ${name}` : name, '👨‍✈️');
 };
 
 // ── PEDIDOS ──
@@ -1568,21 +1693,28 @@ async function loadRequests() {
       $('reqList').innerHTML='<div style="padding:14px 18px;text-align:center;color:var(--mt);font-size:11px">Nenhum pedido ativo 🟢</div>';
       return;
     }
-    const icons={sos:'🚨',helice:'🚁',battery:'🔋',fuel:'⛽',part:'🔧',support:'🛠️',tow:'🚜'};
-    $('reqList').innerHTML=reqs.map(r=>`
-      <div class="req-item ${r.type==='sos'?'sos-req':''}" data-rid="${r.id}">
+    const visible=reqs.filter(isRequestInScope).sort((a,b)=>requestPriorityScore(b)-requestPriorityScore(a));
+    if(!visible.length){
+      $('reqList').innerHTML='<div style="padding:14px 18px;text-align:center;color:var(--mt);font-size:11px">Nenhum pedido no seu alcance operacional 🟢</div>';
+      return;
+    }
+    $('reqList').innerHTML=visible.map(r=>{
+      const cfg=requestConfig(r.type);
+      return `
+      <div class="req-item ${cfg.category==='emergency'?'sos-req':''}" data-rid="${r.id}">
         <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">
-          <span style="font-size:18px">${icons[r.type]||'🔧'}</span>
-          <div>
-            <div style="font-size:12px;font-weight:800;color:var(--tx)">${r.pilotName||'Piloto'}</div>
-            <div style="font-size:10px;color:${r.type==='sos'?'#f07070':'var(--mt)'}">${r.message}</div>
+          <span style="font-size:18px">${cfg.icon}</span>
+          <div style="min-width:0">
+            <div style="font-size:12px;font-weight:800;color:var(--tx)">${escapeHtml(r.pilotName||'Piloto')}</div>
+            <div style="font-size:10px;color:${cfg.category==='emergency'?'#f07070':'var(--mt)'}">${escapeHtml(r.message)}</div>
+            <div class="req-intel">${requestIntelChips(r)}</div>
           </div>
         </div>
-        <button onclick="window.acceptReq('${r.uid}','${(r.pilotName||'').replace(/'/g,"\\'")}','${(r.message||'').replace(/'/g,"\\'")}')"
-          style="width:100%;padding:7px;border-radius:8px;border:none;background:${r.type==='sos'?'var(--red)':'var(--g5)'};color:white;font-family:var(--fu);font-size:11px;font-weight:800;cursor:pointer">
-          ${r.type==='sos'?'🚨 Responder SOS':'✅ Aceitar chamado'}
+        <button onclick="window.acceptReq('${r.uid}','${(r.pilotName||'').replace(/'/g,"\\'")}','${(r.message||'').replace(/'/g,"\\'")}','${r.id}','${r.type}')"
+          style="width:100%;padding:7px;border-radius:8px;border:none;background:${cfg.category==='emergency'?'var(--red)':'var(--g5)'};color:white;font-family:var(--fu);font-size:11px;font-weight:800;cursor:pointer">
+          ${cfg.category==='emergency'?'🚨 Responder SOS':'✅ Entrar na operação'}
         </button>
-      </div>`).join('');
+      </div>`}).join('');
   }catch(e){console.warn('loadRequests:',e);}
 }
 window.clearHistory = () => {
@@ -1597,24 +1729,13 @@ async function listenRequests() {
     const{collection,query,where,limit,onSnapshot}=await importFirestore();
     const q=query(collection(db,'requests'),where('status','==','open'),limit(50));
     onSnapshot(q,snap=>{
-      let count=0;
       snap.docChanges().forEach(change=>{
         const r={id:change.doc.id,...change.doc.data()};
-        if(r.uid===R.user?.uid||R.hiddenRequests.has(r.id))return;
-        count++;
-        if(change.type==='added'&&!_shownReqs.has(r.id)){
-          _shownReqs.add(r.id);
-          if(R.lat&&R.lon&&r.lat&&r.lon){
-            const R2=6371,dL=(r.lat-R.lat)*Math.PI/180,dO=(r.lon-R.lon)*Math.PI/180;
-            const a=Math.sin(dL/2)**2+Math.cos(R.lat*Math.PI/180)*Math.cos(r.lat*Math.PI/180)*Math.sin(dO/2)**2;
-            if(R2*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))>120)return;
-          }
-          showRequestModal(r);
-        }
+        if(change.type==='removed' && pendingReq?.id===r.id) closeRequestModal('✅ Chamado assumido por outro piloto');
       });
-      const dot=$('reqDot');
-      if(count>0){dot.classList.add('on');dot.textContent=count>9?'9+':count;}
-      else{dot.classList.remove('on');dot.textContent='!';}
+      R.openRequests=snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>r.uid!==R.user?.uid&&!R.hiddenRequests.has(r.id));
+      evaluateOpenRequests();
+      if(!R.requestScanTimer) R.requestScanTimer=setInterval(evaluateOpenRequests,60000);
     });
   }catch(e){console.warn('listenRequests:',e);}
 }
@@ -1623,20 +1744,22 @@ async function listenRequests() {
 let pendingReq = null;
 function showRequestModal(req) {
   pendingReq = req;
-  const isSOS = req.type==='sos';
-  startOperationalAlert(isSOS ? 'sos' : 'request');
-  pulseNotif('reqDot', isSOS ? 30000 : 30000);
-  $('modalIcon').textContent  = isSOS?'🚨':'🔧';
-  $('modalTitle').textContent = isSOS?'SOS URGENTE!':'Novo Pedido';
+  const cfg = requestConfig(req.type);
+  triggerRequestFeedback(req);
+  pulseNotif('reqDot', cfg.category === 'emergency' ? 30000 : 9000);
+  $('modalIcon').textContent  = cfg.icon;
+  $('modalTitle').textContent = cfg.category === 'emergency' ? 'SOS OPERACIONAL!' : cfg.label;
   $('modalMsg').textContent   = `${req.pilotName}: ${req.message}`;
+  $('modalIntel').innerHTML = requestIntelChips(req) + (cfg.category === 'parts' ? '<div class="search-wave"></div>' : '');
   $('modalChamadoOverlay').style.display='block';
-  $('modalChamado').classList.add('on');
-  if(isSOS)$('modalChamado').classList.add('sos-mode');
-  else $('modalChamado').classList.remove('sos-mode');
-  let s=0; $('modalTimer').textContent='Aguardando aceite — alerta ativo';
+  $('modalChamado').classList.remove('sos-mode','emergency-mode','technical-mode','operational-mode','parts-mode');
+  $('modalChamado').classList.add('on', `${cfg.category}-mode`);
+  let s=0; $('modalTimer').textContent= cfg.category === 'emergency' ? 'Alerta ativo até aceite ou cancelamento' : `${cfg.tone} · ${cfg.range}`;
   if(pendingReq?.timerInterval)clearInterval(pendingReq.timerInterval);
   pendingReq.timerInterval=setInterval(()=>{
-    s++; $('modalTimer').textContent=`Aguardando aceite há ${s}s`;
+    s++; $('modalTimer').textContent= cfg.category === 'parts'
+      ? `Busca expandindo · raio atual ${requestRadiusKm(req)} km · ${s}s`
+      : `Aguardando coordenação há ${s}s`;
   },1000);
 }
 window.modalAccept = async () => {
@@ -1647,17 +1770,10 @@ window.modalAccept = async () => {
     pendingReq=null;
     $('modalChamado').classList.remove('on');
     $('modalChamadoOverlay').style.display='none';
-    await window.acceptReq(req.uid,req.pilotName,req.message);
+    await window.acceptReq(req.uid,req.pilotName,req.message,req.id,req.type);
   }
 };
-window.modalIgnore = () => {
-  stopOperationalAlert();
-  if(pendingReq?.timerInterval)clearInterval(pendingReq.timerInterval);
-  $('modalChamado').classList.remove('on');
-  $('modalChamadoOverlay').style.display='none';
-  pendingReq=null;
-  showToast('❌ Chamado ignorado');
-};
+window.modalIgnore = () => { closeRequestModal('❌ Chamado ignorado'); };
 
 // ── PERFIL ──
 function renderProfile() {
@@ -1694,6 +1810,10 @@ function renderProfile() {
         ${['DJI T25','DJI T40','DJI T50','XAG P100','XAG V40','EAVision','Pegasus Agri','Outro']
           .map(d=>`<option ${p.drone===d?'selected':''}>${d}</option>`).join('')}
       </select></div>
+    <div class="inp-g"><label class="inp-l">Especialidades operacionais</label>
+      <div class="op-chip-row" id="pfSpecialties">
+        ${REQUEST_SPECIALTIES.map(sp=>`<div class="op-chip ${(p.specialties||[]).includes(sp.id)?'on':''}" data-spec="${sp.id}" onclick="window.toggleSpecialty(this)">${sp.label}</div>`).join('')}
+      </div></div>
     ${isPro?`<div class="inp-g"><label class="inp-l">Foto (URL)</label><input class="inp" id="pfPhoto" value="${p.photo||''}" placeholder="URL da foto"></div>`:''}
     <div class="plan-b ${pCls}">
       <div class="plan-icon">${pIcon}</div>
@@ -1712,13 +1832,15 @@ function renderProfile() {
     <button class="btn-prim" onclick="window.saveProfile()" style="margin-top:10px">💾 Salvar perfil</button>
     <button class="btn-sec" onclick="window.doLogout()" style="margin-top:7px">Sair da conta</button>`;
 }
+window.toggleSpecialty = el => el.classList.toggle('on');
 window.saveProfile = async () => {
   const uid=R.user?.uid;if(!uid)return;
   let nick=cleanName($('pfNick')?.value.trim(),R.user);
   const city=$('pfCity')?.value.trim();
   const drone=$('pfDrone')?.value;
   const photo=R.plan?.plan==='paid'?$('pfPhoto')?.value.trim():null;
-  const upd={nickname:nick,city,drone};if(photo)upd.photo=photo;
+  const specialties=[...document.querySelectorAll('#pfSpecialties .op-chip.on')].map(el=>el.dataset.spec).filter(Boolean);
+  const upd={nickname:nick,city,drone,specialties};if(photo)upd.photo=photo;
   if(window._updateProfileFn)await window._updateProfileFn(uid,upd);
   Object.assign(R.profile,upd);
   renderHeaderProfile();
