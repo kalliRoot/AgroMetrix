@@ -211,13 +211,15 @@ header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); b
 /* COMPASS */
 .compass-wrap { margin-top:5px; }
 .compass { width:58px; height:58px; position:relative; }
-.compass-ring { width:58px; height:58px; border-radius:50%; border:1.5px solid var(--border-md); display:flex; align-items:center; justify-content:center; position:relative; }
+.compass-ring { width:58px; height:58px; border-radius:50%; border:1.5px solid var(--border-md); display:flex; align-items:center; justify-content:center; position:relative; background:radial-gradient(circle,rgba(94,200,128,.1),transparent 64%); box-shadow:inset 0 0 18px rgba(47,132,80,.08); }
 .c-n,.c-s,.c-e,.c-w { position:absolute; font-size:8px; font-weight:700; color:var(--text-muted); font-family:var(--font-mono); }
 .c-n{top:2px;left:50%;transform:translateX(-50%)}
 .c-s{bottom:2px;left:50%;transform:translateX(-50%)}
 .c-e{right:2px;top:50%;transform:translateY(-50%)}
 .c-w{left:2px;top:50%;transform:translateY(-50%)}
-.compass-needle { width:2px; height:20px; background:linear-gradient(to bottom,var(--red-500) 50%,var(--green-400) 50%); border-radius:1px; transform-origin:bottom center; position:absolute; bottom:50%; left:50%; margin-left:-1px; transition:transform .9s cubic-bezier(.4,0,.2,1); }
+.compass-needle { width:24px; height:24px; position:absolute; left:50%; top:50%; margin:-12px 0 0 -12px; transform-origin:center; transition:transform .9s cubic-bezier(.4,0,.2,1); }
+.compass-needle::before{content:'';position:absolute;left:50%;top:2px;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:18px solid var(--green-400);filter:drop-shadow(0 2px 6px rgba(47,132,80,.34))}
+.compass-needle::after{content:'';position:absolute;left:50%;top:50%;width:5px;height:5px;border-radius:50%;background:var(--surface);border:1px solid var(--green-400);transform:translate(-50%,-50%);box-shadow:0 0 0 2px rgba(94,200,128,.12)}
 .cloud-cell { grid-column:span 2; }
 
 /* APP INDEX */
@@ -261,11 +263,12 @@ header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); b
 .hour-time { font-family:var(--font-mono); font-size:12px; font-weight:500; color:var(--text-primary); min-width:38px; }
 .hour-icon { font-size:17px; }
 .hour-temp { font-family:var(--font-mono); font-size:12px; font-weight:500; color:var(--text-secondary); min-width:33px; }
-.hour-desc { flex:1; font-size:11px; color:var(--text-muted); padding-right:96px; }
-.hour-more{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:8px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--green-700);background:rgba(160,228,181,.28);border:1px solid rgba(61,168,102,.24);border-radius:999px;padding:3px 8px;pointer-events:none;white-space:nowrap;box-shadow:0 4px 14px rgba(47,132,80,.08);z-index:2}
+.hour-desc { flex:1; font-size:11px; color:var(--text-muted); padding-right:104px; }
+.hour-more{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:8px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--green-800);background:rgba(160,228,181,.34);border:1px solid rgba(61,168,102,.28);border-radius:999px;padding:3px 8px;pointer-events:none;white-space:nowrap;box-shadow:0 4px 14px rgba(47,132,80,.08);z-index:2}
 .hour-row:hover .hour-more,.hour-row.open .hour-more{color:white;background:linear-gradient(135deg,var(--green-700),var(--green-400));border-color:transparent}
+[data-theme="dark"] .hour-more{color:var(--green-200);background:rgba(94,200,128,.16);border-color:rgba(94,200,128,.3)}
 [data-theme="dark"] .day-card.active{background:linear-gradient(180deg,var(--surface3),var(--surface2))}
-.hour-tags { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; }
+.hour-tags { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; padding-right:96px; }
 .tag { font-size:10px; font-weight:600; padding:2px 7px; border-radius:5px; white-space:nowrap; }
 .tag-wind{background:var(--sky-100);color:var(--sky-700)}.tag-rain{background:#e8f4fd;color:var(--sky-700)}
 .tag-good{background:var(--green-100);color:var(--green-800)}.tag-warn{background:var(--amber-100);color:var(--earth-800)}.tag-bad{background:#fde8e8;color:#8a2020}.tag-cloud{background:var(--surface3);color:var(--text-muted)}
@@ -327,7 +330,7 @@ footer a { color:var(--green-500); text-decoration:none; }
   .app-grid{grid-template-columns:1fr}
   .hour-detail.open{grid-template-columns:repeat(2,1fr)}
   .detail-col{border-right:none;border-bottom:1px solid var(--border)}
-  .hour-desc{padding-right:88px}
+  .hour-desc{padding-right:104px}
   .hour-tags{display:none}
   .header-search{display:none}
 }
@@ -651,24 +654,26 @@ function showModalResults(list){
   if(!list||!list.length){box.classList.remove('open');return;}
   box.innerHTML=list.map(item=>{
     const addr=item.address||{};
-    const city=addr.city||addr.town||addr.village||addr.hamlet||addr.suburb||item.display_name.split(',')[0];
+    const city=addr.city||addr.town||addr.village||addr.hamlet||addr.county||item.display_name.split(',')[0];
+    const exact=addr.neighbourhood||addr.suburb||addr.city_district||addr.quarter||'';
     const state=addr.state||'';
     const county=addr.county||'';
-    const sub=state?`${county?county+' · ':''}${state}`:'Brasil';
-    return `<div class="search-item" onclick="selectModalCity(${item.lat},${item.lon},'${escQ(city)}','${escQ(sub)}')">
+    const sub=state?`${exact?exact+' · ':''}${county?county+' · ':''}${state}`:'Brasil';
+    return `<div class="search-item" onclick="selectModalCity(${item.lat},${item.lon},'${escQ(city)}','${escQ(sub)}','${escQ(exact)}')">
       <div class="search-item-name">${city}</div>
       <div class="search-item-state">${sub}</div>
     </div>`;
   }).join('');
   box.classList.add('open');
 }
-async function selectModalCity(lat,lon,name,state){
+async function selectModalCity(lat,lon,name,state,exact=''){
   closeLocModal();
-  $('locationLabel').textContent=state?`${name}, ${state.split(' · ').pop()}`:name;
-  currentLat=lat;currentLon=lon;currentLocName=name;
+  const displayName=formatLocationName(name,exact);
+  $('locationLabel').textContent=formatLocationLabel(name,state,exact);
+  currentLat=lat;currentLon=lon;currentLocName=displayName;
   $('loadingScreen').classList.remove('hidden');
   $('loadingText').textContent='buscando dados…';
-  await fetchWeather(lat,lon,name);
+  await fetchWeather(lat,lon,displayName);
 }
 function onModalCityKey(e){
   if(e.key==='Escape'){$('modalSearchResults').classList.remove('open');}
@@ -687,8 +692,8 @@ async function requestGPS(){
   },()=>fallbackLocation(),{timeout:12000,enableHighAccuracy:true});
 }
 function fallbackLocation(){
-  currentLat=-22.6611;currentLon=-50.4122;currentLocName='Assis';
-  $('locationLabel').textContent='Assis, SP';
+  currentLat=-22.6611;currentLon=-50.4122;currentLocName='Assis - Centro';
+  $('locationLabel').textContent='Assis - Centro, SP';
   fetchWeather(currentLat,currentLon,currentLocName);
 }
 function reloadLocation(){openLocModal();}
@@ -713,26 +718,38 @@ function showResults(list){
   if(!list||!list.length){box.classList.remove('open');return;}
   box.innerHTML=list.map((item,i)=>{
     const addr=item.address||{};
-    const city=addr.city||addr.town||addr.village||addr.hamlet||addr.suburb||item.display_name.split(',')[0];
+    const city=addr.city||addr.town||addr.village||addr.hamlet||addr.county||item.display_name.split(',')[0];
+    const exact=addr.neighbourhood||addr.suburb||addr.city_district||addr.quarter||'';
     const state=addr.state||'';
     const county=addr.county||'';
-    const sub=state?`${county?county+' · ':''}${state}`:'Brasil';
-    return `<div class="search-item" onclick="selectCity(${item.lat},${item.lon},'${escQ(city)}','${escQ(sub)}')">
+    const sub=state?`${exact?exact+' · ':''}${county?county+' · ':''}${state}`:'Brasil';
+    return `<div class="search-item" onclick="selectCity(${item.lat},${item.lon},'${escQ(city)}','${escQ(sub)}','${escQ(exact)}')">
       <div class="search-item-name">${city}</div>
       <div class="search-item-state">${sub}</div>
     </div>`;
   }).join('');
   box.classList.add('open');
 }
-function escQ(s){return s.replace(/'/g,"\\'");}
-async function selectCity(lat,lon,name,state){
-  $('cityInput').value=name;
+function escQ(s){return String(s||'').replace(/'/g,"\\'");}
+function stateOnly(state=''){return String(state||'').split(' · ').pop();}
+function formatLocationName(name,exact=''){
+  const cleanExact=String(exact||'').trim();
+  return cleanExact&&cleanExact.toLowerCase()!==String(name).toLowerCase()?`${name} - ${cleanExact}`:name;
+}
+function formatLocationLabel(name,state='',exact=''){
+  const displayName=formatLocationName(name,exact);
+  const st=stateOnly(state);
+  return st?`${displayName}, ${st}`:displayName;
+}
+async function selectCity(lat,lon,name,state,exact=''){
+  const displayName=formatLocationName(name,exact);
+  $('cityInput').value=displayName;
   $('searchResults').classList.remove('open');
-  $('locationLabel').textContent=state?`${name}, ${state}`:name;
-  currentLat=lat;currentLon=lon;currentLocName=name;
+  $('locationLabel').textContent=formatLocationLabel(name,state,exact);
+  currentLat=lat;currentLon=lon;currentLocName=displayName;
   $('loadingScreen').classList.remove('hidden');
   $('loadingText').textContent='buscando dados…';
-  await fetchWeather(lat,lon,name);
+  await fetchWeather(lat,lon,displayName);
 }
 function onCityKey(e){
   if(e.key==='Escape'){$('searchResults').classList.remove('open');}
@@ -1343,8 +1360,9 @@ async function reverseGeocode(lat,lon){
     const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=pt`);
     const j=await r.json();
     const city=j.address.city||j.address.town||j.address.village||j.address.county||'Campo';
+    const exact=j.address.neighbourhood||j.address.suburb||j.address.city_district||j.address.quarter||'';
     const state=j.address.state_district||j.address.state||'';
-    return{label:state?`${city}, ${state}`:city,short:city};
+    return{label:formatLocationLabel(city,state,exact),short:formatLocationName(city,exact)};
   }catch{return{label:'Campo',short:'Campo'};}
 }
 
