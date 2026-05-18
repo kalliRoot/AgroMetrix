@@ -108,20 +108,22 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .leaflet-popup-tip-container{display:none}
 .leaflet-popup-content{margin:10px!important;min-width:180px}
 .leaflet-marker-pane,.leaflet-overlay-pane{will-change:transform}
-.agro-influence{position:relative;border-radius:50%;pointer-events:none;mix-blend-mode:screen;filter:blur(.25px);opacity:.62;transition:opacity .35s,filter .35s}
+.agro-influence{position:relative;border-radius:50%;pointer-events:none;mix-blend-mode:screen;filter:blur(.18px);opacity:.7;transition:opacity .35s,filter .35s}
 .agro-influence::before{content:'';position:absolute;inset:0;border-radius:50%;
-  background:radial-gradient(circle,rgba(92,210,137,.18) 0%,rgba(58,168,96,.1) 30%,rgba(37,128,82,.045) 55%,rgba(37,128,82,.015) 67%,transparent 76%);
-  mask-image:radial-gradient(circle,#000 0 50%,rgba(0,0,0,.8) 60%,transparent 80%);
+  background:radial-gradient(circle,rgba(208,58,142,.24) 0%,rgba(178,42,126,.13) 30%,rgba(112,30,94,.06) 58%,transparent 80%);
+  mask-image:radial-gradient(circle,#000 0 50%,rgba(0,0,0,.78) 62%,transparent 82%);
   animation:territoryBreath 12s cubic-bezier(.45,0,.2,1) infinite}
-.agro-influence::after{content:'';position:absolute;inset:18%;border-radius:50%;border:1px solid rgba(94,200,128,.09);
-  box-shadow:0 0 34px rgba(80,210,160,.09);animation:territoryScan 13s linear infinite}
-.agro-influence .scan{position:absolute;inset:12%;height:auto;border-radius:50%;border:1px solid rgba(123,244,188,.11);background:conic-gradient(from 0deg,transparent 0 68%,rgba(123,244,188,.16) 74%,transparent 84%);box-shadow:inset 0 0 24px rgba(123,244,188,.045);animation:territoryScan 14s linear infinite}
-.agro-influence.dominant{opacity:1;filter:blur(.04px) drop-shadow(0 0 30px rgba(245,184,76,.36));mix-blend-mode:screen}
-.agro-influence.dominant::before{background:radial-gradient(circle,rgba(255,207,96,.34) 0%,rgba(222,158,44,.2) 28%,rgba(180,112,24,.09) 55%,rgba(180,112,24,.035) 72%,transparent 83%)}
-.agro-influence.dominant::after{inset:8%;border:1.5px solid rgba(255,221,126,.4);box-shadow:0 0 78px rgba(255,186,70,.34),inset 0 0 34px rgba(255,213,112,.14);animation:territoryScan 16s linear infinite,dominantPulse 5.8s ease-in-out infinite}
-@keyframes dominantPulse{0%,100%{opacity:.68;transform:scale(.985)}50%{opacity:1;transform:scale(1.035)}}
-.agro-influence.operating .scan{border-color:rgba(104,220,240,.16);background:conic-gradient(from 0deg,transparent 0 66%,rgba(104,220,240,.18) 74%,transparent 84%)}
-.agro-influence.dominant .scan{border-color:rgba(255,221,126,.22);background:conic-gradient(from 0deg,transparent 0 62%,rgba(255,207,96,.24) 72%,transparent 85%);box-shadow:inset 0 0 34px rgba(255,207,96,.08)}
+.agro-influence::after{content:'';position:absolute;inset:12%;border-radius:50%;border:1px solid rgba(255,91,178,.2);
+  box-shadow:0 0 42px rgba(255,62,158,.16),inset 0 0 28px rgba(255,91,178,.08);animation:dominantPulse 5.8s ease-in-out infinite}
+.agro-influence .scan{position:absolute;inset:18%;height:auto;border-radius:50%;border:1px solid rgba(255,128,194,.18);background:conic-gradient(from 0deg,transparent 0 64%,rgba(255,91,178,.24) 73%,transparent 84%);box-shadow:inset 0 0 24px rgba(255,91,178,.06);animation:territoryScan 12s linear infinite}
+.agro-influence .x{position:absolute;inset:32%;border-radius:50%;animation:territoryScan 10s linear infinite;filter:drop-shadow(0 0 10px rgba(255,91,178,.28))}
+.agro-influence .x::before,.agro-influence .x::after{content:'';position:absolute;left:50%;top:0;width:1.5px;height:100%;border-radius:2px;background:linear-gradient(180deg,transparent,rgba(255,128,194,.72),transparent);transform-origin:center}
+.agro-influence .x::before{transform:translateX(-50%) rotate(45deg)}.agro-influence .x::after{transform:translateX(-50%) rotate(-45deg)}
+.agro-influence .core{position:absolute;left:50%;top:50%;width:9px;height:9px;border-radius:50%;background:#ff5bb2;box-shadow:0 0 14px rgba(255,91,178,.75),0 0 34px rgba(255,91,178,.28);transform:translate(-50%,-50%);animation:beaconBreathe 3.8s ease-in-out infinite}
+.agro-influence.dominant{opacity:.92;filter:blur(.04px) drop-shadow(0 0 28px rgba(255,91,178,.34));mix-blend-mode:screen}
+.agro-influence.dominant::before{background:radial-gradient(circle,rgba(255,91,178,.28) 0%,rgba(206,49,145,.16) 30%,rgba(112,30,94,.07) 58%,transparent 82%)}
+@keyframes dominantPulse{0%,100%{opacity:.66;transform:scale(.985)}50%{opacity:1;transform:scale(1.035)}}
+.agro-influence.operating .scan{border-color:rgba(255,128,194,.22);background:conic-gradient(from 0deg,transparent 0 64%,rgba(255,91,178,.27) 73%,transparent 84%)}
 @keyframes territoryBreath{0%,100%{transform:scale(.96);opacity:.6}50%{transform:scale(1.04);opacity:.95}}
 @keyframes territoryScan{to{transform:rotate(360deg)}}
 @keyframes territoryLine{0%,100%{transform:translateY(-34px);opacity:0}45%,55%{opacity:.8}50%{transform:translateY(34px)}}
@@ -142,7 +144,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .zoom-far .pilot-beacon{transform:scale(.78)}
 body.legend-filter-operating .pilot-beacon.status-operating,body.legend-filter-online .pilot-beacon.status-online,body.legend-filter-request .pilot-beacon.status-request,body.legend-filter-sos .pilot-beacon.status-sos{filter:drop-shadow(0 0 14px var(--bc)) brightness(1.12);transform:scale(1.08)}
 body.legend-filter-operating .agro-influence.operating,body.legend-filter-sos .agro-influence.sos{opacity:.9;filter:drop-shadow(0 0 24px rgba(104,220,240,.22))}
-body.legend-filter-dominant .agro-influence.dominant{opacity:1;filter:drop-shadow(0 0 38px rgba(255,199,82,.52))}
+body.legend-filter-dominant .agro-influence.dominant{opacity:1;filter:drop-shadow(0 0 38px rgba(255,91,178,.52))}
 @keyframes beaconPulse{0%,100%{transform:scale(.72);opacity:.22}50%{transform:scale(1.55);opacity:.04}}
 @keyframes beaconSweep{to{transform:rotate(360deg)}}
 @keyframes beaconBreathe{0%,100%{transform:scale(.88);opacity:.88}50%{transform:scale(1.12);opacity:1}}
@@ -166,7 +168,7 @@ body.legend-filter-dominant .agro-influence.dominant{opacity:1;filter:drop-shado
   border:1px solid var(--bdm);display:flex;align-items:center;justify-content:center;
   font-size:14px;cursor:pointer;transition:all .2s;flex-shrink:0;backdrop-filter:blur(8px);position:relative}
 .ico-btn:hover{border-color:var(--bdh);background:var(--s3)}
-.user-chip{height:32px;min-width:112px;max-width:148px;margin-right:16px;border-radius:18px;border:1px solid rgba(90,173,112,.16);background:rgba(5,12,7,.56);backdrop-filter:blur(16px);display:flex;align-items:center;gap:7px;padding:3px 8px 3px 3px;color:var(--tx);cursor:pointer;box-shadow:0 10px 26px rgba(0,0,0,.18);transition:all .22s ease}
+.user-chip{height:32px;min-width:112px;max-width:148px;margin-right:24px;border-radius:18px;border:1px solid rgba(90,173,112,.16);background:rgba(5,12,7,.56);backdrop-filter:blur(16px);display:flex;align-items:center;gap:7px;padding:3px 8px 3px 3px;color:var(--tx);cursor:pointer;box-shadow:0 10px 26px rgba(0,0,0,.18);transition:all .22s ease}
 .user-chip:hover,.user-chip.on{border-color:rgba(130,205,150,.36);background:rgba(11,22,13,.64)}
 .user-chip-av{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:rgba(47,107,64,.7);font-size:13px;flex-shrink:0;box-shadow:0 0 14px rgba(91,199,232,.16)}
 .user-chip-av img{width:100%;height:100%;object-fit:cover}
@@ -192,7 +194,7 @@ body.legend-filter-dominant .agro-influence.dominant{opacity:1;filter:drop-shado
 .map-action{width:42px;height:42px;border-radius:16px;border:1px solid rgba(90,173,112,.18);background:rgba(5,12,7,.5);backdrop-filter:blur(16px);box-shadow:0 10px 28px rgba(0,0,0,.2),0 0 18px rgba(91,199,232,.06);color:rgba(223,240,227,.82);font:800 15px var(--fu);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s ease}
 .map-action span{display:none}.map-action:hover{border-color:rgba(130,205,150,.38);color:var(--g1);transform:translateY(-1px)}
 .map-particles{position:fixed;inset:0;z-index:82;pointer-events:none;overflow:hidden}.map-particles span{position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(120,240,170,.22);box-shadow:0 0 10px rgba(120,240,170,.18);animation:particleDrift 18s linear infinite}.map-particles span:nth-child(1){left:18%;top:38%;animation-duration:21s}.map-particles span:nth-child(2){left:76%;top:31%;animation-duration:24s;animation-delay:-6s}.map-particles span:nth-child(3){left:52%;top:68%;animation-duration:19s;animation-delay:-11s}.map-particles span:nth-child(4){left:34%;top:77%;animation-duration:26s;animation-delay:-3s}@keyframes particleDrift{0%{transform:translate3d(0,18px,0);opacity:0}20%,70%{opacity:.72}100%{transform:translate3d(18px,-48px,0);opacity:0}}
-@media (max-width:520px){.r-hdr{padding:6px 8px 13px;grid-template-columns:auto minmax(72px,1fr) auto}.r-wordmark{font-size:11px}.r-wordmark small{display:none}.status-badge{font-size:7px;padding:3px 5px}.status-badge span{max-width:70px;overflow:hidden;text-overflow:ellipsis}.live-legend{top:50px;left:8px;right:8px}.legend-pill{padding:5px 6px;font-size:7.5px}.map-actions{right:10px;bottom:158px;width:40px}.map-action{width:40px;height:40px}.user-chip{min-width:104px;max-width:124px;margin-right:12px}.user-chip-name{max-width:68px}}
+@media (max-width:520px){.r-hdr{padding:6px 8px 13px;grid-template-columns:auto minmax(72px,1fr) auto}.r-wordmark{font-size:11px}.r-wordmark small{display:none}.status-badge{font-size:7px;padding:3px 5px}.status-badge span{max-width:70px;overflow:hidden;text-overflow:ellipsis}.live-legend{top:50px;left:8px;right:8px}.legend-pill{padding:5px 6px;font-size:7.5px}.map-actions{right:10px;bottom:158px;width:40px}.map-action{width:40px;height:40px}.user-chip{min-width:104px;max-width:124px;margin-right:18px}.user-chip-name{max-width:68px}}
 
 /* SOS Bar */
 .sos-bar{position:fixed;top:54px;left:0;right:0;z-index:200;padding:8px 14px;display:none;
@@ -786,6 +788,8 @@ window.showToast = (msg, dur = 3200) => {
 };
 function haptic(pattern = 45) { if (navigator.vibrate) navigator.vibrate(pattern); }
 function playFeedback(type) { audio?.play?.(type); haptic(type === 'sos' ? [90, 45, 90] : type === 'message' ? 35 : 55); }
+function startOperationalAlert(type) { stopOperationalAlert(); audio?.startLoop?.(type, type === 'sos' ? 950 : 1700, 0); window._alertVibe = setInterval(() => haptic(type === 'sos' ? [100,45,100] : [70,35,70]), type === 'sos' ? 1200 : 2200); }
+function stopOperationalAlert() { audio?.stopLoop?.(); if (window._alertVibe) { clearInterval(window._alertVibe); window._alertVibe = null; } }
 function pulseNotif(id, duration = 4200) {
   const el = $(id); if (!el) return;
   el.classList.add('on','pulse');
@@ -1009,6 +1013,30 @@ function areaIntel(data) {
   const recentOps = Number(data.recentOps || Math.max(1, Math.round((data.opsTotal || 5) % 8) + 1));
   return { days, since, reputation, recentOps };
 }
+function stableHash(value) {
+  return Array.from(String(value || '')).reduce((acc, ch) => ((acc * 31) + ch.charCodeAt(0)) >>> 0, 7);
+}
+function dominanceProfile(data, intel) {
+  const accepted = Number(data.acceptedCalls || data.callsAccepted || data.supportCount || 0);
+  const activity = (data.opsTotal || 0) + (data.hectares || 0) * .6 + (intel.days || 0) * .35 + accepted * 9 + (data.amxScore || data.score || 0) * .25;
+  const rareBot = !!data.isBot && data.hectares >= 72 && data.opsTotal >= 90 && stableHash(data.id) % 7 === 0;
+  const strongReal = !!data.isRealUser && (accepted >= 4 || data.opsTotal >= 55 || data.hectares >= 85 || (intel.days >= 70 && (data.amxScore || data.score || 0) >= 78));
+  const isDominant = rareBot || strongReal || activity >= 165;
+  const alternatives = ['Tentando dominar a área','Na disputa da região','Ativo na região','Patrulhando a área'];
+  return { isDominant, activity, label: isDominant ? `🏆 Dominando esta região desde ${intel.since}` : alternatives[stableHash(data.id) % alternatives.length] };
+}
+function humanStatus(data) {
+  if (!data.isRealUser) return 'Piloto demonstrativo';
+  const score = data.amxScore || data.score || 0;
+  const ops = data.opsTotal || 0;
+  if ((data.acceptedCalls || data.callsAccepted || 0) >= 5) return 'Suporte rápido';
+  if (ops >= 120) return 'Especialista';
+  if (ops >= 70) return 'Experiente';
+  if (score >= 88) return 'Responde rápido';
+  if (data.status === 'operating') return 'Operador ativo';
+  if (ops <= 8) return 'Iniciante';
+  return ['Pronto para ajudar','Monitorando região','Experiente','Professor'][stableHash(data.id) % 4];
+}
 function distanceLabel(data) {
   if (!R.lat || !R.lon || !data.lat || !data.lon) return '—';
   const Rkm = 6371;
@@ -1018,19 +1046,18 @@ function distanceLabel(data) {
   const km = Rkm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(km < 10 ? 1 : 0)} km`;
 }
-function upsertInfluence(data, popupHtml = '') {
+function upsertInfluence(data, popupHtml = '', dominance = null) {
   if (!R.map) return;
   const removeInfluence = () => {
     if (R.domainLayers[data.id]) { R.domainLayers[data.id].remove(); delete R.domainLayers[data.id]; }
   };
-  if (data.status === 'offline') { removeInfluence(); return; }
+  if (data.status === 'offline' || !dominance?.isDominant) { removeInfluence(); return; }
   const hectares = hectaresNow(data);
-  if (hectares < 18 && data.status !== 'operating') { removeInfluence(); return; }
   const size = influenceSize(hectares);
-  const influenceClass = `agro-influence${hectares >= 70 ? ' dominant' : ''}${data.status === 'operating' ? ' operating' : ''}${data.status === 'sos' ? ' sos' : ''}`;
+  const influenceClass = `agro-influence dominant${data.status === 'operating' ? ' operating' : ''}${data.status === 'sos' ? ' sos' : ''}`;
   const icon = L.divIcon({
     className:'',
-    html:`<div class="${influenceClass}"><span class="scan"></span></div>`,
+    html:`<div class="${influenceClass}"><span class="scan"></span><span class="x"></span><span class="core"></span></div>`,
     iconSize:[size,size],
     iconAnchor:[size/2,size/2],
   });
@@ -1068,9 +1095,11 @@ function upsertPilot(data) {
 
   const safeName = escapeHtml(data.name);
   const intel = areaIntel(data);
+  const dominance = dominanceProfile(data, intel);
+  const assistStatus = humanStatus(data);
   const distance = distanceLabel(data);
   const popupHtml = `<div class="p-card">
-    <div class="p-card-kicker">🏆 Domina a área desde ${intel.since}</div>
+    <div class="p-card-kicker">${dominance.label}</div>
     <div class="p-card-hdr">
       <div class="p-card-av">${photoHtml}</div>
       <div>
@@ -1086,11 +1115,13 @@ function upsertPilot(data) {
       <div class="p-card-metric"><strong>${distance}</strong><span>distância</span></div>
     </div>
     <div class="p-card-intel">
-      <div><span>Conquista territorial</span><b>desde ${intel.since}</b></div>
-      <div><span>Presença contínua</span><b>${intel.days} dias</b></div>
+      <div><span>${dominance.isDominant ? 'Conquista territorial' : 'Posição regional'}</span><b>${dominance.isDominant ? 'desde ' + intel.since : dominance.label}</b></div>
+      <div><span>Tempo online estimado</span><b>${intel.days} dias</b></div>
+      <div><span>Status humano</span><b>${assistStatus}</b></div>
       <div><span>Últimas operações</span><b>${intel.recentOps} recentes</b></div>
       <div><span>Status</span><b>${statusLabels[data.status]||'Online'}</b></div>
-      <div><span>Reputação / Rank</span><b>${intel.reputation} · AMX ${data.amxScore||data.score||0}</b></div>
+      <div><span>Ranking</span><b>${intel.reputation} · AMX ${data.amxScore||data.score||0}</b></div>
+      <div><span>Chamados atendidos</span><b>${data.acceptedCalls || data.callsAccepted || data.supportCount || 0}</b></div>
       <div><span>Drone favorito</span><b>${escapeHtml(data.drone||'—')}</b></div>
     </div>
     <button class="p-card-btn" onclick="window.openChatWith('${pid}','${data.name.replace(/'/g,"\\'")}','${(data.photo||'👨‍✈️').replace(/'/g,"\\'")}')">💬 Iniciar Chat</button>
@@ -1109,7 +1140,7 @@ function upsertPilot(data) {
     R.markers[pid] = marker;
   }
   R.botData[pid] = data;
-  upsertInfluence(data, popupHtml);
+  upsertInfluence(data, popupHtml, dominance);
   updateCounters();
   console.debug('[PILOT UPSERT OK]', { id: pid, real: !!data.isRealUser, bot: !!data.isBot, status: data.status, lat: data.lat, lon: data.lon });
 }
@@ -1546,8 +1577,8 @@ let pendingReq = null;
 function showRequestModal(req) {
   pendingReq = req;
   const isSOS = req.type==='sos';
-  playFeedback(isSOS ? 'sos' : 'request');
-  pulseNotif('reqDot', isSOS ? 9000 : 5200);
+  startOperationalAlert(isSOS ? 'sos' : 'request');
+  pulseNotif('reqDot', isSOS ? 30000 : 30000);
   $('modalIcon').textContent  = isSOS?'🚨':'🔧';
   $('modalTitle').textContent = isSOS?'SOS URGENTE!':'Novo Pedido';
   $('modalMsg').textContent   = `${req.pilotName}: ${req.message}`;
@@ -1566,6 +1597,7 @@ window.modalAccept = async () => {
   if(pendingReq){
     const req=pendingReq;
     if(req.timerInterval)clearInterval(req.timerInterval);
+    stopOperationalAlert();
     pendingReq=null;
     $('modalChamado').classList.remove('on');
     $('modalChamadoOverlay').style.display='none';
@@ -1573,6 +1605,7 @@ window.modalAccept = async () => {
   }
 };
 window.modalIgnore = () => {
+  stopOperationalAlert();
   if(pendingReq?.timerInterval)clearInterval(pendingReq.timerInterval);
   $('modalChamado').classList.remove('on');
   $('modalChamadoOverlay').style.display='none';
