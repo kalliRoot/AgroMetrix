@@ -108,23 +108,23 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .leaflet-popup-tip-container{display:none}
 .leaflet-popup-content{margin:10px!important;min-width:180px}
 .leaflet-marker-pane,.leaflet-overlay-pane{will-change:transform}
-.agro-influence{position:relative;width:100%;height:100%;overflow:visible;border-radius:50%;pointer-events:none;mix-blend-mode:screen;filter:blur(.18px);opacity:.7;transition:opacity .35s,filter .35s}
+.agro-influence{position:relative;width:100%;height:100%;overflow:visible;border-radius:50%;pointer-events:none;mix-blend-mode:screen;filter:blur(.08px);opacity:.74;transition:opacity .35s,filter .35s}
 .agro-influence::before{content:'';position:absolute;inset:0;border-radius:50%;
-  background:radial-gradient(circle,rgba(208,58,142,.24) 0%,rgba(178,42,126,.13) 30%,rgba(112,30,94,.06) 58%,transparent 80%);
+  background:radial-gradient(circle,rgba(208,58,142,.18) 0%,rgba(178,42,126,.1) 34%,rgba(112,30,94,.04) 56%,transparent 76%);
   mask-image:radial-gradient(circle,#000 0 50%,rgba(0,0,0,.78) 62%,transparent 82%);
   animation:territoryBreath 12s cubic-bezier(.45,0,.2,1) infinite}
-.agro-influence::after{content:'';position:absolute;inset:12%;border-radius:50%;border:1px solid rgba(255,91,178,.2);
-  box-shadow:0 0 42px rgba(255,62,158,.16),inset 0 0 28px rgba(255,91,178,.08);animation:dominantPulse 5.8s ease-in-out infinite}
-.agro-influence .scan{position:absolute;inset:18%;height:auto;border-radius:50%;border:1px solid rgba(255,128,194,.18);background:conic-gradient(from 0deg,transparent 0 64%,rgba(255,91,178,.24) 73%,transparent 84%);box-shadow:inset 0 0 24px rgba(255,91,178,.06);animation:territoryScan 12s linear infinite}
-.agro-influence .x{position:absolute;inset:32%;border-radius:50%;animation:territoryScan 10s linear infinite;filter:drop-shadow(0 0 10px rgba(255,91,178,.28))}
+.agro-influence::after{content:'';position:absolute;inset:6%;border-radius:50%;border:1px solid rgba(255,91,178,.28);
+  box-shadow:0 0 14px rgba(255,62,158,.18),inset 0 0 10px rgba(255,91,178,.08);animation:dominantPulse 5.8s ease-in-out infinite}
+.agro-influence .scan{position:absolute;inset:4%;height:auto;border-radius:50%;border:1px solid rgba(255,128,194,.28);background:conic-gradient(from 0deg,transparent 0 64%,rgba(255,91,178,.28) 73%,transparent 84%);box-shadow:inset 0 0 10px rgba(255,91,178,.06);animation:territoryScan 12s linear infinite}
+.agro-influence .x{position:absolute;inset:24%;border-radius:50%;animation:territoryScan 10s linear infinite;filter:drop-shadow(0 0 6px rgba(255,91,178,.28))}
 .agro-influence .x::before,.agro-influence .x::after{content:'';position:absolute;left:50%;top:0;width:1.5px;height:100%;border-radius:2px;background:linear-gradient(180deg,transparent,rgba(255,128,194,.72),transparent);transform-origin:center}
 .agro-influence .x::before{transform:translateX(-50%) rotate(45deg)}.agro-influence .x::after{transform:translateX(-50%) rotate(-45deg)}
 .agro-influence .core{position:absolute;left:50%;top:50%;width:9px;height:9px;border-radius:50%;background:#ff5bb2;box-shadow:0 0 14px rgba(255,91,178,.75),0 0 34px rgba(255,91,178,.28);transform:translate(-50%,-50%);animation:beaconBreathe 3.8s ease-in-out infinite}
-.agro-influence.dominant{opacity:.92;filter:blur(.04px) drop-shadow(0 0 28px rgba(255,91,178,.34));mix-blend-mode:screen}
-.agro-influence.dominant::before{background:radial-gradient(circle,rgba(255,91,178,.28) 0%,rgba(206,49,145,.16) 30%,rgba(112,30,94,.07) 58%,transparent 82%)}
-@keyframes dominantPulse{0%,100%{opacity:.66;transform:scale(.985)}50%{opacity:1;transform:scale(1.035)}}
+.agro-influence.dominant{opacity:.9;filter:blur(.02px) drop-shadow(0 0 12px rgba(255,91,178,.34));mix-blend-mode:screen}
+.agro-influence.dominant::before{background:radial-gradient(circle,rgba(255,91,178,.2) 0%,rgba(206,49,145,.1) 34%,rgba(112,30,94,.04) 58%,transparent 76%)}
+@keyframes dominantPulse{0%,100%{opacity:.7;transform:scale(.99)}50%{opacity:1;transform:scale(1.01)}}
 .agro-influence.operating .scan{border-color:rgba(255,128,194,.22);background:conic-gradient(from 0deg,transparent 0 64%,rgba(255,91,178,.27) 73%,transparent 84%)}
-@keyframes territoryBreath{0%,100%{transform:scale(.96);opacity:.6}50%{transform:scale(1.04);opacity:.95}}
+@keyframes territoryBreath{0%,100%{transform:scale(.99);opacity:.58}50%{transform:scale(1.01);opacity:.9}}
 @keyframes territoryScan{to{transform:rotate(360deg)}}
 @keyframes territoryLine{0%,100%{transform:translateY(-34px);opacity:0}45%,55%{opacity:.8}50%{transform:translateY(34px)}}
 .agro-trail{stroke-linecap:round;filter:drop-shadow(0 0 5px rgba(94,200,128,.35));animation:trailFade 42s linear forwards}
@@ -144,7 +144,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .zoom-far .pilot-beacon{transform:scale(.78)}
 body.legend-filter-operating .pilot-beacon.status-operating,body.legend-filter-online .pilot-beacon.status-online,body.legend-filter-request .pilot-beacon.status-request,body.legend-filter-sos .pilot-beacon.status-sos{filter:drop-shadow(0 0 14px var(--bc)) brightness(1.12);transform:scale(1.08)}
 body.legend-filter-operating .agro-influence.operating,body.legend-filter-sos .agro-influence.sos{opacity:.9;filter:drop-shadow(0 0 24px rgba(104,220,240,.22))}
-body.legend-filter-dominant .agro-influence.dominant{opacity:1;filter:drop-shadow(0 0 38px rgba(255,91,178,.52))}
+body.legend-filter-dominant .agro-influence.dominant{opacity:1;filter:drop-shadow(0 0 16px rgba(255,91,178,.52))}
 @keyframes beaconPulse{0%,100%{transform:scale(.72);opacity:.22}50%{transform:scale(1.55);opacity:.04}}
 @keyframes beaconSweep{to{transform:rotate(360deg)}}
 @keyframes beaconBreathe{0%,100%{transform:scale(.88);opacity:.88}50%{transform:scale(1.12);opacity:1}}
@@ -1001,7 +1001,7 @@ function hectaresNow(data) {
   const seed = Array.from(String(data.id)).reduce((a,c)=>a+c.charCodeAt(0),0) % 7;
   return Math.min(99, base + Math.max(0, day - 20590 + seed) * data.growthPerDay);
 }
-const DOMINANCE_INFLUENCE_SIZE = 132;
+const DOMINANCE_INFLUENCE_SIZE = 42;
 function influenceSize() {
   return DOMINANCE_INFLUENCE_SIZE;
 }
@@ -1088,7 +1088,7 @@ function upsertInfluence(data, popupHtml = '', dominance = null) {
   const size = influenceSize();
   const influenceClass = `agro-influence dominant${data.status === 'operating' ? ' operating' : ''}${data.status === 'sos' ? ' sos' : ''}`;
   const icon = L.divIcon({
-    className:'',
+    className:'dominance-influence-icon',
     html:`<div class="${influenceClass}"><span class="scan"></span><span class="x"></span><span class="core"></span></div>`,
     iconSize:[size,size],
     iconAnchor:[size/2,size/2],
