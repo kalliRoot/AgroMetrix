@@ -20,29 +20,29 @@
 
 /* ── TEMAS ── */
 [data-theme="light"] {
-  --bg: #f2f5f0;
-  --surface: #ffffff;
-  --surface2: #f7faf6;
-  --surface3: #eef3ec;
-  --border: rgba(30,60,30,0.1);
-  --border-md: rgba(30,60,30,0.18);
+  --bg: #eef6ef;
+  --surface: #fffefa;
+  --surface2: #f4faf2;
+  --surface3: #e7f3e7;
+  --border: rgba(31,85,52,0.12);
+  --border-md: rgba(47,132,80,0.24);
   --text-primary: #0f1f12;
   --text-secondary: #3a5240;
   --text-muted: #6b8573;
-  --header-bg: rgba(242,245,240,0.92);
+  --header-bg: rgba(238,246,239,0.9);
   --now-bg: #0d2b1a;
   --now-sun-bg: #163d26;
   --modal-overlay: rgba(0,0,0,0.5);
-  --shadow-card: 0 2px 16px rgba(10,30,15,0.08), 0 1px 4px rgba(10,30,15,0.05);
-  --shadow-float: 0 8px 40px rgba(10,30,15,0.18);
+  --shadow-card: 0 12px 34px rgba(13,43,26,0.1), 0 2px 8px rgba(13,43,26,0.06);
+  --shadow-float: 0 18px 60px rgba(13,43,26,0.2);
 }
 [data-theme="dark"] {
-  --bg: #0a140d;
-  --surface: #111d14;
-  --surface2: #162119;
-  --surface3: #1c2a1e;
-  --border: rgba(80,180,100,0.12);
-  --border-md: rgba(80,180,100,0.22);
+  --bg: #071109;
+  --surface: #101d13;
+  --surface2: #142418;
+  --surface3: #1a3020;
+  --border: rgba(94,200,128,0.14);
+  --border-md: rgba(94,200,128,0.28);
   --text-primary: #e8f5eb;
   --text-secondary: #9ac8a6;
   --text-muted: #5a8a65;
@@ -70,13 +70,13 @@
 }
 
 html { scroll-behavior: smooth; }
-body { font-family: var(--font-ui); background: var(--bg); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; transition: background .3s, color .3s; }
+body { font-family: var(--font-ui); background: radial-gradient(circle at 18% 8%, rgba(94,200,128,.14), transparent 28%), radial-gradient(circle at 84% 4%, rgba(30,136,208,.1), transparent 24%), linear-gradient(180deg, var(--bg), var(--surface2)); background-attachment: fixed; color: var(--text-primary); min-height: 100vh; overflow-x: hidden; transition: background .3s, color .3s; }
 
 /* ── HEADER ── */
 header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 0 16px; }
 .header-inner { max-width: 960px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 10px; }
 .logo-mark { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.logo-icon { width: 30px; height: 30px; background: var(--green-700); border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+.logo-icon { width: 30px; height: 30px; background: linear-gradient(135deg,var(--green-800),var(--green-400)); border-radius: 9px; display: flex; align-items: center; justify-content: center; box-shadow:0 8px 22px rgba(47,132,80,.28); }
 .logo-icon::after { content:''; width:13px; height:13px; border:2.5px solid rgba(255,255,255,.9); border-radius:50% 50% 50% 0; transform:rotate(-45deg); display:block; }
 .logo-name { font-size:17px; font-weight:800; color:var(--green-600); letter-spacing:-.5px; }
 .logo-name span { color:var(--green-400); }
@@ -171,10 +171,10 @@ header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); b
 
 /* ── CARD ── */
 .main-card { max-width:960px; margin:0 auto 14px; padding:0 20px; }
-.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-card); overflow:hidden; transition:background .3s, border .3s; }
+.card { background:linear-gradient(180deg,var(--surface),var(--surface2)); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-card); overflow:hidden; transition:background .3s, border .3s, box-shadow .3s; }
 
 /* NOW */
-.now-strip { display:flex; align-items:center; gap:14px; padding:18px 22px; border-bottom:1px solid rgba(255,255,255,.07); background:var(--now-bg); color:white; flex-wrap:wrap; }
+.now-strip { display:flex; align-items:center; gap:14px; padding:18px 22px; border-bottom:1px solid rgba(255,255,255,.09); background:radial-gradient(circle at 82% 20%, rgba(94,200,128,.22), transparent 30%), linear-gradient(135deg,var(--now-bg),var(--green-800) 58%,#0b3424); color:white; flex-wrap:wrap; }
 .now-label { font-family:var(--font-mono); font-size:9px; letter-spacing:.15em; text-transform:uppercase; opacity:.55; margin-bottom:2px; }
 .now-temp { font-family:var(--font-display); font-size:50px; line-height:1; letter-spacing:-2px; }
 .now-temp-unit { font-size:19px; opacity:.45; }
@@ -183,7 +183,7 @@ header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); b
 .now-icon { font-size:46px; margin-left:auto; }
 
 /* SUN BAR */
-.sun-bar { display:flex; align-items:center; gap:14px; padding:12px 22px; background:var(--now-sun-bg); border-bottom:1px solid rgba(255,255,255,.05); color:white; flex-wrap:wrap; }
+.sun-bar { display:flex; align-items:center; gap:14px; padding:12px 22px; background:linear-gradient(135deg,var(--now-sun-bg),rgba(22,61,38,.96)); border-bottom:1px solid rgba(255,255,255,.07); color:white; flex-wrap:wrap; }
 .sun-item { display:flex; align-items:center; gap:7px; }
 .sun-label { font-size:9px; font-family:var(--font-mono); letter-spacing:.1em; text-transform:uppercase; opacity:.45; }
 .sun-time { font-family:var(--font-mono); font-size:15px; font-weight:500; }
@@ -211,13 +211,15 @@ header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); b
 /* COMPASS */
 .compass-wrap { margin-top:5px; }
 .compass { width:58px; height:58px; position:relative; }
-.compass-ring { width:58px; height:58px; border-radius:50%; border:1.5px solid var(--border-md); display:flex; align-items:center; justify-content:center; position:relative; }
+.compass-ring { width:58px; height:58px; border-radius:50%; border:1.5px solid var(--border-md); display:flex; align-items:center; justify-content:center; position:relative; background:radial-gradient(circle,rgba(94,200,128,.1),transparent 64%); box-shadow:inset 0 0 18px rgba(47,132,80,.08); }
 .c-n,.c-s,.c-e,.c-w { position:absolute; font-size:8px; font-weight:700; color:var(--text-muted); font-family:var(--font-mono); }
 .c-n{top:2px;left:50%;transform:translateX(-50%)}
 .c-s{bottom:2px;left:50%;transform:translateX(-50%)}
 .c-e{right:2px;top:50%;transform:translateY(-50%)}
 .c-w{left:2px;top:50%;transform:translateY(-50%)}
-.compass-needle { width:2px; height:20px; background:linear-gradient(to bottom,var(--red-500) 50%,var(--green-400) 50%); border-radius:1px; transform-origin:bottom center; position:absolute; bottom:50%; left:50%; margin-left:-1px; transition:transform .9s cubic-bezier(.4,0,.2,1); }
+.compass-needle { width:24px; height:24px; position:absolute; left:50%; top:50%; margin:-12px 0 0 -12px; transform-origin:center; transition:transform .9s cubic-bezier(.4,0,.2,1); }
+.compass-needle::before{content:'';position:absolute;left:50%;top:2px;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:18px solid var(--green-400);filter:drop-shadow(0 2px 6px rgba(47,132,80,.34))}
+.compass-needle::after{content:'';position:absolute;left:50%;top:50%;width:5px;height:5px;border-radius:50%;background:var(--surface);border:1px solid var(--green-400);transform:translate(-50%,-50%);box-shadow:0 0 0 2px rgba(94,200,128,.12)}
 .cloud-cell { grid-column:span 2; }
 
 /* APP INDEX */
@@ -243,9 +245,9 @@ header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); b
 /* DAILY */
 .daily-scroll { display:flex; gap:7px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
 .daily-scroll::-webkit-scrollbar { display:none; }
-.day-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:13px 11px; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:80px; cursor:pointer; transition:all .2s; flex-shrink:0; }
-.day-card:hover { border-color:var(--green-400); box-shadow:var(--shadow-card); }
-.day-card.active { border-color:var(--green-500); background:var(--surface3); }
+.day-card { background:linear-gradient(180deg,var(--surface),var(--surface2)); border:1px solid var(--border); border-radius:var(--radius-md); padding:13px 11px; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:80px; cursor:pointer; transition:all .2s; flex-shrink:0; }
+.day-card:hover { border-color:var(--green-400); box-shadow:0 12px 28px rgba(47,132,80,.16); transform:translateY(-1px); }
+.day-card.active { border-color:var(--green-500); background:linear-gradient(180deg,var(--green-50),var(--surface3)); box-shadow:inset 0 0 0 1px rgba(94,200,128,.16); }
 .day-name { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-muted); }
 .day-icon { font-size:20px; }
 .day-tmax { font-family:var(--font-mono); font-size:13px; font-weight:500; color:var(--text-primary); }
@@ -254,21 +256,25 @@ header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); b
 
 /* HOURLY */
 .hourly-list { display:flex; flex-direction:column; gap:4px; }
-.hour-row { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); display:flex; align-items:center; padding:11px 14px; gap:9px; cursor:pointer; transition:all .2s; position:relative; overflow:hidden; }
+.hour-row { background:linear-gradient(135deg,var(--surface),var(--surface2)); border:1px solid var(--border); border-radius:var(--radius-md); display:flex; align-items:center; padding:11px 14px; gap:9px; cursor:pointer; transition:all .2s; position:relative; overflow:hidden; }
 .hour-row::before { content:''; position:absolute; left:0;top:0;bottom:0; width:4px; border-radius:4px 0 0 4px; }
 .hour-good::before{background:var(--green-400)}.hour-warn::before{background:var(--amber-500)}.hour-bad::before{background:var(--red-500)}
-.hour-row:hover { transform:translateX(2px); box-shadow:var(--shadow-card); border-color:var(--border-md); }
+.hour-row:hover { transform:translateX(2px); box-shadow:0 12px 28px rgba(13,43,26,.12); border-color:var(--border-md); }
 .hour-time { font-family:var(--font-mono); font-size:12px; font-weight:500; color:var(--text-primary); min-width:38px; }
 .hour-icon { font-size:17px; }
 .hour-temp { font-family:var(--font-mono); font-size:12px; font-weight:500; color:var(--text-secondary); min-width:33px; }
-.hour-desc { flex:1; font-size:11px; color:var(--text-muted); }
-.hour-tags { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; }
+.hour-desc { flex:1; font-size:11px; color:var(--text-muted); padding-right:104px; }
+.hour-more{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:8px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--green-800);background:rgba(160,228,181,.34);border:1px solid rgba(61,168,102,.28);border-radius:999px;padding:3px 8px;pointer-events:none;white-space:nowrap;box-shadow:0 4px 14px rgba(47,132,80,.08);z-index:2}
+.hour-row:hover .hour-more,.hour-row.open .hour-more{color:white;background:linear-gradient(135deg,var(--green-700),var(--green-400));border-color:transparent}
+[data-theme="dark"] .hour-more{color:var(--green-200);background:rgba(94,200,128,.16);border-color:rgba(94,200,128,.3)}
+[data-theme="dark"] .day-card.active{background:linear-gradient(180deg,var(--surface3),var(--surface2))}
+.hour-tags { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; padding-right:96px; }
 .tag { font-size:10px; font-weight:600; padding:2px 7px; border-radius:5px; white-space:nowrap; }
 .tag-wind{background:var(--sky-100);color:var(--sky-700)}.tag-rain{background:#e8f4fd;color:var(--sky-700)}
 .tag-good{background:var(--green-100);color:var(--green-800)}.tag-warn{background:var(--amber-100);color:var(--earth-800)}.tag-bad{background:#fde8e8;color:#8a2020}.tag-cloud{background:var(--surface3);color:var(--text-muted)}
 
 /* DETAIL */
-.hour-detail { display:none; background:var(--surface2); border:1px solid var(--border); border-top:none; border-radius:0 0 var(--radius-md) var(--radius-md); }
+.hour-detail { display:none; background:linear-gradient(180deg,var(--surface2),var(--surface)); border:1px solid var(--border); border-top:none; border-radius:0 0 var(--radius-md) var(--radius-md); }
 .hour-detail.open { display:grid; grid-template-columns:repeat(4,1fr); }
 .detail-col { padding:11px 13px; border-right:1px solid var(--border); }
 .detail-col:last-child { border-right:none; }
@@ -324,6 +330,7 @@ footer a { color:var(--green-500); text-decoration:none; }
   .app-grid{grid-template-columns:1fr}
   .hour-detail.open{grid-template-columns:repeat(2,1fr)}
   .detail-col{border-right:none;border-bottom:1px solid var(--border)}
+  .hour-desc{padding-right:104px}
   .hour-tags{display:none}
   .header-search{display:none}
 }
@@ -647,24 +654,26 @@ function showModalResults(list){
   if(!list||!list.length){box.classList.remove('open');return;}
   box.innerHTML=list.map(item=>{
     const addr=item.address||{};
-    const city=addr.city||addr.town||addr.village||addr.hamlet||addr.suburb||item.display_name.split(',')[0];
+    const city=addr.city||addr.town||addr.village||addr.hamlet||addr.county||item.display_name.split(',')[0];
+    const exact=addr.neighbourhood||addr.suburb||addr.city_district||addr.quarter||'';
     const state=addr.state||'';
     const county=addr.county||'';
-    const sub=state?`${county?county+' · ':''}${state}`:'Brasil';
-    return `<div class="search-item" onclick="selectModalCity(${item.lat},${item.lon},'${escQ(city)}','${escQ(sub)}')">
+    const sub=state?`${exact?exact+' · ':''}${county?county+' · ':''}${state}`:'Brasil';
+    return `<div class="search-item" onclick="selectModalCity(${item.lat},${item.lon},'${escQ(city)}','${escQ(sub)}','${escQ(exact)}')">
       <div class="search-item-name">${city}</div>
       <div class="search-item-state">${sub}</div>
     </div>`;
   }).join('');
   box.classList.add('open');
 }
-async function selectModalCity(lat,lon,name,state){
+async function selectModalCity(lat,lon,name,state,exact=''){
   closeLocModal();
-  $('locationLabel').textContent=state?`${name}, ${state.split(' · ').pop()}`:name;
-  currentLat=lat;currentLon=lon;currentLocName=name;
+  const displayName=formatLocationName(name,exact);
+  $('locationLabel').textContent=formatLocationLabel(name,state,exact);
+  currentLat=lat;currentLon=lon;currentLocName=displayName;
   $('loadingScreen').classList.remove('hidden');
   $('loadingText').textContent='buscando dados…';
-  await fetchWeather(lat,lon,name);
+  await fetchWeather(lat,lon,displayName);
 }
 function onModalCityKey(e){
   if(e.key==='Escape'){$('modalSearchResults').classList.remove('open');}
@@ -683,8 +692,8 @@ async function requestGPS(){
   },()=>fallbackLocation(),{timeout:12000,enableHighAccuracy:true});
 }
 function fallbackLocation(){
-  currentLat=-22.6611;currentLon=-50.4122;currentLocName='Assis';
-  $('locationLabel').textContent='Assis, SP';
+  currentLat=-22.6611;currentLon=-50.4122;currentLocName='Assis - Centro';
+  $('locationLabel').textContent='Assis - Centro, SP';
   fetchWeather(currentLat,currentLon,currentLocName);
 }
 function reloadLocation(){openLocModal();}
@@ -709,26 +718,38 @@ function showResults(list){
   if(!list||!list.length){box.classList.remove('open');return;}
   box.innerHTML=list.map((item,i)=>{
     const addr=item.address||{};
-    const city=addr.city||addr.town||addr.village||addr.hamlet||addr.suburb||item.display_name.split(',')[0];
+    const city=addr.city||addr.town||addr.village||addr.hamlet||addr.county||item.display_name.split(',')[0];
+    const exact=addr.neighbourhood||addr.suburb||addr.city_district||addr.quarter||'';
     const state=addr.state||'';
     const county=addr.county||'';
-    const sub=state?`${county?county+' · ':''}${state}`:'Brasil';
-    return `<div class="search-item" onclick="selectCity(${item.lat},${item.lon},'${escQ(city)}','${escQ(sub)}')">
+    const sub=state?`${exact?exact+' · ':''}${county?county+' · ':''}${state}`:'Brasil';
+    return `<div class="search-item" onclick="selectCity(${item.lat},${item.lon},'${escQ(city)}','${escQ(sub)}','${escQ(exact)}')">
       <div class="search-item-name">${city}</div>
       <div class="search-item-state">${sub}</div>
     </div>`;
   }).join('');
   box.classList.add('open');
 }
-function escQ(s){return s.replace(/'/g,"\\'");}
-async function selectCity(lat,lon,name,state){
-  $('cityInput').value=name;
+function escQ(s){return String(s||'').replace(/'/g,"\\'");}
+function stateOnly(state=''){return String(state||'').split(' · ').pop();}
+function formatLocationName(name,exact=''){
+  const cleanExact=String(exact||'').trim();
+  return cleanExact&&cleanExact.toLowerCase()!==String(name).toLowerCase()?`${name} - ${cleanExact}`:name;
+}
+function formatLocationLabel(name,state='',exact=''){
+  const displayName=formatLocationName(name,exact);
+  const st=stateOnly(state);
+  return st?`${displayName}, ${st}`:displayName;
+}
+async function selectCity(lat,lon,name,state,exact=''){
+  const displayName=formatLocationName(name,exact);
+  $('cityInput').value=displayName;
   $('searchResults').classList.remove('open');
-  $('locationLabel').textContent=state?`${name}, ${state}`:name;
-  currentLat=lat;currentLon=lon;currentLocName=name;
+  $('locationLabel').textContent=formatLocationLabel(name,state,exact);
+  currentLat=lat;currentLon=lon;currentLocName=displayName;
   $('loadingScreen').classList.remove('hidden');
   $('loadingText').textContent='buscando dados…';
-  await fetchWeather(lat,lon,name);
+  await fetchWeather(lat,lon,displayName);
 }
 function onCityKey(e){
   if(e.key==='Escape'){$('searchResults').classList.remove('open');}
@@ -879,11 +900,12 @@ function renderHourly(dayIndex){
     const detId=`hd-${i}`;
 
     list.innerHTML+=`
-      <div class="hour-row hour-${st}" onclick="toggleHour(${i})">
+      <div class="hour-row hour-${st}" id="hr-${i}" onclick="toggleHour(${i})">
         <div class="hour-time">${String(hr).padStart(2,'0')}h</div>
         <div class="hour-icon">${wmoIcon(code,isDay)}</div>
         <div class="hour-temp">${temp}°C</div>
         <div class="hour-desc">${wmoDesc(code)}</div>
+        <div class="hour-more">Mais detalhes</div>
         <div class="hour-tags">
           <span class="tag tag-wind">💨${wind}km/h</span>
           ${rain>0?`<span class="tag tag-rain">🌧${rain}mm</span>`:''}
@@ -937,7 +959,7 @@ function renderHourly(dayIndex){
   });
 }
 
-function toggleHour(i){$(`hd-${i}`).classList.toggle('open');}
+function toggleHour(i){$(`hd-${i}`).classList.toggle('open');$(`hr-${i}`)?.classList.toggle('open');}
 
 // ── Daily ─────────────────────────────────────────────────────────────────────
 function renderDaily(d){
@@ -1338,8 +1360,9 @@ async function reverseGeocode(lat,lon){
     const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=pt`);
     const j=await r.json();
     const city=j.address.city||j.address.town||j.address.village||j.address.county||'Campo';
+    const exact=j.address.neighbourhood||j.address.suburb||j.address.city_district||j.address.quarter||'';
     const state=j.address.state_district||j.address.state||'';
-    return{label:state?`${city}, ${state}`:city,short:city};
+    return{label:formatLocationLabel(city,state,exact),short:formatLocationName(city,exact)};
   }catch{return{label:'Campo',short:'Campo'};}
 }
 
