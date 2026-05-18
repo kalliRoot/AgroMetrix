@@ -773,8 +773,8 @@ const R = window.AgroRadar = {
   user: null, profile: null, plan: null,
   lat: null, lon: null, map: null, weather: null,
   opCfg: {}, sosActive: false, isOperating: false, opStartTime: null,
-  hiddenRequests: new Set(), openRequests: [], requestScanTimer:null,
-  markers: {}, domainLayers: {}, trailLayers: {}, botData: {}, activeBots: [], dominanceLeaders:{}, pilotsUnsub:null, presenceBound:false,
+  hiddenRequests: new Set(),
+  markers: {}, domainLayers: {}, trailLayers: {}, botData: {}, activeBots: [], pilotsUnsub:null, presenceBound:false,
   chatTarget: null, // { uid, name, photo } — alvo atual do chat aberto
   isSetup:false, weatherTimer:null,
   timeline:{mode:'live', windowHours:24, layers:[], future:['replay-24h','heatmap-operacional','historico-operacoes','crescimento-territorial']},
@@ -987,6 +987,7 @@ function createBeaconIcon(status, data = {}) {
   const colors={online:'#5bc7e8',operating:'#5ec880',sos:'#ff5f5f',offline:'#3d5c44',request:'#e0a13a'};
   const glyphs={online:'●',operating:'⌁',sos:'!',offline:'·',request:'+'};
   const col = colors[status] || colors.online;
+  const label = escapeHtml(cleanName(data.name || '', null));
   const cls = `pilot-beacon status-${status}${data.isCurrentUser ? ' is-user' : ''}${data.isRealUser ? ' real' : ''}${data.isBot ? ' bot' : ''}${data.locPulse ? ' loc-pulse' : ''}`;
   const html = `<div class="${cls}" style="--bc:${col}">
     <i class="halo"></i><i class="scan"></i><i class="core"></i><span class="glyph">${glyphs[status]||'●'}</span>
@@ -1202,6 +1203,15 @@ function removePilot(pid) {
   delete R.botData[pid];
   recomputeDominanceLeaders();
   syncDominanceLayers();
+  updateCounters();
+  console.debug('[PILOT UPSERT OK]', { id: pid, real: !!data.isRealUser, bot: !!data.isBot, status: data.status, lat: data.lat, lon: data.lon });
+}
+
+function removePilot(pid) {
+  if (!pid) return;
+  if (R.markers[pid]) { R.markers[pid].remove(); delete R.markers[pid]; }
+  if (R.domainLayers[pid]) { R.domainLayers[pid].remove(); delete R.domainLayers[pid]; }
+  delete R.botData[pid];
   updateCounters();
 }
 function normalizePilotDoc(docSnap) {
