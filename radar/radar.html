@@ -172,7 +172,7 @@ body.legend-filter-dominant .agro-influence.dominant{opacity:1;filter:drop-shado
 .user-chip:hover,.user-chip.on{border-color:rgba(130,205,150,.36);background:rgba(11,22,13,.64)}
 .user-chip-av{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:rgba(47,107,64,.7);font-size:13px;flex-shrink:0;box-shadow:0 0 14px rgba(91,199,232,.16)}
 .user-chip-av img{width:100%;height:100%;object-fit:cover}
-.user-chip-meta{min-width:0;line-height:1.05;text-align:left}.user-chip-name{font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:86px}.user-chip-status{font:500 7px var(--fm);color:rgba(130,205,150,.78);letter-spacing:.04em;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-menu{position:fixed;top:45px;right:10px;z-index:320;width:min(230px,calc(100vw - 20px));padding:8px;border-radius:18px;background:rgba(5,12,7,.76);border:1px solid rgba(120,220,160,.14);backdrop-filter:blur(20px);box-shadow:0 22px 60px rgba(0,0,0,.42);opacity:0;transform:translateY(-8px) scale(.98);pointer-events:none;transition:all .22s ease}.user-menu.on{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}.user-menu-head{display:flex;align-items:center;gap:8px;padding:7px;border-radius:13px;background:rgba(255,255,255,.03);margin-bottom:6px}.user-menu-title{font-size:12px;font-weight:800;color:var(--tx)}.user-menu-sub{font:500 8px var(--fm);color:var(--tx2);margin-top:2px}.user-menu-item{width:100%;border:0;background:transparent;color:rgba(223,240,227,.82);font:700 11px var(--fu);display:flex;align-items:center;justify-content:space-between;padding:9px 8px;border-radius:12px;cursor:pointer;text-align:left}.user-menu-item:hover{background:rgba(90,173,112,.1);color:var(--g1)}.user-menu-item .notif-dot{position:static;width:14px;height:14px;font-size:7px;flex-shrink:0}
+.user-chip-meta{min-width:0;line-height:1.05;text-align:left;display:flex;flex-direction:column;justify-content:center}.user-chip-name{display:block;font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:86px}.user-chip-status{display:block;font:500 7px var(--fm);color:rgba(130,205,150,.78);letter-spacing:.04em;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-menu{position:fixed;top:45px;right:10px;z-index:320;width:min(230px,calc(100vw - 20px));padding:8px;border-radius:18px;background:rgba(5,12,7,.76);border:1px solid rgba(120,220,160,.14);backdrop-filter:blur(20px);box-shadow:0 22px 60px rgba(0,0,0,.42);opacity:0;transform:translateY(-8px) scale(.98);pointer-events:none;transition:all .22s ease}.user-menu.on{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}.user-menu-head{display:flex;align-items:center;gap:8px;padding:7px;border-radius:13px;background:rgba(255,255,255,.03);margin-bottom:6px}.user-menu-title{font-size:12px;font-weight:800;color:var(--tx)}.user-menu-sub{font:500 8px var(--fm);color:var(--tx2);margin-top:2px}.user-menu-item{width:100%;border:0;background:transparent;color:rgba(223,240,227,.82);font:700 11px var(--fu);display:flex;align-items:center;justify-content:space-between;padding:9px 8px;border-radius:12px;cursor:pointer;text-align:left}.user-menu-item:hover{background:rgba(90,173,112,.1);color:var(--g1)}.user-menu-item .notif-dot{position:static;width:14px;height:14px;font-size:7px;flex-shrink:0}
 .notif-dot{position:absolute;top:-2px;right:-2px;width:13px;height:13px;border-radius:50%;
   background:var(--red2);color:white;font-size:7px;font-weight:700;display:none;
   align-items:center;justify-content:center}
@@ -519,7 +519,7 @@ select.inp{cursor:pointer}
     </div>
     <button class="user-chip" id="userChip" onclick="window.toggleUserMenu()">
       <span class="user-chip-av" id="userChipAv">👨‍✈️</span>
-      <span class="user-chip-meta"><span class="user-chip-name" id="userChipName">Piloto</span><span class="user-chip-status" id="userChipStatus">ONLINE · AMX —</span></span>
+      <span class="user-chip-meta"><span class="user-chip-name" id="userChipName">Piloto</span><span class="user-chip-status" id="userChipStatus">ONLINE - AMX —</span></span>
     </button>
   </div>
   <div class="user-menu" id="userMenu">
@@ -813,7 +813,7 @@ function renderHeaderProfile() {
   const score = p.amxScore || p.score || 0;
   ['userChipAv','userMenuAv'].forEach(id => { const el = $(id); if (el) el.innerHTML = avatar; });
   if ($('userChipName')) $('userChipName').textContent = name;
-  if ($('userChipStatus')) $('userChipStatus').textContent = `${status} · AMX ${score || '—'}`;
+  if ($('userChipStatus')) $('userChipStatus').textContent = `${status} - AMX ${score || '—'}`;
   if ($('userMenuName')) $('userMenuName').textContent = name;
   if ($('userMenuSub')) $('userMenuSub').textContent = `${status} · ${p.city || 'cidade não informada'}`;
 }
