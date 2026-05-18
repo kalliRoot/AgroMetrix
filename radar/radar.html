@@ -500,9 +500,9 @@ select.inp{cursor:pointer}
         <span>🚨 SOS</span><span>💬 Chat</span><span>🏆 Ranking</span>
       </div>
     </div>
-    <button class="btn-cta" id="btnEntrar">🚀 Começar 7 dias grátis</button>
+    <button class="btn-cta" id="btnEntrar" onclick="window.enterRadar()">🚀 Começar 7 dias grátis</button>
     <div class="sp-divider"><span>já tenho conta</span></div>
-    <button class="btn-google" id="btnGoogle">
+    <button class="btn-google" id="btnGoogle" onclick="window.enterRadar()">
       <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Entrar com Google
     </button>
@@ -775,8 +775,6 @@ const R = window.AgroRadar = {
   opCfg: {}, sosActive: false, isOperating: false, opStartTime: null,
   hiddenRequests: new Set(), openRequests: [], requestScanTimer:null,
   markers: {}, domainLayers: {}, trailLayers: {}, botData: {}, activeBots: [], dominanceLeaders:{}, pilotsUnsub:null, presenceBound:false,
-  hiddenRequests: new Set(),
-  markers: {}, domainLayers: {}, trailLayers: {}, botData: {}, activeBots: [], pilotsUnsub:null, presenceBound:false,
   chatTarget: null, // { uid, name, photo } — alvo atual do chat aberto
   isSetup:false, weatherTimer:null,
   timeline:{mode:'live', windowHours:24, layers:[], future:['replay-24h','heatmap-operacional','historico-operacoes','crescimento-territorial']},
@@ -989,7 +987,6 @@ function createBeaconIcon(status, data = {}) {
   const colors={online:'#5bc7e8',operating:'#5ec880',sos:'#ff5f5f',offline:'#3d5c44',request:'#e0a13a'};
   const glyphs={online:'●',operating:'⌁',sos:'!',offline:'·',request:'+'};
   const col = colors[status] || colors.online;
-  const label = escapeHtml(cleanName(data.name || '', null));
   const cls = `pilot-beacon status-${status}${data.isCurrentUser ? ' is-user' : ''}${data.isRealUser ? ' real' : ''}${data.isBot ? ' bot' : ''}${data.locPulse ? ' loc-pulse' : ''}`;
   const html = `<div class="${cls}" style="--bc:${col}">
     <i class="halo"></i><i class="scan"></i><i class="core"></i><span class="glyph">${glyphs[status]||'●'}</span>
@@ -1205,85 +1202,6 @@ function removePilot(pid) {
   delete R.botData[pid];
   recomputeDominanceLeaders();
   syncDominanceLayers();
-  updateCounters();
-}
-function normalizePilotDoc(docSnap) {
-  const d = docSnap.data() || {};
-  const uid = d.uid || docSnap.id;
-  const lat = Number(d.lat);
-  const lon = Number(d.lon);
-  return {
-    id: uid, uid,
-    name: d.nickname || d.name || d.displayName || 'Piloto',
-    photo: fixPhoto(d.photo) || d.photo || '👨‍✈️',
-    city: d.city || '', drone: d.drone || '',
-    score: d.amxScore || d.score || 0, amxScore: d.amxScore || d.score || 0,
-    hoursTotal: d.hoursTotal || 0, opsTotal: d.opsTotal || 0,
-    hectares: d.hectares || 0, presenceDays: d.presenceDays || 0, recentOps: d.recentOps || 0,
-    lat, lon, status: d.status || 'online', visibility: d.visibility || 'online',
-    isRealUser:true, isBot:false, isCurrentUser: uid === R.user?.uid,
-    updatedAt: d.updatedAt, lastSeen: d.lastSeen,
-  };
-}
-function shouldRenderRealPilot(pilot) {
-  if (!pilot.id || pilot.id === R.user?.uid) return false;
-  if (pilot.visibility === 'invisible' || pilot.status === 'offline') return false;
-  return Number.isFinite(pilot.lat) && Number.isFinite(pilot.lon);
-}
-async function listenPilots() {
-  const db = window._firebaseDB;
-  if (!db || !R.user) return;
-  if (R.pilotsUnsub) { R.pilotsUnsub(); R.pilotsUnsub = null; }
-  try {
-    const { collection, onSnapshot } = await importFirestore();
-    R.pilotsUnsub = onSnapshot(collection(db, 'pilots'), snap => {
-      console.debug('[FIRESTORE SNAPSHOT]', { size: snap.size, changes: snap.docChanges().length });
-      snap.docChanges().forEach(change => {
-        const pilot = normalizePilotDoc(change.doc);
-        if (pilot.id === R.user?.uid) return;
-        if (change.type === 'removed' || !shouldRenderRealPilot(pilot)) {
-          removePilot(pilot.id);
-          return;
-        }
-        console.debug('[REAL PILOT RECEIVED]', pilot.id, pilot);
-        upsertPilot(pilot);
-      });
-    }, err => console.warn('[FIRESTORE SNAPSHOT]', err));
-  } catch (e) { console.warn('listenPilots:', e); }
-}
-function markSelfOffline() {
-  if (!R.user || !window._updateProfileFn) return;
-  window._updateProfileFn(R.user.uid, { status:'offline', lastSeen:new Date().toISOString() }).catch(()=>{});
-}
-function bindPresenceLifecycle() {
-  if (R.presenceBound) return;
-  R.presenceBound = true;
-  window.addEventListener('pagehide', markSelfOffline);
-  window.addEventListener('beforeunload', markSelfOffline);
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') markSelfOffline();
-    else publishSelf(R.isOperating ? 'operating' : R.sosActive ? 'sos' : 'online');
-  });
-}
-
-}
-
-function removePilot(pid) {
-  if (!pid) return;
-  if (R.markers[pid]) { R.markers[pid].remove(); delete R.markers[pid]; }
-  if (R.domainLayers[pid]) { R.domainLayers[pid].remove(); delete R.domainLayers[pid]; }
-  delete R.botData[pid];
-  recomputeDominanceLeaders();
-  syncDominanceLayers();
-  updateCounters();
-  console.debug('[PILOT UPSERT OK]', { id: pid, real: !!data.isRealUser, bot: !!data.isBot, status: data.status, lat: data.lat, lon: data.lon });
-}
-
-function removePilot(pid) {
-  if (!pid) return;
-  if (R.markers[pid]) { R.markers[pid].remove(); delete R.markers[pid]; }
-  if (R.domainLayers[pid]) { R.domainLayers[pid].remove(); delete R.domainLayers[pid]; }
-  delete R.botData[pid];
   updateCounters();
 }
 function normalizePilotDoc(docSnap) {
@@ -2072,11 +1990,13 @@ window.enterRadar = async () => {
   }
 
   const btn=$('btnEntrar');
-  btn.textContent='🔄 Conectando…';btn.disabled=true;
+  const gbtn=$('btnGoogle');
+  const prevText=btn?.textContent||'🚀 Começar 7 dias grátis';
+  if(btn){btn.textContent='🔄 Conectando…';btn.disabled=true;}
+  if(gbtn)gbtn.disabled=true;
   try{
     const{loginGoogle,getProfile,updateProfile,getPlanStatus}=await import('./auth.js');
     const user=await loginGoogle();
-    btn.textContent='🚀 Começar 7 dias grátis';btn.disabled=false;
     if(!user)return;
     const profile=await getProfile(user.uid);
     const safeName=cleanName(profile.nickname||profile.name,user);
@@ -2088,8 +2008,10 @@ window.enterRadar = async () => {
     window._updateProfileFn=updateProfile;
     if(R.plan.active)showRadar();else await window.startTrial();
   }catch(e){
-    btn.textContent='🚀 Começar 7 dias grátis';btn.disabled=false;
     showToast('❌ Erro ao conectar');
+  }finally{
+    if(btn){btn.textContent=prevText;btn.disabled=false;}
+    if(gbtn)gbtn.disabled=false;
   }
 };
 window.startTrial = async () => {
