@@ -1001,8 +1001,9 @@ function hectaresNow(data) {
   const seed = Array.from(String(data.id)).reduce((a,c)=>a+c.charCodeAt(0),0) % 7;
   return Math.min(99, base + Math.max(0, day - 20590 + seed) * data.growthPerDay);
 }
-function influenceSize(hectares) {
-  return Math.max(90, Math.min(270, 84 + Math.sqrt(Math.max(1, hectares)) * 17));
+const DOMINANCE_INFLUENCE_SIZE = 132;
+function influenceSize() {
+  return DOMINANCE_INFLUENCE_SIZE;
 }
 function areaIntel(data) {
   const days = Number(data.presenceDays || Math.max(14, Math.round((data.opsTotal || 20) / 2)));
@@ -1084,8 +1085,7 @@ function upsertInfluence(data, popupHtml = '', dominance = null) {
     if (R.domainLayers[data.id]) { R.domainLayers[data.id].remove(); delete R.domainLayers[data.id]; }
   };
   if (data.status === 'offline' || !dominance?.isDominant) { removeInfluence(); return; }
-  const hectares = hectaresNow(data);
-  const size = influenceSize(hectares);
+  const size = influenceSize();
   const influenceClass = `agro-influence dominant${data.status === 'operating' ? ' operating' : ''}${data.status === 'sos' ? ' sos' : ''}`;
   const icon = L.divIcon({
     className:'',
