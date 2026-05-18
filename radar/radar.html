@@ -1394,7 +1394,7 @@ function requestCreatedMs(req) {
   if (Number(req.createdAtMs)) return Number(req.createdAtMs);
   if (req.createdAt?.toMillis) return req.createdAt.toMillis();
   if (req.createdAt?.seconds) return req.createdAt.seconds * 1000;
-  return Date.now();
+  return 0;
 }
 function requestRadiusKm(req) {
   const cfg = requestConfig(req.type);
@@ -1444,17 +1444,19 @@ function closeRequestModal(message = '') {
 }
 function triggerRequestFeedback(req) {
   const cfg = requestConfig(req.type);
-  if (cfg.category === 'emergency') { startOperationalAlert('sos'); return; }
-  if (cfg.category === 'technical') { playFeedback('message'); return; }
-  if (cfg.category === 'operational') { playFeedback('request'); haptic(45); return; }
-  playFeedback('request'); haptic([35,25,35]);
+  startOperationalAlert(cfg.category === 'emergency' ? 'sos' : 'request');
 }
-function evaluateOpenRequests() {
+const REQUEST_ALERT_FRESH_MS = 15 * 60 * 1000;
+function isFreshRequestAlert(req) {
+  const created = requestCreatedMs(req);
+  return created > 0 && Date.now() - created <= REQUEST_ALERT_FRESH_MS;
+}
+function evaluateOpenRequests(notify = true) {
   let count = 0;
   R.openRequests.forEach(r => {
     if (r.uid === R.user?.uid || R.hiddenRequests.has(r.id) || !isRequestInScope(r)) return;
     count++;
-    if (!_shownReqs.has(r.id)) {
+    if (notify && !_shownReqs.has(r.id) && isFreshRequestAlert(r)) {
       _shownReqs.add(r.id);
       showRequestModal(r);
     }
@@ -1725,6 +1727,7 @@ window.clearHistory = () => {
 };
 async function listenRequests() {
   const db=window._firebaseDB;if(!db)return;
+  let bootstrapped = false;
   try{
     const{collection,query,where,limit,onSnapshot}=await importFirestore();
     const q=query(collection(db,'requests'),where('status','==','open'),limit(50));
@@ -1734,8 +1737,12 @@ async function listenRequests() {
         if(change.type==='removed' && pendingReq?.id===r.id) closeRequestModal('✅ Chamado assumido por outro piloto');
       });
       R.openRequests=snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>r.uid!==R.user?.uid&&!R.hiddenRequests.has(r.id));
-      evaluateOpenRequests();
-      if(!R.requestScanTimer) R.requestScanTimer=setInterval(evaluateOpenRequests,60000);
+      if (!bootstrapped) {
+        R.openRequests.forEach(r => _shownReqs.add(r.id));
+        evaluateOpenRequests(false);
+        bootstrapped = true;
+      } else evaluateOpenRequests(true);
+      if(!R.requestScanTimer) R.requestScanTimer=setInterval(() => evaluateOpenRequests(true),60000);
     });
   }catch(e){console.warn('listenRequests:',e);}
 }
