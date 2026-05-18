@@ -82,8 +82,23 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 
 /* ══ RADAR ══ */
 #sRadar{background:var(--bg)}
+#sRadar::before{content:'';position:fixed;left:0;right:0;top:-12%;height:28%;z-index:80;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(104,225,170,.045),transparent);
+  filter:blur(10px);animation:liveEarthScan 18s cubic-bezier(.45,0,.2,1) infinite}
+#sRadar::after{content:'';position:fixed;left:50%;top:46%;width:min(110vw,920px);height:min(110vw,920px);z-index:79;pointer-events:none;
+  border-radius:50%;transform:translate(-50%,-50%);
+  background:repeating-radial-gradient(circle,transparent 0 15%,rgba(94,200,128,.018) 15.3% 15.6%,transparent 16%),
+    conic-gradient(from 20deg,transparent 0 68%,rgba(105,230,180,.025) 74%,transparent 82%);
+  filter:blur(.4px);opacity:.62;animation:atmoRadar 34s linear infinite}
+@keyframes liveEarthScan{0%{transform:translateY(-20vh);opacity:0}22%,70%{opacity:.82}100%{transform:translateY(120vh);opacity:0}}
+@keyframes atmoRadar{to{transform:translate(-50%,-50%) rotate(360deg)}}
 #mapEl{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
-.leaflet-tile{filter:brightness(.34) saturate(.28) hue-rotate(95deg) contrast(1.1)}
+#mapEl::after{content:'';position:absolute;inset:0;z-index:450;pointer-events:none;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 45%,transparent 35%,rgba(3,8,5,.34) 100%),
+    linear-gradient(180deg,rgba(5,12,7,.18),transparent 24%,transparent 72%,rgba(5,12,7,.3));
+  mix-blend-mode:multiply}
+.leaflet-tile{filter:brightness(.43) saturate(.34) hue-rotate(82deg) contrast(1.05)}
 .leaflet-container{background:var(--bg)!important}
 .leaflet-control-zoom a{background:rgba(5,12,7,.92)!important;color:var(--tx2)!important;
   border:1px solid var(--bdm)!important;border-radius:6px!important;margin-bottom:3px!important;display:block!important}
@@ -92,29 +107,94 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
   backdrop-filter:blur(16px)!important}
 .leaflet-popup-tip-container{display:none}
 .leaflet-popup-content{margin:10px!important;min-width:180px}
+.leaflet-marker-pane,.leaflet-overlay-pane{will-change:transform}
+.agro-influence{position:relative;width:100%;height:100%;overflow:visible;border-radius:50%;pointer-events:none;mix-blend-mode:screen;filter:blur(.08px);opacity:.74;transition:opacity .35s,filter .35s}
+.agro-influence::before{content:'';position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle,rgba(208,58,142,.18) 0%,rgba(178,42,126,.1) 34%,rgba(112,30,94,.04) 56%,transparent 76%);
+  mask-image:radial-gradient(circle,#000 0 50%,rgba(0,0,0,.78) 62%,transparent 82%);
+  animation:territoryBreath 12s cubic-bezier(.45,0,.2,1) infinite}
+.agro-influence::after{content:'';position:absolute;inset:6%;border-radius:50%;border:1px solid rgba(255,91,178,.28);
+  box-shadow:0 0 14px rgba(255,62,158,.18),inset 0 0 10px rgba(255,91,178,.08);animation:dominantPulse 5.8s ease-in-out infinite}
+.agro-influence .scan{position:absolute;inset:4%;height:auto;border-radius:50%;border:1px solid rgba(255,128,194,.28);background:conic-gradient(from 0deg,transparent 0 64%,rgba(255,91,178,.28) 73%,transparent 84%);box-shadow:inset 0 0 10px rgba(255,91,178,.06);animation:territoryScan 12s linear infinite}
+.agro-influence .x{position:absolute;inset:24%;border-radius:50%;animation:territoryScan 10s linear infinite;filter:drop-shadow(0 0 6px rgba(255,91,178,.28))}
+.agro-influence .x::before,.agro-influence .x::after{content:'';position:absolute;left:50%;top:0;width:1.5px;height:100%;border-radius:2px;background:linear-gradient(180deg,transparent,rgba(255,128,194,.72),transparent);transform-origin:center}
+.agro-influence .x::before{transform:translateX(-50%) rotate(45deg)}.agro-influence .x::after{transform:translateX(-50%) rotate(-45deg)}
+.agro-influence .core{position:absolute;left:50%;top:50%;width:9px;height:9px;border-radius:50%;background:#ff5bb2;box-shadow:0 0 14px rgba(255,91,178,.75),0 0 34px rgba(255,91,178,.28);transform:translate(-50%,-50%);animation:beaconBreathe 3.8s ease-in-out infinite}
+.agro-influence.dominant{opacity:.9;filter:blur(.02px) drop-shadow(0 0 12px rgba(255,91,178,.34));mix-blend-mode:screen}
+.agro-influence.dominant::before{background:radial-gradient(circle,rgba(255,91,178,.2) 0%,rgba(206,49,145,.1) 34%,rgba(112,30,94,.04) 58%,transparent 76%)}
+@keyframes dominantPulse{0%,100%{opacity:.7;transform:scale(.99)}50%{opacity:1;transform:scale(1.01)}}
+.agro-influence.operating .scan{border-color:rgba(255,128,194,.22);background:conic-gradient(from 0deg,transparent 0 64%,rgba(255,91,178,.27) 73%,transparent 84%)}
+@keyframes territoryBreath{0%,100%{transform:scale(.99);opacity:.58}50%{transform:scale(1.01);opacity:.9}}
+@keyframes territoryScan{to{transform:rotate(360deg)}}
+@keyframes territoryLine{0%,100%{transform:translateY(-34px);opacity:0}45%,55%{opacity:.8}50%{transform:translateY(34px)}}
+.agro-trail{stroke-linecap:round;filter:drop-shadow(0 0 5px rgba(94,200,128,.35));animation:trailFade 42s linear forwards}
+@keyframes trailFade{0%{opacity:.58}70%{opacity:.28}100%{opacity:0}}
+.pilot-beacon{position:relative;width:28px;height:28px;display:grid;place-items:center;transform:translateZ(0);transition:opacity .3s,filter .3s,transform .3s}
+.pilot-beacon .halo{position:absolute;inset:3px;border-radius:50%;border:1px solid var(--bc);opacity:.24;animation:beaconPulse 3.8s ease-in-out infinite}
+.pilot-beacon .scan{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 300deg,rgba(255,255,255,.16),transparent 342deg);animation:beaconSweep 5.6s linear infinite;opacity:.38}
+.pilot-beacon .core{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--bc);box-shadow:0 0 12px var(--bc),0 0 24px rgba(94,200,128,.18);animation:beaconBreathe 4.2s ease-in-out infinite}
+.pilot-beacon.status-operating .core{width:9px;height:9px;box-shadow:0 0 15px var(--bc),0 0 34px rgba(94,200,128,.22)}
+.pilot-beacon.status-operating .halo{animation-duration:2.9s;opacity:.34}
+.pilot-beacon.bot{opacity:.72}.pilot-beacon.bot .pilot-label{opacity:.56}
+.pilot-beacon.real{filter:drop-shadow(0 0 10px rgba(91,199,232,.24))}.pilot-beacon.real .core{width:9px;height:9px;box-shadow:0 0 16px #5bc7e8,0 0 34px rgba(91,199,232,.26)}
+.pilot-beacon.real .halo{opacity:.38;animation-duration:2.7s}.pilot-beacon.real .scan{opacity:.52;animation-duration:4.4s}
+.pilot-beacon.is-user.loc-pulse .halo,.locating .pilot-beacon.is-user .halo{border-width:2px;animation-duration:1.1s}
+.pilot-beacon .glyph{position:absolute;font-size:8px;line-height:1;opacity:.84;transform:translateY(-11px);filter:drop-shadow(0 1px 4px rgba(0,0,0,.65))}
+.pilot-label{display:none}
+.zoom-far .pilot-beacon{transform:scale(.78)}
+body.legend-filter-operating .pilot-beacon.status-operating,body.legend-filter-online .pilot-beacon.status-online,body.legend-filter-request .pilot-beacon.status-request,body.legend-filter-sos .pilot-beacon.status-sos{filter:drop-shadow(0 0 14px var(--bc)) brightness(1.12);transform:scale(1.08)}
+body.legend-filter-operating .agro-influence.operating,body.legend-filter-sos .agro-influence.sos{opacity:.9;filter:drop-shadow(0 0 24px rgba(104,220,240,.22))}
+body.legend-filter-dominant .agro-influence.dominant{opacity:1;filter:drop-shadow(0 0 16px rgba(255,91,178,.52))}
+@keyframes beaconPulse{0%,100%{transform:scale(.72);opacity:.22}50%{transform:scale(1.55);opacity:.04}}
+@keyframes beaconSweep{to{transform:rotate(360deg)}}
+@keyframes beaconBreathe{0%,100%{transform:scale(.88);opacity:.88}50%{transform:scale(1.12);opacity:1}}
+@media (prefers-reduced-motion:reduce){#sRadar::before,#sRadar::after,.agro-influence::before,.agro-influence::after,.agro-influence .scan,.pilot-beacon .halo,.pilot-beacon .scan,.pilot-beacon .core,.agro-trail{animation:none}}
 .leaflet-popup-close-button{color:var(--mt)!important;top:8px!important;right:8px!important}
 
 /* Header */
-.r-hdr{position:fixed;top:0;left:0;right:0;z-index:100;padding:10px 14px;
-  background:linear-gradient(to bottom,rgba(5,12,7,.96) 0%,rgba(5,12,7,.6) 70%,transparent);
-  display:flex;align-items:center;gap:7px}
-.r-wordmark{font-size:14px;font-weight:800;flex:1;color:var(--tx)}
+.r-hdr{position:fixed;top:0;left:0;right:0;z-index:120;padding:7px 10px 14px;
+  background:linear-gradient(to bottom,rgba(5,12,7,.9) 0%,rgba(5,12,7,.42) 72%,transparent);
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:7px;min-height:46px}
+.r-wordmark{font-size:12px;font-weight:800;color:var(--tx);white-space:nowrap}
 .r-wordmark span{color:var(--g2)}
 .r-wordmark small{font-size:8px;color:var(--mt);font-weight:400;margin-left:4px;letter-spacing:.1em}
-.r-status-row{display:flex;gap:5px;align-items:center}
-.status-badge{display:flex;align-items:center;gap:4px;padding:4px 9px;border-radius:20px;
-  background:rgba(5,12,7,.88);border:1px solid var(--bdm);font-family:var(--fm);font-size:9px;
-  color:var(--tx2);letter-spacing:.05em;backdrop-filter:blur(8px)}
-.status-badge .dot{width:5px;height:5px;border-radius:50%;background:var(--g2);animation:ldotP 2.5s infinite}
+.r-status-row{display:flex;gap:4px;align-items:center;justify-content:center;min-width:0}
+.status-badge{display:flex;align-items:center;gap:3px;padding:3px 6px;border-radius:20px;
+  background:rgba(5,12,7,.54);border:1px solid rgba(90,173,112,.14);font-family:var(--fm);font-size:8px;
+  color:rgba(223,240,227,.7);letter-spacing:.03em;backdrop-filter:blur(10px);white-space:nowrap}
+.status-badge .dot{width:4px;height:4px;border-radius:50%;background:var(--g2);animation:ldotP 2.5s infinite}
 @keyframes ldotP{0%,100%{opacity:1}50%{opacity:.25}}
 .ico-btn{width:34px;height:34px;border-radius:50%;background:rgba(5,12,7,.88);
   border:1px solid var(--bdm);display:flex;align-items:center;justify-content:center;
   font-size:14px;cursor:pointer;transition:all .2s;flex-shrink:0;backdrop-filter:blur(8px);position:relative}
 .ico-btn:hover{border-color:var(--bdh);background:var(--s3)}
+.user-chip{height:32px;min-width:112px;max-width:148px;margin-right:24px;border-radius:18px;border:1px solid rgba(90,173,112,.16);background:rgba(5,12,7,.56);backdrop-filter:blur(16px);display:flex;align-items:center;gap:7px;padding:3px 8px 3px 3px;color:var(--tx);cursor:pointer;box-shadow:0 10px 26px rgba(0,0,0,.18);transition:all .22s ease}
+.user-chip:hover,.user-chip.on{border-color:rgba(130,205,150,.36);background:rgba(11,22,13,.64)}
+.user-chip-av{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:rgba(47,107,64,.7);font-size:13px;flex-shrink:0;box-shadow:0 0 14px rgba(91,199,232,.16)}
+.user-chip-av img{width:100%;height:100%;object-fit:cover}
+.user-chip-meta{min-width:0;line-height:1.05;text-align:left;display:flex;flex-direction:column;justify-content:center}.user-chip-name{display:block;font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:86px}.user-chip-status{display:block;font:500 7px var(--fm);color:rgba(130,205,150,.78);letter-spacing:.04em;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-menu{position:fixed;top:45px;right:10px;z-index:320;width:min(230px,calc(100vw - 20px));padding:8px;border-radius:18px;background:rgba(5,12,7,.76);border:1px solid rgba(120,220,160,.14);backdrop-filter:blur(20px);box-shadow:0 22px 60px rgba(0,0,0,.42);opacity:0;transform:translateY(-8px) scale(.98);pointer-events:none;transition:all .22s ease}.user-menu.on{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}.user-menu-head{display:flex;align-items:center;gap:8px;padding:7px;border-radius:13px;background:rgba(255,255,255,.03);margin-bottom:6px}.user-menu-title{font-size:12px;font-weight:800;color:var(--tx)}.user-menu-sub{font:500 8px var(--fm);color:var(--tx2);margin-top:2px}.user-menu-item{width:100%;border:0;background:transparent;color:rgba(223,240,227,.82);font:700 11px var(--fu);display:flex;align-items:center;justify-content:space-between;padding:9px 8px;border-radius:12px;cursor:pointer;text-align:left}.user-menu-item:hover{background:rgba(90,173,112,.1);color:var(--g1)}.user-menu-item .notif-dot{position:static;width:14px;height:14px;font-size:7px;flex-shrink:0}
 .notif-dot{position:absolute;top:-2px;right:-2px;width:13px;height:13px;border-radius:50%;
   background:var(--red2);color:white;font-size:7px;font-weight:700;display:none;
   align-items:center;justify-content:center}
 .notif-dot.on{display:flex}
+.notif-dot.pulse{animation:notifPulse 1.05s ease-in-out infinite}
+@keyframes notifPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 rgba(224,53,53,0)}50%{transform:scale(1.16);box-shadow:0 0 18px rgba(224,53,53,.45)}}
+
+
+/* Live legend + map actions */
+.live-legend{position:fixed;left:10px;top:52px;z-index:95;display:flex;gap:4px;max-width:calc(100vw - 20px);overflow-x:auto;scrollbar-width:none;padding:15px 5px 5px;border-radius:17px;background:rgba(5,12,7,.38);border:1px solid rgba(120,220,160,.1);backdrop-filter:blur(16px);box-shadow:0 12px 34px rgba(0,0,0,.16)}
+.live-legend::before{content:'pressione para filtrar';position:absolute;left:10px;top:4px;font:600 7px var(--fm);letter-spacing:.08em;text-transform:uppercase;color:rgba(138,184,150,.52)}
+.live-legend::-webkit-scrollbar{display:none}
+.legend-pill{display:flex;align-items:center;gap:4px;white-space:nowrap;padding:5px 7px;border-radius:999px;border:1px solid transparent;background:rgba(7,15,9,.42);color:rgba(223,240,227,.74);font:600 8px var(--fm);letter-spacing:.01em;cursor:pointer;transition:all .24s ease}
+.legend-pill i{width:7px;height:7px;border-radius:50%;display:block;background:var(--lc);box-shadow:0 0 10px var(--lc);animation:legendBreath 3.8s ease-in-out infinite}
+.legend-pill.dom i{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#ff75c4,#d72882);box-shadow:0 0 16px rgba(255,91,178,.5)}
+@keyframes legendBreath{0%,100%{opacity:.72;transform:scale(.92)}50%{opacity:1;transform:scale(1.12)}}
+.legend-pill:hover,.legend-pill.on{border-color:rgba(140,235,175,.22);color:var(--tx);background:rgba(22,46,30,.56);transform:translateY(-1px)}
+.map-actions{position:fixed;right:12px;bottom:196px;z-index:110;display:flex;flex-direction:column;gap:7px;width:42px}
+.map-action{width:42px;height:42px;border-radius:16px;border:1px solid rgba(90,173,112,.18);background:rgba(5,12,7,.5);backdrop-filter:blur(16px);box-shadow:0 10px 28px rgba(0,0,0,.2),0 0 18px rgba(91,199,232,.06);color:rgba(223,240,227,.82);font:800 15px var(--fu);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s ease}
+.map-action span{display:none}.map-action:hover{border-color:rgba(130,205,150,.38);color:var(--g1);transform:translateY(-1px)}
+.map-particles{position:fixed;inset:0;z-index:82;pointer-events:none;overflow:hidden}.map-particles span{position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(120,240,170,.22);box-shadow:0 0 10px rgba(120,240,170,.18);animation:particleDrift 18s linear infinite}.map-particles span:nth-child(1){left:18%;top:38%;animation-duration:21s}.map-particles span:nth-child(2){left:76%;top:31%;animation-duration:24s;animation-delay:-6s}.map-particles span:nth-child(3){left:52%;top:68%;animation-duration:19s;animation-delay:-11s}.map-particles span:nth-child(4){left:34%;top:77%;animation-duration:26s;animation-delay:-3s}@keyframes particleDrift{0%{transform:translate3d(0,18px,0);opacity:0}20%,70%{opacity:.72}100%{transform:translate3d(18px,-48px,0);opacity:0}}
+@media (max-width:520px){.r-hdr{padding:6px 8px 13px;grid-template-columns:auto minmax(72px,1fr) auto}.r-wordmark{font-size:11px}.r-wordmark small{display:none}.status-badge{font-size:7px;padding:3px 5px}.status-badge span{max-width:70px;overflow:hidden;text-overflow:ellipsis}.live-legend{top:50px;left:8px;right:8px}.legend-pill{padding:5px 6px;font-size:7.5px}.map-actions{right:10px;bottom:190px;width:40px}.map-action{width:40px;height:40px}.user-chip{min-width:104px;max-width:124px;margin-right:18px}.user-chip-name{max-width:68px}}
 
 /* SOS Bar */
 .sos-bar{position:fixed;top:54px;left:0;right:0;z-index:200;padding:8px 14px;display:none;
@@ -274,6 +354,8 @@ select.inp{cursor:pointer}
 /* Req items */
 .req-item{background:var(--s2);border-radius:10px;padding:11px;margin:0 18px 7px;border:1px solid var(--bd)}
 .req-item.sos-req{border-left:3px solid var(--red);animation:reqPulse 1.5s ease-in-out infinite}
+.req-intel{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.req-chip{font:700 8px var(--fm);letter-spacing:.05em;text-transform:uppercase;padding:3px 6px;border-radius:999px;background:rgba(7,15,9,.65);border:1px solid rgba(120,220,160,.14);color:var(--tx2)}
+.req-chip.prio-critical{border-color:rgba(255,95,95,.36);color:#ff8585}.req-chip.prio-high{border-color:rgba(224,161,58,.36);color:#ffc76a}.req-chip.prio-medium{border-color:rgba(91,199,232,.32);color:#8bdcf5}
 @keyframes reqPulse{0%,100%{border-left-color:var(--red)}50%{border-left-color:rgba(196,40,40,.3)}}
 
 /* ══ CHAT BILATERAL ══ */
@@ -340,10 +422,12 @@ select.inp{cursor:pointer}
   width:calc(100% - 36px);max-width:320px;text-align:center;
   box-shadow:0 24px 60px rgba(0,0,0,.7);display:none}
 .modal-chamado.on{display:block;animation:modalIn .3s cubic-bezier(.34,1.3,.64,1)}
-.modal-chamado.sos-mode{border-color:rgba(196,40,40,.6)}
+.modal-chamado.sos-mode{border-color:rgba(196,40,40,.6);box-shadow:0 24px 70px rgba(196,40,40,.24),0 0 0 1px rgba(255,95,95,.12)}
+.modal-chamado.emergency-mode{border-color:rgba(196,40,40,.6);box-shadow:0 24px 70px rgba(196,40,40,.24),0 0 0 1px rgba(255,95,95,.12)}.modal-chamado.technical-mode{border-color:rgba(224,161,58,.42)}.modal-chamado.operational-mode{border-color:rgba(94,200,128,.42)}.modal-chamado.parts-mode{border-color:rgba(91,199,232,.42)}
 .modal-chamado-icon{font-size:46px;margin-bottom:9px;display:block}
 .modal-chamado-title{font-size:16px;font-weight:800;margin-bottom:5px}
 .modal-chamado-msg{font-size:12px;color:var(--tx2);margin-bottom:6px;line-height:1.5}
+.modal-intel{display:flex;justify-content:center;gap:5px;flex-wrap:wrap;margin:7px 0 8px}.modal-intel .req-chip{font-size:7.5px}.search-wave{height:28px;margin:2px auto 8px;position:relative;width:88px}.search-wave::before,.search-wave::after{content:'';position:absolute;inset:4px 34px;border-radius:50%;border:1px solid rgba(91,199,232,.34);animation:searchWave 2.2s ease-out infinite}.search-wave::after{animation-delay:.75s}@keyframes searchWave{from{transform:scale(.5);opacity:.85}to{transform:scale(3.2);opacity:0}}
 .modal-chamado-timer{font-size:10px;color:var(--mt);margin-bottom:14px;font-family:var(--fm)}
 .modal-chamado-buttons{display:flex;gap:9px}
 .modal-chamado-btn{flex:1;padding:12px;border-radius:14px;border:none;font-weight:800;
@@ -353,20 +437,29 @@ select.inp{cursor:pointer}
 .modal-chamado-btn.ignore:hover{background:rgba(196,40,40,.1);border-color:rgba(196,40,40,.4);color:#f07070}
 
 /* Popup card */
-.p-card{display:flex;flex-direction:column;gap:7px}
+.p-card{display:flex;flex-direction:column;gap:8px;padding:2px;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);animation:contextIn .28s ease-out both}
+.p-card-kicker{font:700 7px var(--fm);letter-spacing:.12em;text-transform:uppercase;color:rgba(130,205,150,.68);margin-bottom:-2px}
+@keyframes contextIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .p-card-hdr{display:flex;align-items:center;gap:9px}
 .p-card-av{width:30px;height:30px;border-radius:50%;background:var(--g6);
   display:flex;align-items:center;justify-content:center;font-size:15px;overflow:hidden;flex-shrink:0}
 .p-card-av img{width:100%;height:100%;object-fit:cover}
 .p-card-name{font-size:13px;font-weight:800;color:var(--tx)}
-.p-card-tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase}
+.p-card-tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:999px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
 .p-card-tag.online{background:rgba(45,107,64,.2);color:var(--g1)}
 .p-card-tag.op{background:rgba(26,125,196,.2);color:#60b8e8}
 .p-card-tag.sos{background:rgba(196,40,40,.2);color:#f07070}
 .p-card-info{font-size:10px;color:var(--tx2);display:flex;align-items:center;gap:3px}
-.p-card-btn{margin-top:3px;width:100%;padding:7px;border-radius:7px;background:var(--g6);
+.p-card-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:2px}
+.p-card-metric{padding:6px 5px;border:1px solid rgba(90,173,112,.12);border-radius:10px;background:rgba(7,15,9,.48);text-align:center}
+.p-card-metric strong{display:block;font:500 11px var(--fm);color:var(--g1)}
+.p-card-metric span{display:block;margin-top:1px;font-size:7px;color:var(--mt);text-transform:uppercase;letter-spacing:.08em}
+.p-card-intel{display:flex;flex-direction:column;gap:4px;padding:7px;border-radius:11px;background:rgba(255,255,255,.025);border:1px solid rgba(90,173,112,.1)}
+.p-card-intel div{display:flex;justify-content:space-between;gap:10px;font-size:9px;color:var(--tx2)}
+.p-card-intel b{color:rgba(223,240,227,.88);font-weight:700;text-align:right}
+.p-card-btn{margin-top:3px;width:100%;padding:8px;border-radius:10px;background:linear-gradient(135deg,rgba(30,64,41,.92),rgba(47,107,64,.88));
   color:white;border:none;font-family:var(--fu);font-size:10px;font-weight:800;cursor:pointer;transition:all .2s}
-.p-card-btn:hover{background:var(--g5)}
+.p-card-btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
 
 .clear-hist-btn{background:rgba(196,40,40,.12);border:1px solid rgba(196,40,40,.3);color:#f07070;
   margin:0 18px 14px;padding:7px 14px;border-radius:20px;font-size:10px;font-weight:700;
@@ -420,28 +513,47 @@ select.inp{cursor:pointer}
 <!-- ══ RADAR ══ -->
 <div class="screen off" id="sRadar">
   <div id="mapEl"></div>
+  <div class="map-particles"><span></span><span></span><span></span><span></span></div>
 
   <div class="r-hdr">
     <div class="r-wordmark">Agro<span>Metrix</span><small>RADAR</small></div>
     <div class="r-status-row">
-      <div class="status-badge"><div class="dot"></div><span id="pilotCount">— pilotos</span></div>
+      <div class="status-badge"><div class="dot"></div><span id="pilotCount">— online</span></div>
+      <div class="status-badge"><div class="dot"></div><span id="domainCount">— áreas</span></div>
     </div>
-    <button class="ico-btn" onclick="window.centerOnUser()" style="font-size:13px">📍</button>
-    <div style="position:relative">
-      <button class="ico-btn" id="btnChatIco" onclick="window.onChatIconClick()">💬</button>
-      <div class="notif-dot" id="chatDot">!</div>
+    <button class="user-chip" id="userChip" onclick="window.toggleUserMenu()">
+      <span class="user-chip-av" id="userChipAv">👨‍✈️</span>
+      <span class="user-chip-meta"><span class="user-chip-name" id="userChipName">Piloto</span><span class="user-chip-status" id="userChipStatus">ONLINE - AMX —</span></span>
+    </button>
+  </div>
+  <div class="user-menu" id="userMenu">
+    <div class="user-menu-head">
+      <div class="user-chip-av" id="userMenuAv">👨‍✈️</div>
+      <div><div class="user-menu-title" id="userMenuName">Piloto</div><div class="user-menu-sub" id="userMenuSub">Radar operacional</div></div>
     </div>
-    <div style="position:relative">
-      <button class="ico-btn" onclick="window.openSheet('shReq')">🔧</button>
-      <div class="notif-dot" id="reqDot">!</div>
-    </div>
-    <button class="ico-btn" onclick="window.openSheet('shProfile')">👤</button>
+    <button class="user-menu-item" onclick="window.openUserMenuSheet('shProfile')"><span>👤 Perfil e configurações</span><span>›</span></button>
+    <button class="user-menu-item" onclick="window.onChatIconClick()"><span>💬 Chat</span><span class="notif-dot" id="chatDot">!</span></button>
+    <button class="user-menu-item" onclick="window.openUserMenuSheet('shReq')"><span>🔧 Suporte</span><span class="notif-dot" id="reqDot">!</span></button>
+    <button class="user-menu-item" onclick="window.openUserMenuSheet('shOpConfig')"><span>⚙️ Ferramentas</span><span>›</span></button>
+    <button class="user-menu-item" onclick="window.doLogout()"><span>↩ Sair</span><span>›</span></button>
   </div>
 
   <div class="sos-bar" id="sosBar">
     <span style="font-size:16px">🚨</span>
     <div class="sos-txt">SOS ATIVO — Aguardando pilotos próximos…</div>
     <button class="sos-cancel" onclick="window.cancelSOS()">Cancelar</button>
+  </div>
+
+  <div class="live-legend" id="liveLegend" aria-label="Legenda viva do radar">
+    <button class="legend-pill" data-filter="operating" onclick="window.setLegendFilter('operating')"><i style="--lc:#5ec880"></i>🟢 Operando</button>
+    <button class="legend-pill" data-filter="online" onclick="window.setLegendFilter('online')"><i style="--lc:#5bc7e8"></i>🔵 Online</button>
+    <button class="legend-pill" data-filter="request" onclick="window.setLegendFilter('request')"><i style="--lc:#e0a13a"></i>🟠 Assist.</button>
+    <button class="legend-pill" data-filter="sos" onclick="window.setLegendFilter('sos')"><i style="--lc:#ff5f5f"></i>🔴 SOS</button>
+    <button class="legend-pill dom" data-filter="dominant" onclick="window.setLegendFilter('dominant')"><i></i>🟥 Área</button>
+  </div>
+
+  <div class="map-actions">
+    <button class="map-action" onclick="window.centerOnUser()" title="Minha localização" aria-label="Minha localização">📍<span>Minha localização</span></button>
   </div>
 
   <div class="r-nav">
@@ -482,7 +594,7 @@ select.inp{cursor:pointer}
         <div class="qbtn" onclick="window.sendReq('battery','🔋 Preciso de bateria')">🔋 Bateria</div>
         <div class="qbtn" onclick="window.sendReq('helice','🚁 Preciso de hélice')">🚁 Hélice</div>
         <div class="qbtn" onclick="window.sendReq('part','🔧 Preciso de peça')">🔧 Peça</div>
-        <div class="qbtn" onclick="window.sendReq('support','🛠️ Suporte')">🛠️ Suporte</div>
+        <div class="qbtn" onclick="window.sendReq('technical','🛠️ Ajuda técnica')">🛠️ Ajuda técnica</div>
         <div class="qbtn" onclick="window.sendReq('fuel','⛽ Abastecimento')">⛽ Combustível</div>
         <div class="qbtn" onclick="window.sendReq('tow','🚜 Atolamento')">🚜 Atolamento</div>
       </div>
@@ -640,6 +752,7 @@ select.inp{cursor:pointer}
   <span class="modal-chamado-icon" id="modalIcon">🔧</span>
   <div class="modal-chamado-title" id="modalTitle">Novo Chamado</div>
   <div class="modal-chamado-msg" id="modalMsg">Alguém precisa de ajuda!</div>
+  <div class="modal-intel" id="modalIntel"></div>
   <div class="modal-chamado-timer" id="modalTimer">Expira em 30s</div>
   <div class="modal-chamado-buttons">
     <button class="modal-chamado-btn accept" onclick="window.modalAccept()">✅ Aceitar</button>
@@ -653,19 +766,24 @@ select.inp{cursor:pointer}
 // ══════════════════════════════════════════════════════════════════════
 
 import { chat } from './chat.js';
+import { audio } from './audio.js';
 
 // ── ESTADO GLOBAL ──
 const R = window.AgroRadar = {
   user: null, profile: null, plan: null,
   lat: null, lon: null, map: null, weather: null,
   opCfg: {}, sosActive: false, isOperating: false, opStartTime: null,
-  hiddenRequests: new Set(),
-  markers: {}, botData: {}, activeBots: [],
+  hiddenRequests: new Set(), openRequests: [], requestScanTimer:null,
+  markers: {}, domainLayers: {}, trailLayers: {}, botData: {}, activeBots: [], dominanceLeaders:{}, pilotsUnsub:null, presenceBound:false,
   chatTarget: null, // { uid, name, photo } — alvo atual do chat aberto
+  isSetup:false, weatherTimer:null,
+  timeline:{mode:'live', windowHours:24, layers:[], future:['replay-24h','heatmap-operacional','historico-operacoes','crescimento-territorial']},
 };
 
 const $ = id => document.getElementById(id);
 const ov = id => id.replace('sh', 'ov');
+window._markers = R.markers;
+window._beaconMarkers = R.domainLayers;
 
 // ── UI HELPERS ──
 window.showToast = (msg, dur = 3200) => {
@@ -673,6 +791,16 @@ window.showToast = (msg, dur = 3200) => {
   clearTimeout(window._toastTimer);
   window._toastTimer = setTimeout(() => t.classList.remove('on'), dur);
 };
+function haptic(pattern = 45) { if (navigator.vibrate) navigator.vibrate(pattern); }
+function playFeedback(type) { audio?.play?.(type); haptic(type === 'sos' ? [90, 45, 90] : type === 'message' ? 35 : 55); }
+function startOperationalAlert(type) { stopOperationalAlert(); audio?.startLoop?.(type, type === 'sos' ? 950 : 1700, 0); window._alertVibe = setInterval(() => haptic(type === 'sos' ? [100,45,100] : [70,35,70]), type === 'sos' ? 1200 : 2200); }
+function stopOperationalAlert() { audio?.stopLoop?.(); if (window._alertVibe) { clearInterval(window._alertVibe); window._alertVibe = null; } }
+function pulseNotif(id, duration = 4200) {
+  const el = $(id); if (!el) return;
+  el.classList.add('on','pulse');
+  clearTimeout(el._pulseTimer);
+  el._pulseTimer = setTimeout(() => el.classList.remove('pulse'), duration);
+}
 window.openSheet = id => {
   $(ov(id)).classList.add('on'); $(id).classList.add('on');
   if (id === 'shProfile') renderProfile();
@@ -681,6 +809,37 @@ window.openSheet = id => {
 window.closeSheet = id => {
   $(ov(id)).classList.remove('on'); $(id).classList.remove('on');
 };
+function renderHeaderProfile() {
+  const p = R.profile || {};
+  const name = cleanName(p.nickname || p.name, R.user);
+  const photo = fixPhoto(p.photo) || fixPhoto(R.user?.photoURL);
+  const avatar = photo ? `<img src="${photo}" onerror="this.outerHTML='👨‍✈️'">` : '👨‍✈️';
+  const status = R.sosActive ? 'SOS' : R.isOperating ? 'OPERANDO' : (p.visibility === 'invisible' ? 'INVISÍVEL' : 'ONLINE');
+  const score = p.amxScore || p.score || 0;
+  ['userChipAv','userMenuAv'].forEach(id => { const el = $(id); if (el) el.innerHTML = avatar; });
+  if ($('userChipName')) $('userChipName').textContent = name;
+  if ($('userChipStatus')) $('userChipStatus').textContent = `${status} - AMX ${score || '—'}`;
+  if ($('userMenuName')) $('userMenuName').textContent = name;
+  if ($('userMenuSub')) $('userMenuSub').textContent = `${status} · ${p.city || 'cidade não informada'}`;
+}
+window.toggleUserMenu = () => {
+  renderHeaderProfile();
+  $('userMenu')?.classList.toggle('on');
+  $('userChip')?.classList.toggle('on', $('userMenu')?.classList.contains('on'));
+};
+window.closeUserMenu = () => {
+  $('userMenu')?.classList.remove('on');
+  $('userChip')?.classList.remove('on');
+};
+window.openUserMenuSheet = id => {
+  window.closeUserMenu();
+  window.openSheet(id);
+};
+document.addEventListener('click', (ev) => {
+  if (!$('userMenu')?.classList.contains('on')) return;
+  if (ev.target.closest('#userMenu') || ev.target.closest('#userChip')) return;
+  window.closeUserMenu();
+});
 window.switchTab = tab => {
   ['radar','clima','ops','rank'].forEach(t => {
     $('tab-'+t)?.classList.remove('act');
@@ -700,9 +859,36 @@ window.showDroneInput = el => {
   inp.onblur = () => { if (inp.value.trim()) R.opCfg.drone = inp.value.trim(); inp.style.display = 'none'; };
 };
 window.centerOnUser = () => {
-  if (R.map && R.lat && R.lon) { R.map.setView([R.lat, R.lon], 13); showToast('📍 Centralizado'); }
-  else showToast('⚠️ Localização indisponível');
+  if (R.map && R.lat && R.lon) {
+    R.map.flyTo([R.lat, R.lon], Math.max(R.map.getZoom(), 13), {duration:1.15, easeLinearity:.18});
+    document.body.classList.add('locating');
+    setTimeout(() => document.body.classList.remove('locating'), 1500);
+    if (R.markers[R.user?.uid]) {
+      R.markers[R.user.uid].setIcon(createBeaconIcon(R.isOperating ? 'operating' : R.sosActive ? 'sos' : 'online', {...R.botData[R.user.uid], isCurrentUser:true, locPulse:true}));
+      setTimeout(() => R.botData[R.user?.uid] && R.markers[R.user.uid]?.setIcon(createBeaconIcon(R.botData[R.user.uid].status || 'online', R.botData[R.user.uid])), 1500);
+    }
+    showToast('📍 Minha localização centralizada');
+  } else showToast('⚠️ Localização indisponível');
 };
+function applyLegendFilter(filter) {
+  document.body.className = document.body.className.replace(/\blegend-filter-\w+\b/g, '').trim();
+  if (filter) document.body.classList.add(`legend-filter-${filter}`);
+  document.querySelectorAll('.legend-pill').forEach(btn => btn.classList.toggle('on', btn.dataset.filter === filter));
+}
+window.setLegendFilter = (filter) => {
+  const current = R.legendFilter === filter ? null : filter;
+  R.legendFilter = current;
+  applyLegendFilter(current);
+};
+function wireLegendPreview() {
+  if (R.legendWired) return;
+  R.legendWired = true;
+  document.querySelectorAll('.legend-pill').forEach(btn => {
+    const filter = btn.dataset.filter;
+    btn.addEventListener('pointerenter', () => { if (!R.legendFilter) applyLegendFilter(filter); });
+    btn.addEventListener('pointerleave', () => { if (!R.legendFilter) applyLegendFilter(null); });
+  });
+}
 
 // ── UTILITÁRIOS ──
 function fixPhoto(url) {
@@ -717,6 +903,11 @@ function cleanName(name, user) {
     n = user?.displayName || user?.email?.split('@')[0] || 'Piloto';
   if (n.length > 24) n = n.substring(0, 21) + '…';
   return n || 'Piloto';
+}
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = String(str ?? '');
+  return div.innerHTML;
 }
 
 // Cache Firestore
@@ -770,10 +961,15 @@ function gerarBots() {
       score:50+Math.floor(Math.random()*45), amxScore:50+Math.floor(Math.random()*45),
       hoursTotal:10+Math.floor(Math.random()*600), opsTotal:5+Math.floor(Math.random()*150),
       hectares:10+Math.floor(Math.random()*80),
+      growthPerDay:10+Math.floor(Math.random()*11),
+      presenceDays:18+Math.floor(Math.random()*120),
+      recentOps:1+Math.floor(Math.random()*9),
       baseLat:reg.lat, baseLon:reg.lon,
       lat:reg.lat+(Math.random()-.5)*.2, lon:reg.lon+(Math.random()-.5)*.2,
       status:r<0.3?'operating':r<0.7?'online':'offline',
+      isBot:true,
     });
+    console.debug('[BOT SPAWNED]', bots[bots.length - 1].id, bots[bots.length - 1].city);
   }
   return bots;
 }
@@ -781,25 +977,157 @@ function gerarBots() {
 // ── MAPA ──
 function initMap(lat, lon) {
   if (R.map) return;
-  R.map = L.map('mapEl',{zoomControl:true,attributionControl:false}).setView([lat,lon],7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(R.map);
+  R.map = L.map('mapEl',{zoomControl:true,attributionControl:false,preferCanvas:true}).setView([lat,lon],7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,updateWhenIdle:true,keepBuffer:2}).addTo(R.map);
+  const syncZoomClass = () => document.body.classList.toggle('zoom-far', R.map.getZoom() < 10);
+  R.map.on('zoomend', syncZoomClass);
+  syncZoomClass();
 }
-function createBeaconIcon(status) {
-  const colors={online:'#3d8a52',operating:'#1a7dc4',sos:'#c42828',offline:'#3d5c44',request:'#c47800'};
+function createBeaconIcon(status, data = {}) {
+  const colors={online:'#5bc7e8',operating:'#5ec880',sos:'#ff5f5f',offline:'#3d5c44',request:'#e0a13a'};
+  const glyphs={online:'●',operating:'⌁',sos:'!',offline:'·',request:'+'};
   const col = colors[status] || colors.online;
-  const s = 10;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28" overflow="visible">
-    <circle cx="14" cy="14" r="${s+3}" fill="${col}" opacity=".35">
-      <animate attributeName="r" values="${s+2};${s+7};${s+2}" dur="2.8s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values=".35;.05;.35" dur="2.8s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="14" cy="14" r="${s}" fill="${col}" opacity=".95"/>
-    <circle cx="14" cy="14" r="${s-2}" fill="none" stroke="rgba(255,255,255,.25)" stroke-width=".5"/>
-  </svg>`;
-  return L.divIcon({html:svg,className:'',iconSize:[28,28],iconAnchor:[14,14]});
+  const cls = `pilot-beacon status-${status}${data.isCurrentUser ? ' is-user' : ''}${data.isRealUser ? ' real' : ''}${data.isBot ? ' bot' : ''}${data.locPulse ? ' loc-pulse' : ''}`;
+  const html = `<div class="${cls}" style="--bc:${col}">
+    <i class="halo"></i><i class="scan"></i><i class="core"></i><span class="glyph">${glyphs[status]||'●'}</span>
+  </div>`;
+  return L.divIcon({html,className:'',iconSize:[28,28],iconAnchor:[14,14]});
+}
+function updateCounters() {
+  const pilots = Object.values(R.botData).filter(p => p.status !== 'offline').length;
+  const areas = Object.keys(R.domainLayers).length;
+  $('pilotCount').textContent = `${pilots} online`;
+  $('domainCount').textContent = `${areas} áreas`;
+}
+function hectaresNow(data) {
+  const base = Math.min(99, Number(data.hectares || 0));
+  if (!data.growthPerDay || data.isCurrentUser) return base;
+  const day = Math.floor(Date.now() / 86400000);
+  const seed = Array.from(String(data.id)).reduce((a,c)=>a+c.charCodeAt(0),0) % 7;
+  return Math.min(99, base + Math.max(0, day - 20590 + seed) * data.growthPerDay);
+}
+const DOMINANCE_INFLUENCE_SIZE = 42;
+function influenceSize() {
+  return DOMINANCE_INFLUENCE_SIZE;
+}
+function areaIntel(data) {
+  const days = Number(data.presenceDays || Math.max(14, Math.round((data.opsTotal || 20) / 2)));
+  const sinceDate = new Date(Date.now() - days * 86400000);
+  const since = sinceDate.toLocaleDateString('pt-BR');
+  const score = data.amxScore || data.score || 0;
+  const reputation = score >= 82 ? 'Elite' : score >= 68 ? 'Alta' : 'Estável';
+  const recentOps = Number(data.recentOps || Math.max(1, Math.round((data.opsTotal || 5) % 8) + 1));
+  return { days, since, reputation, recentOps };
+}
+function stableHash(value) {
+  return Array.from(String(value || '')).reduce((acc, ch) => ((acc * 31) + ch.charCodeAt(0)) >>> 0, 7);
+}
+function isValidDominanceLocation(data) {
+  const lat = Number(data.lat), lon = Number(data.lon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
+  if (lat < -34 || lat > 6 || lon < -74 || lon > -35.2) return false;
+  if (lon > -38.2 && lat > -31) return false;
+  return true;
+}
+function regionKey(data) {
+  const grid = 1.35;
+  return `${Math.floor(Number(data.lat) / grid)}:${Math.floor(Number(data.lon) / grid)}`;
+}
+function dominanceScore(data) {
+  return (Number(data.hectares || 0) * 1000) + ((data.amxScore || data.score || 0) * 10) + (Number(data.opsTotal || 0));
+}
+function recomputeDominanceLeaders() {
+  const groups = new Map();
+  Object.values(R.botData).forEach(p => {
+    if (!p || p.status === 'offline' || !isValidDominanceLocation(p)) return;
+    if ((Number(p.hectares || 0) < 45) && ((p.amxScore || p.score || 0) < 82)) return;
+    const key = regionKey(p);
+    const current = groups.get(key);
+    if (!current || dominanceScore(p) > dominanceScore(current)) groups.set(key, p);
+  });
+  const selected = [];
+  [...groups.values()]
+    .sort((a,b) => dominanceScore(b) - dominanceScore(a))
+    .forEach(candidate => {
+      const tooClose = selected.some(sel => R.map && R.map.distance([candidate.lat,candidate.lon],[sel.lat,sel.lon]) < 135000);
+      if (!tooClose) selected.push(candidate);
+    });
+  R.dominanceLeaders = {};
+  selected.forEach((p, index) => {
+    const intel = areaIntel(p);
+    R.dominanceLeaders[p.id] = { rank:index + 1, since:intel.since, score:dominanceScore(p), region:regionKey(p) };
+  });
+}
+function dominanceProfile(data, intel) {
+  const leader = R.dominanceLeaders?.[data.id];
+  const alternatives = ['🌱 Crescendo na região','⚡ Em operação na área','🎯 Disputando território','🚁 Ativo nesta região','📡 Expandindo cobertura','🔥 Na corrida pela liderança'];
+  return { isDominant:!!leader, leader, label: leader ? `🏆 Dominante da Região desde ${leader.since}` : alternatives[stableHash(data.id) % alternatives.length] };
+}
+function humanStatus(data) {
+  if (!data.isRealUser) return 'Piloto demonstrativo';
+  const score = data.amxScore || data.score || 0;
+  const ops = data.opsTotal || 0;
+  if ((data.acceptedCalls || data.callsAccepted || 0) >= 5) return 'Suporte rápido';
+  if (ops >= 120) return 'Especialista';
+  if (ops >= 70) return 'Experiente';
+  if (score >= 88) return 'Responde rápido';
+  if (data.status === 'operating') return 'Operador ativo';
+  if (ops <= 8) return 'Iniciante';
+  return ['Pronto para ajudar','Monitorando região','Experiente','Professor'][stableHash(data.id) % 4];
+}
+function distanceLabel(data) {
+  if (!R.lat || !R.lon || !data.lat || !data.lon) return '—';
+  const Rkm = 6371;
+  const dLat = (data.lat - R.lat) * Math.PI / 180;
+  const dLon = (data.lon - R.lon) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(R.lat*Math.PI/180) * Math.cos(data.lat*Math.PI/180) * Math.sin(dLon/2)**2;
+  const km = Rkm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(km < 10 ? 1 : 0)} km`;
+}
+function upsertInfluence(data, popupHtml = '', dominance = null) {
+  if (!R.map) return;
+  const removeInfluence = () => {
+    if (R.domainLayers[data.id]) { R.domainLayers[data.id].remove(); delete R.domainLayers[data.id]; }
+  };
+  if (data.status === 'offline' || !dominance?.isDominant) { removeInfluence(); return; }
+  const size = influenceSize();
+  const influenceClass = `agro-influence dominant${data.status === 'operating' ? ' operating' : ''}${data.status === 'sos' ? ' sos' : ''}`;
+  const icon = L.divIcon({
+    className:'dominance-influence-icon',
+    html:`<div class="${influenceClass}"><span class="scan"></span><span class="x"></span><span class="core"></span></div>`,
+    iconSize:[size,size],
+    iconAnchor:[size/2,size/2],
+  });
+  if (R.domainLayers[data.id]) {
+    R.domainLayers[data.id].setLatLng([data.lat,data.lon]);
+    R.domainLayers[data.id].setIcon(icon);
+    if (popupHtml) R.domainLayers[data.id].bindPopup(popupHtml,{maxWidth:235});
+  } else {
+    R.domainLayers[data.id] = L.marker([data.lat,data.lon],{icon,interactive:true,zIndexOffset:-1000}).addTo(R.map);
+    if (popupHtml) R.domainLayers[data.id].bindPopup(popupHtml,{maxWidth:235});
+  }
+}
+function syncDominanceLayers() {
+  const leaderIds = new Set(Object.keys(R.dominanceLeaders || {}));
+  Object.keys(R.domainLayers).forEach(id => {
+    if (!leaderIds.has(id)) { R.domainLayers[id].remove(); delete R.domainLayers[id]; }
+  });
+  leaderIds.forEach(id => {
+    const p = R.botData[id];
+    if (p && p._popupHtml) upsertInfluence(p, p._popupHtml, { isDominant:true });
+  });
+}
+function addOperationTrail(pid, fromLatLng, toLatLng, status) {
+  if (!R.map || !fromLatLng || status === 'offline') return;
+  const dist = R.map.distance(fromLatLng, toLatLng);
+  if (dist < 120 || dist > 70000) return;
+  const color = status === 'operating' ? '#6dd8ef' : '#5ec880';
+  const line = L.polyline([fromLatLng, toLatLng],{className:'agro-trail',color,weight:1.25,opacity:.55,interactive:false}).addTo(R.map);
+  setTimeout(()=>line.remove(), 43000);
 }
 function upsertPilot(data) {
   if (!R.map || !data?.id || !data.lat || !data.lon) return;
+  data.hectares = hectaresNow(data);
   let name = String(data.name||'');
   if (!name || name.startsWith('http') || name.includes('googleusercontent')) name = 'Piloto';
   if (name.length > 24) name = name.substring(0,21)+'…';
@@ -812,34 +1140,133 @@ function upsertPilot(data) {
     ? `<img src="${fixPhoto(data.photo)||data.photo}" onerror="this.outerHTML='👨‍✈️'" style="width:100%;height:100%;object-fit:cover">`
     : (data.photo || '👨‍✈️');
 
+  R.botData[pid] = data;
+  recomputeDominanceLeaders();
+
+  const safeName = escapeHtml(data.name);
+  const intel = areaIntel(data);
+  const dominance = dominanceProfile(data, intel);
+  const assistStatus = humanStatus(data);
+  const distance = distanceLabel(data);
   const popupHtml = `<div class="p-card">
+    <div class="p-card-kicker">${dominance.label}</div>
     <div class="p-card-hdr">
       <div class="p-card-av">${photoHtml}</div>
       <div>
-        <div class="p-card-name">${data.name}</div>
+        <div class="p-card-name">${safeName}</div>
         <span class="p-card-tag ${statusClass[data.status]||'online'}">${statusLabels[data.status]||'Online'}</span>
       </div>
     </div>
-    <div class="p-card-info">📍 ${data.city||'—'}</div>
-    <div class="p-card-info">🚁 ${data.drone||'—'}</div>
-    <div class="p-card-info">AMX ${data.amxScore||data.score||0} · ${data.hectares||0} ha</div>
+    <div class="p-card-info">📍 ${escapeHtml(data.city||'—')}</div>
+    <div class="p-card-info">🚁 ${escapeHtml(data.drone||'—')}</div>
+    <div class="p-card-metrics">
+      <div class="p-card-metric"><strong>${data.hectares||0}</strong><span>hectares</span></div>
+      <div class="p-card-metric"><strong>${data.opsTotal||0}</strong><span>operações</span></div>
+      <div class="p-card-metric"><strong>${distance}</strong><span>distância</span></div>
+    </div>
+    <div class="p-card-intel">
+      <div><span>${dominance.isDominant ? '🏆 Dominante da Região' : 'Posição regional'}</span><b>${dominance.isDominant ? 'Dominando desde ' + dominance.leader.since : dominance.label}</b></div>
+      <div><span>Tempo online estimado</span><b>${intel.days} dias</b></div>
+      <div><span>Status humano</span><b>${assistStatus}</b></div>
+      <div><span>Últimas operações</span><b>${intel.recentOps} recentes</b></div>
+      <div><span>Status</span><b>${statusLabels[data.status]||'Online'}</b></div>
+      <div><span>Ranking</span><b>${intel.reputation} · AMX ${data.amxScore||data.score||0}</b></div>
+      <div><span>Chamados atendidos</span><b>${data.acceptedCalls || data.callsAccepted || data.supportCount || 0}</b></div>
+      <div><span>Drone favorito</span><b>${escapeHtml(data.drone||'—')}</b></div>
+    </div>
     <button class="p-card-btn" onclick="window.openChatWith('${pid}','${data.name.replace(/'/g,"\\'")}','${(data.photo||'👨‍✈️').replace(/'/g,"\\'")}')">💬 Iniciar Chat</button>
   </div>`;
 
   if (R.markers[pid]) {
+    const prev = R.markers[pid].getLatLng();
     R.markers[pid].setLatLng([data.lat,data.lon]);
-    R.markers[pid].setIcon(createBeaconIcon(data.status||'online'));
+    R.markers[pid].setIcon(createBeaconIcon(data.status||'online', data));
+    R.markers[pid].setZIndexOffset?.(data.isRealUser?800:data.isCurrentUser?900:data.isBot?0:200);
+    addOperationTrail(pid, prev, [data.lat,data.lon], data.status);
     R.markers[pid].getPopup()?.setContent(popupHtml);
   } else {
-    const marker = L.marker([data.lat,data.lon],{icon:createBeaconIcon(data.status||'online')}).addTo(R.map);
+    const marker = L.marker([data.lat,data.lon],{icon:createBeaconIcon(data.status||'online', data),riseOnHover:true,zIndexOffset:data.isRealUser?800:data.isCurrentUser?900:data.isBot?0:200}).addTo(R.map);
     marker.bindPopup(popupHtml,{maxWidth:220});
     R.markers[pid] = marker;
   }
-  R.botData[pid] = data;
-  $('pilotCount').textContent = `${Object.keys(R.markers).length} pilotos`;
+  data._popupHtml = popupHtml;
+  syncDominanceLayers();
+  updateCounters();
+  console.debug('[PILOT UPSERT OK]', { id: pid, real: !!data.isRealUser, bot: !!data.isBot, status: data.status, lat: data.lat, lon: data.lon });
 }
+
+function removePilot(pid) {
+  if (!pid) return;
+  if (R.markers[pid]) { R.markers[pid].remove(); delete R.markers[pid]; }
+  if (R.domainLayers[pid]) { R.domainLayers[pid].remove(); delete R.domainLayers[pid]; }
+  delete R.botData[pid];
+  recomputeDominanceLeaders();
+  syncDominanceLayers();
+  updateCounters();
+}
+function normalizePilotDoc(docSnap) {
+  const d = docSnap.data() || {};
+  const uid = d.uid || docSnap.id;
+  const lat = Number(d.lat);
+  const lon = Number(d.lon);
+  return {
+    id: uid, uid,
+    name: d.nickname || d.name || d.displayName || 'Piloto',
+    photo: fixPhoto(d.photo) || d.photo || '👨‍✈️',
+    city: d.city || '', drone: d.drone || '',
+    score: d.amxScore || d.score || 0, amxScore: d.amxScore || d.score || 0,
+    hoursTotal: d.hoursTotal || 0, opsTotal: d.opsTotal || 0,
+    hectares: d.hectares || 0, presenceDays: d.presenceDays || 0, recentOps: d.recentOps || 0,
+    lat, lon, status: d.status || 'online', visibility: d.visibility || 'online',
+    isRealUser:true, isBot:false, isCurrentUser: uid === R.user?.uid,
+    updatedAt: d.updatedAt, lastSeen: d.lastSeen,
+  };
+}
+function shouldRenderRealPilot(pilot) {
+  if (!pilot.id || pilot.id === R.user?.uid) return false;
+  if (pilot.visibility === 'invisible' || pilot.status === 'offline') return false;
+  return Number.isFinite(pilot.lat) && Number.isFinite(pilot.lon);
+}
+async function listenPilots() {
+  const db = window._firebaseDB;
+  if (!db || !R.user) return;
+  if (R.pilotsUnsub) { R.pilotsUnsub(); R.pilotsUnsub = null; }
+  try {
+    const { collection, onSnapshot } = await importFirestore();
+    R.pilotsUnsub = onSnapshot(collection(db, 'pilots'), snap => {
+      console.debug('[FIRESTORE SNAPSHOT]', { size: snap.size, changes: snap.docChanges().length });
+      snap.docChanges().forEach(change => {
+        const pilot = normalizePilotDoc(change.doc);
+        if (pilot.id === R.user?.uid) return;
+        if (change.type === 'removed' || !shouldRenderRealPilot(pilot)) {
+          removePilot(pilot.id);
+          return;
+        }
+        console.debug('[REAL PILOT RECEIVED]', pilot.id, pilot);
+        upsertPilot(pilot);
+      });
+    }, err => console.warn('[FIRESTORE SNAPSHOT]', err));
+  } catch (e) { console.warn('listenPilots:', e); }
+}
+function markSelfOffline() {
+  if (!R.user || !window._updateProfileFn) return;
+  window._updateProfileFn(R.user.uid, { status:'offline', lastSeen:new Date().toISOString() }).catch(()=>{});
+}
+function bindPresenceLifecycle() {
+  if (R.presenceBound) return;
+  R.presenceBound = true;
+  window.addEventListener('pagehide', markSelfOffline);
+  window.addEventListener('beforeunload', markSelfOffline);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') markSelfOffline();
+    else publishSelf(R.isOperating ? 'operating' : R.sosActive ? 'sos' : 'online');
+  });
+}
+
 function publishSelf(status='online') {
   if (!R.user || !R.profile) return;
+  const visibility = R.profile.visibility || 'online';
+  if (visibility === 'invisible') { removePilot(R.user.uid); markSelfOffline(); return; }
   const p = R.profile;
   const name  = cleanName(p.nickname||p.name, R.user);
   const photo = fixPhoto(p.photo) || fixPhoto(R.user?.photoURL) || '👨‍✈️';
@@ -847,10 +1274,11 @@ function publishSelf(status='online') {
     id:R.user.uid, name, photo, city:p.city||'', drone:p.drone||'',
     score:p.amxScore||0, amxScore:p.amxScore||0,
     hoursTotal:p.hoursTotal||0, opsTotal:p.opsTotal||0, hectares:p.hectares||0,
-    lat:R.lat||(-15.78), lon:R.lon||(-47.93), status, isCurrentUser:true,
+    lat:R.lat||(-15.78), lon:R.lon||(-47.93), status: R.sosActive ? 'sos' : status, isCurrentUser:true, isRealUser:true,
   });
+  renderHeaderProfile();
   if (window._updateProfileFn)
-    window._updateProfileFn(R.user.uid,{lat:R.lat,lon:R.lon,status,nickname:name}).catch(()=>{});
+    window._updateProfileFn(R.user.uid,{lat:R.lat,lon:R.lon,status:R.sosActive?'sos':status,nickname:name,visibility,lastSeen:new Date().toISOString()}).catch(()=>{});
 }
 let botMoveInterval = null;
 function startBotMovement() {
@@ -859,6 +1287,7 @@ function startBotMovement() {
     R.activeBots.filter(()=>Math.random()<0.15).forEach(bot=>{
       bot.lat = bot.baseLat+(Math.random()-.5)*.18;
       bot.lon = bot.baseLon+(Math.random()-.5)*.18;
+      bot.status = Math.random() < .38 ? 'operating' : 'online';
       upsertPilot(bot);
     });
   }, 90000);
@@ -943,6 +1372,112 @@ function endOp() {
   updateAMX(getWeather());
 }
 
+const REQUEST_CONFIG = {
+  sos:{category:'emergency',icon:'🚨',label:'SOS / Emergência',priority:'critical',radiusKm:150,range:'100–150 km',sound:'sos',tone:'Alerta máximo',specialties:[]},
+  technical:{category:'technical',icon:'🛠️',label:'Ajuda Técnica',priority:'high',radiusKm:Infinity,range:'Global',sound:'soft',tone:'Suporte coletivo',specialties:['dji','rtk','mapping','eletrica']},
+  support:{category:'technical',icon:'🛠️',label:'Ajuda Técnica',priority:'high',radiusKm:Infinity,range:'Global',sound:'soft',tone:'Suporte coletivo',specialties:['dji','rtk','mapping','eletrica']},
+  ops:{category:'operational',icon:'🟢',label:'Apoio Operacional',priority:'medium',radiusKm:80,range:'30–80 km',sound:'regional',tone:'Apoio regional',specialties:['pulverizacao','t40t50','mistura']},
+  tow:{category:'operational',icon:'🚜',label:'Apoio Operacional',priority:'medium',radiusKm:80,range:'30–80 km',sound:'regional',tone:'Apoio em campo',specialties:['pulverizacao']},
+  battery:{category:'parts',icon:'🔋',label:'Peças / Equipamentos',priority:'medium',radii:[50,100,200],range:'50→100→200 km',sound:'parts',tone:'Busca progressiva',specialties:['t40t50','eletrica']},
+  helice:{category:'parts',icon:'🚁',label:'Peças / Equipamentos',priority:'medium',radii:[50,100,200],range:'50→100→200 km',sound:'parts',tone:'Busca progressiva',specialties:['dji','t40t50']},
+  part:{category:'parts',icon:'🔧',label:'Peças / Equipamentos',priority:'medium',radii:[50,100,200],range:'50→100→200 km',sound:'parts',tone:'Busca progressiva',specialties:['dji','t40t50','eletrica']},
+  fuel:{category:'parts',icon:'⛽',label:'Peças / Equipamentos',priority:'medium',radii:[50,100,200],range:'50→100→200 km',sound:'parts',tone:'Busca progressiva',specialties:['mistura']},
+};
+const REQUEST_SPECIALTIES = [
+  {id:'dji',label:'🔧 Especialista DJI'}, {id:'rtk',label:'🛰️ RTK'},
+  {id:'pulverizacao',label:'🌾 Pulverização'}, {id:'t40t50',label:'🚁 T40/T50'},
+  {id:'mapping',label:'📡 Mapping'}, {id:'eletrica',label:'⚡ Elétrica'},
+  {id:'mistura',label:'🧪 Mistura/Aplicação'},
+];
+function requestConfig(type='support') { return REQUEST_CONFIG[type] || REQUEST_CONFIG.support; }
+function requestCreatedMs(req) {
+  if (Number(req.createdAtMs)) return Number(req.createdAtMs);
+  if (req.createdAt?.toMillis) return req.createdAt.toMillis();
+  if (req.createdAt?.seconds) return req.createdAt.seconds * 1000;
+  return Date.now();
+}
+function requestRadiusKm(req) {
+  const cfg = requestConfig(req.type);
+  if (cfg.category !== 'parts') return cfg.radiusKm;
+  const ageMin = (Date.now() - requestCreatedMs(req)) / 60000;
+  if (ageMin >= 5) return 200;
+  if (ageMin >= 2) return 100;
+  return 50;
+}
+function kmBetween(aLat,aLon,bLat,bLon) {
+  if (![aLat,aLon,bLat,bLon].every(Number.isFinite)) return Infinity;
+  const Rkm=6371,dLat=(bLat-aLat)*Math.PI/180,dLon=(bLon-aLon)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(aLat*Math.PI/180)*Math.cos(bLat*Math.PI/180)*Math.sin(dLon/2)**2;
+  return Rkm*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function requestDistanceKm(req) { return kmBetween(Number(R.lat),Number(R.lon),Number(req.lat),Number(req.lon)); }
+function pilotSpecialties() { return Array.isArray(R.profile?.specialties) ? R.profile.specialties : []; }
+function hasMatchingSpecialty(req) {
+  const needed = requestConfig(req.type).specialties || [];
+  if (!needed.length) return false;
+  const mine = pilotSpecialties();
+  return needed.some(s => mine.includes(s));
+}
+function isRequestInScope(req) {
+  const cfg = requestConfig(req.type);
+  if (cfg.category === 'technical') return true;
+  return requestDistanceKm(req) <= requestRadiusKm(req);
+}
+function requestPriorityScore(req) {
+  const cfg = requestConfig(req.type);
+  return (cfg.priority === 'critical' ? 400 : cfg.priority === 'high' ? 300 : 200) + (hasMatchingSpecialty(req) ? 50 : 0) - Math.min(99, requestDistanceKm(req) || 0);
+}
+function requestIntelChips(req) {
+  const cfg = requestConfig(req.type), dist = requestDistanceKm(req), radius = requestRadiusKm(req);
+  const spec = hasMatchingSpecialty(req) ? '<span class="req-chip prio-high">Especialidade compatível</span>' : '';
+  const distLabel = Number.isFinite(dist) ? `${dist.toFixed(dist < 10 ? 1 : 0)} km` : 'Global';
+  const radiusLabel = cfg.category === 'technical' ? 'Global' : `raio ${radius} km`;
+  return `<span class="req-chip prio-${cfg.priority}">${cfg.label}</span><span class="req-chip">${radiusLabel}</span><span class="req-chip">${distLabel}</span>${spec}`;
+}
+function closeRequestModal(message = '') {
+  stopOperationalAlert();
+  if (pendingReq?.timerInterval) clearInterval(pendingReq.timerInterval);
+  $('modalChamado').classList.remove('on','sos-mode','emergency-mode','technical-mode','operational-mode','parts-mode');
+  $('modalChamadoOverlay').style.display='none';
+  pendingReq=null;
+  if (message) showToast(message);
+}
+function triggerRequestFeedback(req) {
+  const cfg = requestConfig(req.type);
+  if (cfg.category === 'emergency') { startOperationalAlert('sos'); return; }
+  if (cfg.category === 'technical') { playFeedback('message'); return; }
+  if (cfg.category === 'operational') { playFeedback('request'); haptic(45); return; }
+  playFeedback('request'); haptic([35,25,35]);
+}
+function evaluateOpenRequests() {
+  let count = 0;
+  R.openRequests.forEach(r => {
+    if (r.uid === R.user?.uid || R.hiddenRequests.has(r.id) || !isRequestInScope(r)) return;
+    count++;
+    if (!_shownReqs.has(r.id)) {
+      _shownReqs.add(r.id);
+      showRequestModal(r);
+    }
+  });
+  const dot=$('reqDot');
+  if(dot){ if(count>0){dot.classList.add('on');dot.textContent=count>9?'9+':count;} else{dot.classList.remove('on');dot.textContent='!';} }
+}
+async function ensureOperationalRoom(req, requestRef, acceptedByName) {
+  if (!window._firebaseDB || !req?.id) return null;
+  const {doc,setDoc,serverTimestamp}=await importFirestore();
+  const cfg = requestConfig(req.type);
+  const roomId = `op_${req.id}`;
+  const role = hasMatchingSpecialty(req) ? '⚡ Especialista' : cfg.category === 'technical' ? '📡 Suporte Técnico' : cfg.category === 'operational' ? '🌾 Piloto Regional' : '🚁 Operador Principal';
+  const participant = {uid:R.user?.uid,name:acceptedByName,role,joinedAtMs:Date.now()};
+  await setDoc(doc(window._firebaseDB,'operationalRooms',roomId),{
+    id:roomId, requestId:req.id, status:'active', category:cfg.category, type:req.type,
+    title:`Sala Operacional — ${cfg.label}`, requesterUid:req.uid, requesterName:req.pilotName || 'Piloto',
+    leaderUid:R.user?.uid, leaderName:acceptedByName, maxSupport:3, supportParticipants:[participant],
+    createdAt:serverTimestamp(), createdAtMs:Date.now(), lastActivityMs:Date.now(), message:req.message || ''
+  },{merge:true});
+  return {roomId, role};
+}
+
 // ── SOS / PEDIDOS ──
 window.activateSOS = async () => {
   if (R.sosActive){window.cancelSOS();return;}
@@ -964,9 +1499,10 @@ async function saveRequest(type,message) {
   const db=window._firebaseDB;if(!db)return;
   const {collection,addDoc,serverTimestamp}=await importFirestore();
   await addDoc(collection(db,'requests'),{
-    uid:R.user?.uid,type,message,
+    uid:R.user?.uid,type,message,category:requestConfig(type).category,priority:requestConfig(type).priority,
+    searchRadii:requestConfig(type).radii || null,currentRadiusKm:requestRadiusKm({type,createdAtMs:Date.now()}),
     pilotName:cleanName(R.profile?.nickname||R.profile?.name,R.user),
-    lat:R.lat,lon:R.lon,status:'open',createdAt:serverTimestamp(),
+    lat:R.lat,lon:R.lon,status:'open',acceptedBy:null,supportParticipants:[],createdAt:serverTimestamp(),createdAtMs:Date.now(),
   });
 }
 
@@ -1034,6 +1570,7 @@ window.sendMsg = async () => {
 
 // Abrir/fechar drawer de conversas (lista vem do chat.js via #chatList)
 window.onChatIconClick = async () => {
+  window.closeUserMenu?.();
   if (R.chatTarget?.uid) {
     await window.openChatWith(R.chatTarget.uid, R.chatTarget.name, R.chatTarget.photo);
     $('chatDot').classList.remove('on');
@@ -1080,7 +1617,8 @@ async function listenAcceptNotifications() {
       if (R.chatTarget?.uid === accepterUid && $('shChat').classList.contains('on')) return;
 
       showToast(`🎉 ${accepterName} aceitou seu chamado! Abrindo chat…`, 5000);
-      $('chatDot').classList.add('on');
+      playFeedback('accept');
+      pulseNotif('chatDot', 5200);
 
       // Abre o chat após 1.2s (deixa o toast aparecer)
       setTimeout(() => window.openChatWith(accepterUid, accepterName, '👨‍✈️'), 1200);
@@ -1089,34 +1627,47 @@ async function listenAcceptNotifications() {
 }
 
 // Aceitar chamado — UI + delega ao chat.js (bilateral)
-window.acceptReq = async (uid, name, message) => {
+window.acceptReq = async (uid, name, message, requestId = '', type = 'support') => {
   const db = window._firebaseDB;
+  let accepted = false, roomInfo = null;
   if (db) {
+    const {collection,query,where,getDocs,doc,getDoc,updateDoc} = await importFirestore();
     try {
-      const {collection,query,where,getDocs,updateDoc} = await importFirestore();
-      // Marcar pedido como aceito
-      const q = query(collection(db,'requests'),where('uid','==',uid),where('status','==','open'));
-      const snap = await getDocs(q);
-      snap.forEach(d => {
-        updateDoc(d.ref,{status:'accepted',acceptedBy:R.user?.uid,acceptedAt:new Date().toISOString()}).catch(()=>{});
-        R.hiddenRequests.add(d.id);
-      });
+      const now = new Date().toISOString();
+      const acceptedByName = cleanName(R.profile?.nickname || R.profile?.name, R.user);
+      const participant = {uid:R.user?.uid,name:acceptedByName,role:'🚁 Operador Principal',joinedAt:now,joinedAtMs:Date.now()};
+      const applyAccept = async (ref, reqData, id) => {
+        if (reqData.status && reqData.status !== 'open') return false;
+        const req = {id, ...reqData, type:reqData.type || type, uid:reqData.uid || uid, pilotName:reqData.pilotName || name, message:reqData.message || message};
+        roomInfo = await ensureOperationalRoom(req, ref, acceptedByName);
+        await updateDoc(ref,{
+          status:'accepted', acceptedBy:R.user?.uid, acceptedByName, acceptedAt:now,
+          operationalRoomId:roomInfo?.roomId || `op_${id}`, supportParticipants:[participant], alertStoppedAt:now
+        });
+        R.hiddenRequests.add(id);
+        return true;
+      };
+      if (requestId) {
+        const ref = doc(db,'requests',requestId);
+        const snap = await getDoc(ref);
+        if (snap.exists()) accepted = await applyAccept(ref, snap.data(), requestId);
+      } else {
+        const q = query(collection(db,'requests'),where('uid','==',uid),where('status','==','open'));
+        const snap = await getDocs(q);
+        for (const d of snap.docs) {
+          if (!accepted) accepted = await applyAccept(d.ref, d.data(), d.id);
+          else R.hiddenRequests.add(d.id);
+        }
+      }
       saveHidden();
-
-      // Delega ao chat.js: envia msg automática + notificações espelho bilaterais
-      await chat.acceptRequest(uid, name, message);
-
+      if (accepted) await chat.acceptRequest(uid, name, message);
     } catch(e) { console.error('acceptReq:', e); }
   }
 
-  // Fechar modal
-  $('modalChamado').classList.remove('on');
-  $('modalChamadoOverlay').style.display = 'none';
-  if (pendingReq?.timerInterval) { clearInterval(pendingReq.timerInterval); pendingReq = null; }
-
-  // Abre chat para quem aceitou (lado A)
-  showToast(`✅ Chamado aceito! Abrindo chat com ${name}…`);
-  await window.openChatWith(uid, name, '👨‍✈️');
+  closeRequestModal();
+  if (!accepted && db) { showToast('⚠️ Chamado já foi assumido por outro piloto'); return; }
+  showToast(roomInfo?.roomId ? `✅ Sala Operacional criada · ${roomInfo.role}` : `✅ Chamado aceito! Abrindo chat com ${name}…`);
+  await window.openChatWith(uid, roomInfo?.roomId ? `Sala Operacional · ${name}` : name, '👨‍✈️');
 };
 
 // ── PEDIDOS ──
@@ -1142,21 +1693,28 @@ async function loadRequests() {
       $('reqList').innerHTML='<div style="padding:14px 18px;text-align:center;color:var(--mt);font-size:11px">Nenhum pedido ativo 🟢</div>';
       return;
     }
-    const icons={sos:'🚨',helice:'🚁',battery:'🔋',fuel:'⛽',part:'🔧',support:'🛠️',tow:'🚜'};
-    $('reqList').innerHTML=reqs.map(r=>`
-      <div class="req-item ${r.type==='sos'?'sos-req':''}" data-rid="${r.id}">
+    const visible=reqs.filter(isRequestInScope).sort((a,b)=>requestPriorityScore(b)-requestPriorityScore(a));
+    if(!visible.length){
+      $('reqList').innerHTML='<div style="padding:14px 18px;text-align:center;color:var(--mt);font-size:11px">Nenhum pedido no seu alcance operacional 🟢</div>';
+      return;
+    }
+    $('reqList').innerHTML=visible.map(r=>{
+      const cfg=requestConfig(r.type);
+      return `
+      <div class="req-item ${cfg.category==='emergency'?'sos-req':''}" data-rid="${r.id}">
         <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">
-          <span style="font-size:18px">${icons[r.type]||'🔧'}</span>
-          <div>
-            <div style="font-size:12px;font-weight:800;color:var(--tx)">${r.pilotName||'Piloto'}</div>
-            <div style="font-size:10px;color:${r.type==='sos'?'#f07070':'var(--mt)'}">${r.message}</div>
+          <span style="font-size:18px">${cfg.icon}</span>
+          <div style="min-width:0">
+            <div style="font-size:12px;font-weight:800;color:var(--tx)">${escapeHtml(r.pilotName||'Piloto')}</div>
+            <div style="font-size:10px;color:${cfg.category==='emergency'?'#f07070':'var(--mt)'}">${escapeHtml(r.message)}</div>
+            <div class="req-intel">${requestIntelChips(r)}</div>
           </div>
         </div>
-        <button onclick="window.acceptReq('${r.uid}','${(r.pilotName||'').replace(/'/g,"\\'")}','${(r.message||'').replace(/'/g,"\\'")}')"
-          style="width:100%;padding:7px;border-radius:8px;border:none;background:${r.type==='sos'?'var(--red)':'var(--g5)'};color:white;font-family:var(--fu);font-size:11px;font-weight:800;cursor:pointer">
-          ${r.type==='sos'?'🚨 Responder SOS':'✅ Aceitar chamado'}
+        <button onclick="window.acceptReq('${r.uid}','${(r.pilotName||'').replace(/'/g,"\\'")}','${(r.message||'').replace(/'/g,"\\'")}','${r.id}','${r.type}')"
+          style="width:100%;padding:7px;border-radius:8px;border:none;background:${cfg.category==='emergency'?'var(--red)':'var(--g5)'};color:white;font-family:var(--fu);font-size:11px;font-weight:800;cursor:pointer">
+          ${cfg.category==='emergency'?'🚨 Responder SOS':'✅ Entrar na operação'}
         </button>
-      </div>`).join('');
+      </div>`}).join('');
   }catch(e){console.warn('loadRequests:',e);}
 }
 window.clearHistory = () => {
@@ -1171,24 +1729,13 @@ async function listenRequests() {
     const{collection,query,where,limit,onSnapshot}=await importFirestore();
     const q=query(collection(db,'requests'),where('status','==','open'),limit(50));
     onSnapshot(q,snap=>{
-      let count=0;
       snap.docChanges().forEach(change=>{
         const r={id:change.doc.id,...change.doc.data()};
-        if(r.uid===R.user?.uid||R.hiddenRequests.has(r.id))return;
-        count++;
-        if(change.type==='added'&&!_shownReqs.has(r.id)){
-          _shownReqs.add(r.id);
-          if(R.lat&&R.lon&&r.lat&&r.lon){
-            const R2=6371,dL=(r.lat-R.lat)*Math.PI/180,dO=(r.lon-R.lon)*Math.PI/180;
-            const a=Math.sin(dL/2)**2+Math.cos(R.lat*Math.PI/180)*Math.cos(r.lat*Math.PI/180)*Math.sin(dO/2)**2;
-            if(R2*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))>120)return;
-          }
-          showRequestModal(r);
-        }
+        if(change.type==='removed' && pendingReq?.id===r.id) closeRequestModal('✅ Chamado assumido por outro piloto');
       });
-      const dot=$('reqDot');
-      if(count>0){dot.classList.add('on');dot.textContent=count>9?'9+':count;}
-      else{dot.classList.remove('on');dot.textContent='!';}
+      R.openRequests=snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>r.uid!==R.user?.uid&&!R.hiddenRequests.has(r.id));
+      evaluateOpenRequests();
+      if(!R.requestScanTimer) R.requestScanTimer=setInterval(evaluateOpenRequests,60000);
     });
   }catch(e){console.warn('listenRequests:',e);}
 }
@@ -1197,38 +1744,36 @@ async function listenRequests() {
 let pendingReq = null;
 function showRequestModal(req) {
   pendingReq = req;
-  const isSOS = req.type==='sos';
-  $('modalIcon').textContent  = isSOS?'🚨':'🔧';
-  $('modalTitle').textContent = isSOS?'SOS URGENTE!':'Novo Pedido';
+  const cfg = requestConfig(req.type);
+  triggerRequestFeedback(req);
+  pulseNotif('reqDot', cfg.category === 'emergency' ? 30000 : 9000);
+  $('modalIcon').textContent  = cfg.icon;
+  $('modalTitle').textContent = cfg.category === 'emergency' ? 'SOS OPERACIONAL!' : cfg.label;
   $('modalMsg').textContent   = `${req.pilotName}: ${req.message}`;
+  $('modalIntel').innerHTML = requestIntelChips(req) + (cfg.category === 'parts' ? '<div class="search-wave"></div>' : '');
   $('modalChamadoOverlay').style.display='block';
-  $('modalChamado').classList.add('on');
-  if(isSOS)$('modalChamado').classList.add('sos-mode');
-  else $('modalChamado').classList.remove('sos-mode');
-  let s=30; $('modalTimer').textContent=`Expira em ${s}s`;
+  $('modalChamado').classList.remove('sos-mode','emergency-mode','technical-mode','operational-mode','parts-mode');
+  $('modalChamado').classList.add('on', `${cfg.category}-mode`);
+  let s=0; $('modalTimer').textContent= cfg.category === 'emergency' ? 'Alerta ativo até aceite ou cancelamento' : `${cfg.tone} · ${cfg.range}`;
   if(pendingReq?.timerInterval)clearInterval(pendingReq.timerInterval);
   pendingReq.timerInterval=setInterval(()=>{
-    s--;$('modalTimer').textContent=`Expira em ${s}s`;
-    if(s<=0){clearInterval(pendingReq.timerInterval);window.modalIgnore();}
+    s++; $('modalTimer').textContent= cfg.category === 'parts'
+      ? `Busca expandindo · raio atual ${requestRadiusKm(req)} km · ${s}s`
+      : `Aguardando coordenação há ${s}s`;
   },1000);
 }
 window.modalAccept = async () => {
   if(pendingReq){
     const req=pendingReq;
     if(req.timerInterval)clearInterval(req.timerInterval);
+    stopOperationalAlert();
     pendingReq=null;
     $('modalChamado').classList.remove('on');
     $('modalChamadoOverlay').style.display='none';
-    await window.acceptReq(req.uid,req.pilotName,req.message);
+    await window.acceptReq(req.uid,req.pilotName,req.message,req.id,req.type);
   }
 };
-window.modalIgnore = () => {
-  if(pendingReq?.timerInterval)clearInterval(pendingReq.timerInterval);
-  $('modalChamado').classList.remove('on');
-  $('modalChamadoOverlay').style.display='none';
-  pendingReq=null;
-  showToast('❌ Chamado ignorado');
-};
+window.modalIgnore = () => { closeRequestModal('❌ Chamado ignorado'); };
 
 // ── PERFIL ──
 function renderProfile() {
@@ -1265,6 +1810,10 @@ function renderProfile() {
         ${['DJI T25','DJI T40','DJI T50','XAG P100','XAG V40','EAVision','Pegasus Agri','Outro']
           .map(d=>`<option ${p.drone===d?'selected':''}>${d}</option>`).join('')}
       </select></div>
+    <div class="inp-g"><label class="inp-l">Especialidades operacionais</label>
+      <div class="op-chip-row" id="pfSpecialties">
+        ${REQUEST_SPECIALTIES.map(sp=>`<div class="op-chip ${(p.specialties||[]).includes(sp.id)?'on':''}" data-spec="${sp.id}" onclick="window.toggleSpecialty(this)">${sp.label}</div>`).join('')}
+      </div></div>
     ${isPro?`<div class="inp-g"><label class="inp-l">Foto (URL)</label><input class="inp" id="pfPhoto" value="${p.photo||''}" placeholder="URL da foto"></div>`:''}
     <div class="plan-b ${pCls}">
       <div class="plan-icon">${pIcon}</div>
@@ -1283,15 +1832,18 @@ function renderProfile() {
     <button class="btn-prim" onclick="window.saveProfile()" style="margin-top:10px">💾 Salvar perfil</button>
     <button class="btn-sec" onclick="window.doLogout()" style="margin-top:7px">Sair da conta</button>`;
 }
+window.toggleSpecialty = el => el.classList.toggle('on');
 window.saveProfile = async () => {
   const uid=R.user?.uid;if(!uid)return;
   let nick=cleanName($('pfNick')?.value.trim(),R.user);
   const city=$('pfCity')?.value.trim();
   const drone=$('pfDrone')?.value;
   const photo=R.plan?.plan==='paid'?$('pfPhoto')?.value.trim():null;
-  const upd={nickname:nick,city,drone};if(photo)upd.photo=photo;
+  const specialties=[...document.querySelectorAll('#pfSpecialties .op-chip.on')].map(el=>el.dataset.spec).filter(Boolean);
+  const upd={nickname:nick,city,drone,specialties};if(photo)upd.photo=photo;
   if(window._updateProfileFn)await window._updateProfileFn(uid,upd);
   Object.assign(R.profile,upd);
+  renderHeaderProfile();
   // Atualiza perfil no chat.js também
   chat.currentProfile = R.profile;
   publishSelf(R.isOperating?'operating':'online');
@@ -1303,6 +1855,8 @@ window.setVis = async vis => {
   R.profile.visibility=vis;renderProfile();
 };
 window.doLogout = async () => {
+  markSelfOffline();
+  R.pilotsUnsub?.(); R.pilotsUnsub = null;
   if(window._logoutFn)await window._logoutFn();
   window.closeSheet('shProfile');
   $('sRadar').classList.add('off');$('sSplash').classList.remove('off');
@@ -1350,6 +1904,9 @@ async function showRadar() {
 }
 
 function setupMap(lat,lon) {
+  if (R.isSetup) return;
+  R.isSetup = true;
+  wireLegendPreview();
   initMap(lat,lon);
   R.weather=getWeather();
   setTimeout(()=>R.map?.invalidateSize(),350);
@@ -1365,7 +1922,10 @@ function setupMap(lat,lon) {
     },null,{enableHighAccuracy:true,maximumAge:30000,timeout:15000});
   }
 
+  renderHeaderProfile();
   publishSelf('online');
+  bindPresenceLifecycle();
+  listenPilots().catch(()=>{});
 
   // Inicializar chat.js v17 — passa db, user, profile
   chat.init(window._firebaseDB, R.user, R.profile);
@@ -1374,7 +1934,8 @@ function setupMap(lat,lon) {
   listenAcceptNotifications().catch(()=>{}); // escuta 'accept' para abrir chat automaticamente
   updateAMX(R.weather);updateClima(R.weather);
 
-  setInterval(()=>{R.weather=getWeather();updateAMX(R.weather);updateClima(R.weather);},600000);
+  clearInterval(R.weatherTimer);
+  R.weatherTimer = setInterval(()=>{R.weather=getWeather();updateAMX(R.weather);updateClima(R.weather);},600000);
 }
 
 async function init() {
