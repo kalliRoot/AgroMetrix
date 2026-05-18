@@ -108,7 +108,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg)
 .leaflet-popup-tip-container{display:none}
 .leaflet-popup-content{margin:10px!important;min-width:180px}
 .leaflet-marker-pane,.leaflet-overlay-pane{will-change:transform}
-.agro-influence{position:relative;border-radius:50%;pointer-events:none;mix-blend-mode:screen;filter:blur(.18px);opacity:.7;transition:opacity .35s,filter .35s}
+.agro-influence{position:relative;width:100%;height:100%;overflow:visible;border-radius:50%;pointer-events:none;mix-blend-mode:screen;filter:blur(.18px);opacity:.7;transition:opacity .35s,filter .35s}
 .agro-influence::before{content:'';position:absolute;inset:0;border-radius:50%;
   background:radial-gradient(circle,rgba(208,58,142,.24) 0%,rgba(178,42,126,.13) 30%,rgba(112,30,94,.06) 58%,transparent 80%);
   mask-image:radial-gradient(circle,#000 0 50%,rgba(0,0,0,.78) 62%,transparent 82%);
@@ -187,14 +187,14 @@ body.legend-filter-dominant .agro-influence.dominant{opacity:1;filter:drop-shado
 .live-legend::-webkit-scrollbar{display:none}
 .legend-pill{display:flex;align-items:center;gap:4px;white-space:nowrap;padding:5px 7px;border-radius:999px;border:1px solid transparent;background:rgba(7,15,9,.42);color:rgba(223,240,227,.74);font:600 8px var(--fm);letter-spacing:.01em;cursor:pointer;transition:all .24s ease}
 .legend-pill i{width:7px;height:7px;border-radius:50%;display:block;background:var(--lc);box-shadow:0 0 10px var(--lc);animation:legendBreath 3.8s ease-in-out infinite}
-.legend-pill.dom i{width:10px;height:10px;border-radius:3px;background:linear-gradient(135deg,#ffe39a,#d69a2d);box-shadow:0 0 16px rgba(255,190,72,.48)}
+.legend-pill.dom i{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#ff75c4,#d72882);box-shadow:0 0 16px rgba(255,91,178,.5)}
 @keyframes legendBreath{0%,100%{opacity:.72;transform:scale(.92)}50%{opacity:1;transform:scale(1.12)}}
 .legend-pill:hover,.legend-pill.on{border-color:rgba(140,235,175,.22);color:var(--tx);background:rgba(22,46,30,.56);transform:translateY(-1px)}
-.map-actions{position:fixed;right:12px;bottom:164px;z-index:110;display:flex;flex-direction:column;gap:7px;width:42px}
+.map-actions{position:fixed;right:12px;bottom:196px;z-index:110;display:flex;flex-direction:column;gap:7px;width:42px}
 .map-action{width:42px;height:42px;border-radius:16px;border:1px solid rgba(90,173,112,.18);background:rgba(5,12,7,.5);backdrop-filter:blur(16px);box-shadow:0 10px 28px rgba(0,0,0,.2),0 0 18px rgba(91,199,232,.06);color:rgba(223,240,227,.82);font:800 15px var(--fu);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s ease}
 .map-action span{display:none}.map-action:hover{border-color:rgba(130,205,150,.38);color:var(--g1);transform:translateY(-1px)}
 .map-particles{position:fixed;inset:0;z-index:82;pointer-events:none;overflow:hidden}.map-particles span{position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(120,240,170,.22);box-shadow:0 0 10px rgba(120,240,170,.18);animation:particleDrift 18s linear infinite}.map-particles span:nth-child(1){left:18%;top:38%;animation-duration:21s}.map-particles span:nth-child(2){left:76%;top:31%;animation-duration:24s;animation-delay:-6s}.map-particles span:nth-child(3){left:52%;top:68%;animation-duration:19s;animation-delay:-11s}.map-particles span:nth-child(4){left:34%;top:77%;animation-duration:26s;animation-delay:-3s}@keyframes particleDrift{0%{transform:translate3d(0,18px,0);opacity:0}20%,70%{opacity:.72}100%{transform:translate3d(18px,-48px,0);opacity:0}}
-@media (max-width:520px){.r-hdr{padding:6px 8px 13px;grid-template-columns:auto minmax(72px,1fr) auto}.r-wordmark{font-size:11px}.r-wordmark small{display:none}.status-badge{font-size:7px;padding:3px 5px}.status-badge span{max-width:70px;overflow:hidden;text-overflow:ellipsis}.live-legend{top:50px;left:8px;right:8px}.legend-pill{padding:5px 6px;font-size:7.5px}.map-actions{right:10px;bottom:158px;width:40px}.map-action{width:40px;height:40px}.user-chip{min-width:104px;max-width:124px;margin-right:18px}.user-chip-name{max-width:68px}}
+@media (max-width:520px){.r-hdr{padding:6px 8px 13px;grid-template-columns:auto minmax(72px,1fr) auto}.r-wordmark{font-size:11px}.r-wordmark small{display:none}.status-badge{font-size:7px;padding:3px 5px}.status-badge span{max-width:70px;overflow:hidden;text-overflow:ellipsis}.live-legend{top:50px;left:8px;right:8px}.legend-pill{padding:5px 6px;font-size:7.5px}.map-actions{right:10px;bottom:190px;width:40px}.map-action{width:40px;height:40px}.user-chip{min-width:104px;max-width:124px;margin-right:18px}.user-chip-name{max-width:68px}}
 
 /* SOS Bar */
 .sos-bar{position:fixed;top:54px;left:0;right:0;z-index:200;padding:8px 14px;display:none;
@@ -545,7 +545,7 @@ select.inp{cursor:pointer}
     <button class="legend-pill" data-filter="online" onclick="window.setLegendFilter('online')"><i style="--lc:#5bc7e8"></i>🔵 Online</button>
     <button class="legend-pill" data-filter="request" onclick="window.setLegendFilter('request')"><i style="--lc:#e0a13a"></i>🟠 Assist.</button>
     <button class="legend-pill" data-filter="sos" onclick="window.setLegendFilter('sos')"><i style="--lc:#ff5f5f"></i>🔴 SOS</button>
-    <button class="legend-pill dom" data-filter="dominant" onclick="window.setLegendFilter('dominant')"><i></i>🟨 Área</button>
+    <button class="legend-pill dom" data-filter="dominant" onclick="window.setLegendFilter('dominant')"><i></i>🟥 Área</button>
   </div>
 
   <div class="map-actions">
@@ -769,7 +769,7 @@ const R = window.AgroRadar = {
   lat: null, lon: null, map: null, weather: null,
   opCfg: {}, sosActive: false, isOperating: false, opStartTime: null,
   hiddenRequests: new Set(),
-  markers: {}, domainLayers: {}, trailLayers: {}, botData: {}, activeBots: [], pilotsUnsub:null, presenceBound:false,
+  markers: {}, domainLayers: {}, trailLayers: {}, botData: {}, activeBots: [], dominanceLeaders:{}, pilotsUnsub:null, presenceBound:false,
   chatTarget: null, // { uid, name, photo } — alvo atual do chat aberto
   isSetup:false, weatherTimer:null,
   timeline:{mode:'live', windowHours:24, layers:[], future:['replay-24h','heatmap-operacional','historico-operacoes','crescimento-territorial']},
@@ -1016,14 +1016,46 @@ function areaIntel(data) {
 function stableHash(value) {
   return Array.from(String(value || '')).reduce((acc, ch) => ((acc * 31) + ch.charCodeAt(0)) >>> 0, 7);
 }
+function isValidDominanceLocation(data) {
+  const lat = Number(data.lat), lon = Number(data.lon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
+  if (lat < -34 || lat > 6 || lon < -74 || lon > -35.2) return false;
+  if (lon > -38.2 && lat > -31) return false;
+  return true;
+}
+function regionKey(data) {
+  const grid = 1.35;
+  return `${Math.floor(Number(data.lat) / grid)}:${Math.floor(Number(data.lon) / grid)}`;
+}
+function dominanceScore(data) {
+  return (Number(data.hectares || 0) * 1000) + ((data.amxScore || data.score || 0) * 10) + (Number(data.opsTotal || 0));
+}
+function recomputeDominanceLeaders() {
+  const groups = new Map();
+  Object.values(R.botData).forEach(p => {
+    if (!p || p.status === 'offline' || !isValidDominanceLocation(p)) return;
+    if ((Number(p.hectares || 0) < 45) && ((p.amxScore || p.score || 0) < 82)) return;
+    const key = regionKey(p);
+    const current = groups.get(key);
+    if (!current || dominanceScore(p) > dominanceScore(current)) groups.set(key, p);
+  });
+  const selected = [];
+  [...groups.values()]
+    .sort((a,b) => dominanceScore(b) - dominanceScore(a))
+    .forEach(candidate => {
+      const tooClose = selected.some(sel => R.map && R.map.distance([candidate.lat,candidate.lon],[sel.lat,sel.lon]) < 135000);
+      if (!tooClose) selected.push(candidate);
+    });
+  R.dominanceLeaders = {};
+  selected.forEach((p, index) => {
+    const intel = areaIntel(p);
+    R.dominanceLeaders[p.id] = { rank:index + 1, since:intel.since, score:dominanceScore(p), region:regionKey(p) };
+  });
+}
 function dominanceProfile(data, intel) {
-  const accepted = Number(data.acceptedCalls || data.callsAccepted || data.supportCount || 0);
-  const activity = (data.opsTotal || 0) + (data.hectares || 0) * .6 + (intel.days || 0) * .35 + accepted * 9 + (data.amxScore || data.score || 0) * .25;
-  const rareBot = !!data.isBot && data.hectares >= 72 && data.opsTotal >= 90 && stableHash(data.id) % 7 === 0;
-  const strongReal = !!data.isRealUser && (accepted >= 4 || data.opsTotal >= 55 || data.hectares >= 85 || (intel.days >= 70 && (data.amxScore || data.score || 0) >= 78));
-  const isDominant = rareBot || strongReal || activity >= 165;
-  const alternatives = ['Tentando dominar a área','Na disputa da região','Ativo na região','Patrulhando a área'];
-  return { isDominant, activity, label: isDominant ? `🏆 Dominando esta região desde ${intel.since}` : alternatives[stableHash(data.id) % alternatives.length] };
+  const leader = R.dominanceLeaders?.[data.id];
+  const alternatives = ['🌱 Crescendo na região','⚡ Em operação na área','🎯 Disputando território','🚁 Ativo nesta região','📡 Expandindo cobertura','🔥 Na corrida pela liderança'];
+  return { isDominant:!!leader, leader, label: leader ? `🏆 Dominante da Região desde ${leader.since}` : alternatives[stableHash(data.id) % alternatives.length] };
 }
 function humanStatus(data) {
   if (!data.isRealUser) return 'Piloto demonstrativo';
@@ -1070,6 +1102,16 @@ function upsertInfluence(data, popupHtml = '', dominance = null) {
     if (popupHtml) R.domainLayers[data.id].bindPopup(popupHtml,{maxWidth:235});
   }
 }
+function syncDominanceLayers() {
+  const leaderIds = new Set(Object.keys(R.dominanceLeaders || {}));
+  Object.keys(R.domainLayers).forEach(id => {
+    if (!leaderIds.has(id)) { R.domainLayers[id].remove(); delete R.domainLayers[id]; }
+  });
+  leaderIds.forEach(id => {
+    const p = R.botData[id];
+    if (p && p._popupHtml) upsertInfluence(p, p._popupHtml, { isDominant:true });
+  });
+}
 function addOperationTrail(pid, fromLatLng, toLatLng, status) {
   if (!R.map || !fromLatLng || status === 'offline') return;
   const dist = R.map.distance(fromLatLng, toLatLng);
@@ -1093,6 +1135,9 @@ function upsertPilot(data) {
     ? `<img src="${fixPhoto(data.photo)||data.photo}" onerror="this.outerHTML='👨‍✈️'" style="width:100%;height:100%;object-fit:cover">`
     : (data.photo || '👨‍✈️');
 
+  R.botData[pid] = data;
+  recomputeDominanceLeaders();
+
   const safeName = escapeHtml(data.name);
   const intel = areaIntel(data);
   const dominance = dominanceProfile(data, intel);
@@ -1115,7 +1160,7 @@ function upsertPilot(data) {
       <div class="p-card-metric"><strong>${distance}</strong><span>distância</span></div>
     </div>
     <div class="p-card-intel">
-      <div><span>${dominance.isDominant ? 'Conquista territorial' : 'Posição regional'}</span><b>${dominance.isDominant ? 'desde ' + intel.since : dominance.label}</b></div>
+      <div><span>${dominance.isDominant ? '🏆 Dominante da Região' : 'Posição regional'}</span><b>${dominance.isDominant ? 'Dominando desde ' + dominance.leader.since : dominance.label}</b></div>
       <div><span>Tempo online estimado</span><b>${intel.days} dias</b></div>
       <div><span>Status humano</span><b>${assistStatus}</b></div>
       <div><span>Últimas operações</span><b>${intel.recentOps} recentes</b></div>
@@ -1139,8 +1184,8 @@ function upsertPilot(data) {
     marker.bindPopup(popupHtml,{maxWidth:220});
     R.markers[pid] = marker;
   }
-  R.botData[pid] = data;
-  upsertInfluence(data, popupHtml, dominance);
+  data._popupHtml = popupHtml;
+  syncDominanceLayers();
   updateCounters();
   console.debug('[PILOT UPSERT OK]', { id: pid, real: !!data.isRealUser, bot: !!data.isBot, status: data.status, lat: data.lat, lon: data.lon });
 }
@@ -1150,6 +1195,8 @@ function removePilot(pid) {
   if (R.markers[pid]) { R.markers[pid].remove(); delete R.markers[pid]; }
   if (R.domainLayers[pid]) { R.domainLayers[pid].remove(); delete R.domainLayers[pid]; }
   delete R.botData[pid];
+  recomputeDominanceLeaders();
+  syncDominanceLayers();
   updateCounters();
 }
 function normalizePilotDoc(docSnap) {
@@ -1586,11 +1633,10 @@ function showRequestModal(req) {
   $('modalChamado').classList.add('on');
   if(isSOS)$('modalChamado').classList.add('sos-mode');
   else $('modalChamado').classList.remove('sos-mode');
-  let s=30; $('modalTimer').textContent=`Expira em ${s}s`;
+  let s=0; $('modalTimer').textContent='Aguardando aceite — alerta ativo';
   if(pendingReq?.timerInterval)clearInterval(pendingReq.timerInterval);
   pendingReq.timerInterval=setInterval(()=>{
-    s--;$('modalTimer').textContent=`Expira em ${s}s`;
-    if(s<=0){clearInterval(pendingReq.timerInterval);window.modalIgnore();}
+    s++; $('modalTimer').textContent=`Aguardando aceite há ${s}s`;
   },1000);
 }
 window.modalAccept = async () => {
