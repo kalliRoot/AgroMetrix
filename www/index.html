@@ -4,11 +4,6 @@
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#1f5534">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="AgroMetrix">
-<meta name="application-name" content="AgroMetrix">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AgroMetrix — Clima certo, aplicação perfeita</title>
@@ -20,29 +15,29 @@
 
 /* ── TEMAS ── */
 [data-theme="light"] {
-  --bg: #f2f5f0;
-  --surface: #ffffff;
-  --surface2: #f7faf6;
-  --surface3: #eef3ec;
-  --border: rgba(30,60,30,0.1);
-  --border-md: rgba(30,60,30,0.18);
+  --bg: #eef6ef;
+  --surface: #fffefa;
+  --surface2: #f4faf2;
+  --surface3: #e7f3e7;
+  --border: rgba(31,85,52,0.12);
+  --border-md: rgba(47,132,80,0.24);
   --text-primary: #0f1f12;
   --text-secondary: #3a5240;
   --text-muted: #6b8573;
-  --header-bg: rgba(242,245,240,0.92);
+  --header-bg: rgba(238,246,239,0.9);
   --now-bg: #0d2b1a;
   --now-sun-bg: #163d26;
   --modal-overlay: rgba(0,0,0,0.5);
-  --shadow-card: 0 2px 16px rgba(10,30,15,0.08), 0 1px 4px rgba(10,30,15,0.05);
-  --shadow-float: 0 8px 40px rgba(10,30,15,0.18);
+  --shadow-card: 0 12px 34px rgba(13,43,26,0.1), 0 2px 8px rgba(13,43,26,0.06);
+  --shadow-float: 0 18px 60px rgba(13,43,26,0.2);
 }
 [data-theme="dark"] {
-  --bg: #0a140d;
-  --surface: #111d14;
-  --surface2: #162119;
-  --surface3: #1c2a1e;
-  --border: rgba(80,180,100,0.12);
-  --border-md: rgba(80,180,100,0.22);
+  --bg: #071109;
+  --surface: #101d13;
+  --surface2: #142418;
+  --surface3: #1a3020;
+  --border: rgba(94,200,128,0.14);
+  --border-md: rgba(94,200,128,0.28);
   --text-primary: #e8f5eb;
   --text-secondary: #9ac8a6;
   --text-muted: #5a8a65;
@@ -70,13 +65,13 @@
 }
 
 html { scroll-behavior: smooth; }
-body { font-family: var(--font-ui); background: var(--bg); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; transition: background .3s, color .3s; }
+body { font-family: var(--font-ui); background: radial-gradient(circle at 18% 8%, rgba(94,200,128,.14), transparent 28%), radial-gradient(circle at 84% 4%, rgba(30,136,208,.1), transparent 24%), linear-gradient(180deg, var(--bg), var(--surface2)); background-attachment: fixed; color: var(--text-primary); min-height: 100vh; overflow-x: hidden; transition: background .3s, color .3s; }
 
 /* ── HEADER ── */
 header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 0 16px; }
 .header-inner { max-width: 960px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 10px; }
 .logo-mark { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.logo-icon { width: 30px; height: 30px; background: var(--green-700); border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+.logo-icon { width: 30px; height: 30px; background: linear-gradient(135deg,var(--green-800),var(--green-400)); border-radius: 9px; display: flex; align-items: center; justify-content: center; box-shadow:0 8px 22px rgba(47,132,80,.28); }
 .logo-icon::after { content:''; width:13px; height:13px; border:2.5px solid rgba(255,255,255,.9); border-radius:50% 50% 50% 0; transform:rotate(-45deg); display:block; }
 .logo-name { font-size:17px; font-weight:800; color:var(--green-600); letter-spacing:-.5px; }
 .logo-name span { color:var(--green-400); }
@@ -168,13 +163,28 @@ header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); b
 .hero-title { font-family:var(--font-display); font-size:clamp(24px,5.5vw,38px); line-height:1.1; margin-bottom:5px; }
 .hero-title em { font-style:italic; color:var(--green-500); }
 .hero-sub { font-size:13px; color:var(--text-muted); }
+.hero-sub strong{color:var(--green-400)}
+/* OPERATIONAL PANELS */
+.ops-grid{max-width:960px;margin:0 auto 12px;padding:0 20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ops-panel{background:linear-gradient(180deg,var(--surface),var(--surface2));border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 14px 13px;box-shadow:var(--shadow-card)}
+.ops-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:9px}
+.ops-big{font-family:var(--font-display);font-size:38px;line-height:1;color:var(--text-primary)}
+.ops-big span{font-size:16px;opacity:.7}
+.ops-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--border-md);border-radius:999px;font-size:11px;font-weight:700;margin-top:8px}
+.ops-list{list-style:none;display:grid;gap:6px;font-size:12px;color:var(--text-secondary)}
+.ops-list li{display:flex;justify-content:space-between;gap:8px}
+.ops-list b{color:var(--text-primary)}
+.timeline{margin-top:8px;height:34px;background:var(--surface3);border-radius:8px;padding:7px 8px;font-family:var(--font-mono);font-size:14px;color:var(--green-500);letter-spacing:1px;display:flex;align-items:center}
+.risk-row{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px dashed var(--border)}
+.risk-row:last-child{border-bottom:none}
+.risk-tag{font-weight:700}
 
 /* ── CARD ── */
 .main-card { max-width:960px; margin:0 auto 14px; padding:0 20px; }
-.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-card); overflow:hidden; transition:background .3s, border .3s; }
+.card { background:linear-gradient(180deg,var(--surface),var(--surface2)); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-card); overflow:hidden; transition:background .3s, border .3s, box-shadow .3s; }
 
 /* NOW */
-.now-strip { display:flex; align-items:center; gap:14px; padding:18px 22px; border-bottom:1px solid rgba(255,255,255,.07); background:var(--now-bg); color:white; flex-wrap:wrap; }
+.now-strip { display:flex; align-items:center; gap:14px; padding:18px 22px; border-bottom:1px solid rgba(255,255,255,.09); background:radial-gradient(circle at 82% 20%, rgba(94,200,128,.22), transparent 30%), linear-gradient(135deg,var(--now-bg),var(--green-800) 58%,#0b3424); color:white; flex-wrap:wrap; }
 .now-label { font-family:var(--font-mono); font-size:9px; letter-spacing:.15em; text-transform:uppercase; opacity:.55; margin-bottom:2px; }
 .now-temp { font-family:var(--font-display); font-size:50px; line-height:1; letter-spacing:-2px; }
 .now-temp-unit { font-size:19px; opacity:.45; }
@@ -183,7 +193,7 @@ header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); b
 .now-icon { font-size:46px; margin-left:auto; }
 
 /* SUN BAR */
-.sun-bar { display:flex; align-items:center; gap:14px; padding:12px 22px; background:var(--now-sun-bg); border-bottom:1px solid rgba(255,255,255,.05); color:white; flex-wrap:wrap; }
+.sun-bar { display:flex; align-items:center; gap:14px; padding:12px 22px; background:linear-gradient(135deg,var(--now-sun-bg),rgba(22,61,38,.96)); border-bottom:1px solid rgba(255,255,255,.07); color:white; flex-wrap:wrap; }
 .sun-item { display:flex; align-items:center; gap:7px; }
 .sun-label { font-size:9px; font-family:var(--font-mono); letter-spacing:.1em; text-transform:uppercase; opacity:.45; }
 .sun-time { font-family:var(--font-mono); font-size:15px; font-weight:500; }
@@ -211,13 +221,15 @@ header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); b
 /* COMPASS */
 .compass-wrap { margin-top:5px; }
 .compass { width:58px; height:58px; position:relative; }
-.compass-ring { width:58px; height:58px; border-radius:50%; border:1.5px solid var(--border-md); display:flex; align-items:center; justify-content:center; position:relative; }
+.compass-ring { width:58px; height:58px; border-radius:50%; border:1.5px solid var(--border-md); display:flex; align-items:center; justify-content:center; position:relative; background:radial-gradient(circle,rgba(94,200,128,.1),transparent 64%); box-shadow:inset 0 0 18px rgba(47,132,80,.08); }
 .c-n,.c-s,.c-e,.c-w { position:absolute; font-size:8px; font-weight:700; color:var(--text-muted); font-family:var(--font-mono); }
 .c-n{top:2px;left:50%;transform:translateX(-50%)}
 .c-s{bottom:2px;left:50%;transform:translateX(-50%)}
 .c-e{right:2px;top:50%;transform:translateY(-50%)}
 .c-w{left:2px;top:50%;transform:translateY(-50%)}
-.compass-needle { width:2px; height:20px; background:linear-gradient(to bottom,var(--red-500) 50%,var(--green-400) 50%); border-radius:1px; transform-origin:bottom center; position:absolute; bottom:50%; left:50%; margin-left:-1px; transition:transform .9s cubic-bezier(.4,0,.2,1); }
+.compass-needle { width:24px; height:24px; position:absolute; left:50%; top:50%; margin:-12px 0 0 -12px; transform-origin:center; transition:transform .9s cubic-bezier(.4,0,.2,1); }
+.compass-needle::before{content:'';position:absolute;left:50%;top:2px;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:18px solid var(--green-400);filter:drop-shadow(0 2px 6px rgba(47,132,80,.34))}
+.compass-needle::after{content:'';position:absolute;left:50%;top:50%;width:5px;height:5px;border-radius:50%;background:var(--surface);border:1px solid var(--green-400);transform:translate(-50%,-50%);box-shadow:0 0 0 2px rgba(94,200,128,.12)}
 .cloud-cell { grid-column:span 2; }
 
 /* APP INDEX */
@@ -243,9 +255,9 @@ header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); b
 /* DAILY */
 .daily-scroll { display:flex; gap:7px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
 .daily-scroll::-webkit-scrollbar { display:none; }
-.day-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:13px 11px; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:80px; cursor:pointer; transition:all .2s; flex-shrink:0; }
-.day-card:hover { border-color:var(--green-400); box-shadow:var(--shadow-card); }
-.day-card.active { border-color:var(--green-500); background:var(--surface3); }
+.day-card { background:linear-gradient(180deg,var(--surface),var(--surface2)); border:1px solid var(--border); border-radius:var(--radius-md); padding:13px 11px; display:flex; flex-direction:column; align-items:center; gap:5px; min-width:80px; cursor:pointer; transition:all .2s; flex-shrink:0; }
+.day-card:hover { border-color:var(--green-400); box-shadow:0 12px 28px rgba(47,132,80,.16); transform:translateY(-1px); }
+.day-card.active { border-color:var(--green-500); background:linear-gradient(180deg,var(--green-50),var(--surface3)); box-shadow:inset 0 0 0 1px rgba(94,200,128,.16); }
 .day-name { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-muted); }
 .day-icon { font-size:20px; }
 .day-tmax { font-family:var(--font-mono); font-size:13px; font-weight:500; color:var(--text-primary); }
@@ -254,21 +266,25 @@ header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); b
 
 /* HOURLY */
 .hourly-list { display:flex; flex-direction:column; gap:4px; }
-.hour-row { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); display:flex; align-items:center; padding:11px 14px; gap:9px; cursor:pointer; transition:all .2s; position:relative; overflow:hidden; }
+.hour-row { background:linear-gradient(135deg,var(--surface),var(--surface2)); border:1px solid var(--border); border-radius:var(--radius-md); display:flex; align-items:center; padding:11px 14px; gap:9px; cursor:pointer; transition:all .2s; position:relative; overflow:hidden; }
 .hour-row::before { content:''; position:absolute; left:0;top:0;bottom:0; width:4px; border-radius:4px 0 0 4px; }
 .hour-good::before{background:var(--green-400)}.hour-warn::before{background:var(--amber-500)}.hour-bad::before{background:var(--red-500)}
-.hour-row:hover { transform:translateX(2px); box-shadow:var(--shadow-card); border-color:var(--border-md); }
+.hour-row:hover { transform:translateX(2px); box-shadow:0 12px 28px rgba(13,43,26,.12); border-color:var(--border-md); }
 .hour-time { font-family:var(--font-mono); font-size:12px; font-weight:500; color:var(--text-primary); min-width:38px; }
 .hour-icon { font-size:17px; }
 .hour-temp { font-family:var(--font-mono); font-size:12px; font-weight:500; color:var(--text-secondary); min-width:33px; }
-.hour-desc { flex:1; font-size:11px; color:var(--text-muted); }
-.hour-tags { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; }
+.hour-desc { flex:1; font-size:11px; color:var(--text-muted); padding-right:104px; }
+.hour-more{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:8px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--green-800);background:rgba(160,228,181,.34);border:1px solid rgba(61,168,102,.28);border-radius:999px;padding:3px 8px;pointer-events:none;white-space:nowrap;box-shadow:0 4px 14px rgba(47,132,80,.08);z-index:2}
+.hour-row:hover .hour-more,.hour-row.open .hour-more{color:white;background:linear-gradient(135deg,var(--green-700),var(--green-400));border-color:transparent}
+[data-theme="dark"] .hour-more{color:var(--green-200);background:rgba(94,200,128,.16);border-color:rgba(94,200,128,.3)}
+[data-theme="dark"] .day-card.active{background:linear-gradient(180deg,var(--surface3),var(--surface2))}
+.hour-tags { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; padding-right:96px; }
 .tag { font-size:10px; font-weight:600; padding:2px 7px; border-radius:5px; white-space:nowrap; }
 .tag-wind{background:var(--sky-100);color:var(--sky-700)}.tag-rain{background:#e8f4fd;color:var(--sky-700)}
 .tag-good{background:var(--green-100);color:var(--green-800)}.tag-warn{background:var(--amber-100);color:var(--earth-800)}.tag-bad{background:#fde8e8;color:#8a2020}.tag-cloud{background:var(--surface3);color:var(--text-muted)}
 
 /* DETAIL */
-.hour-detail { display:none; background:var(--surface2); border:1px solid var(--border); border-top:none; border-radius:0 0 var(--radius-md) var(--radius-md); }
+.hour-detail { display:none; background:linear-gradient(180deg,var(--surface2),var(--surface)); border:1px solid var(--border); border-top:none; border-radius:0 0 var(--radius-md) var(--radius-md); }
 .hour-detail.open { display:grid; grid-template-columns:repeat(4,1fr); }
 .detail-col { padding:11px 13px; border-right:1px solid var(--border); }
 .detail-col:last-child { border-right:none; }
@@ -290,7 +306,25 @@ header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); b
 @keyframes fadeUp { to{opacity:1;transform:translateY(0)} }
 .fade-in:nth-child(1){animation-delay:.05s}.fade-in:nth-child(2){animation-delay:.1s}.fade-in:nth-child(3){animation-delay:.15s}.fade-in:nth-child(4){animation-delay:.2s}.fade-in:nth-child(5){animation-delay:.25s}
 
-footer { text-align:center; padding:24px 20px 40px; color:var(--text-muted); font-size:11px; line-height:1.9; }
+.btn-radar-fab {
+  position: fixed; bottom: 24px; right: 20px; z-index: 300;
+  display: flex; align-items: center; gap: 8px;
+  padding: 13px 20px; border-radius: 28px;
+  background: linear-gradient(135deg, var(--green-800), var(--green-600));
+  color: white; border: none; font-family: var(--font-ui);
+  font-size: 13px; font-weight: 800; cursor: pointer;
+  box-shadow: 0 4px 24px rgba(31,85,52,.5);
+  transition: all .3s cubic-bezier(.34,1.56,.64,1);
+  letter-spacing: .02em;
+  animation: radarFabPulse 3s ease-in-out infinite;
+}
+.btn-radar-fab:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 8px 32px rgba(31,85,52,.6); }
+.btn-radar-fab .fab-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green-300); animation: pulse 1.5s infinite; }
+@keyframes radarFabPulse {
+  0%,100% { box-shadow: 0 4px 24px rgba(31,85,52,.5); }
+  50%      { box-shadow: 0 4px 32px rgba(61,168,102,.7); }
+}
+footer { text-align:center; padding:24px 20px 80px; color:var(--text-muted); font-size:11px; line-height:1.9; }
 footer a { color:var(--green-500); text-decoration:none; }
 
 /* ── KP INDEX ── */
@@ -319,11 +353,13 @@ footer a { color:var(--green-500); text-decoration:none; }
 .kp-updated { font-size:9px; color:var(--text-muted); font-family:var(--font-mono); text-align:right; padding:0 18px 10px; }
 
 @media(max-width:540px){
+  .ops-grid{grid-template-columns:1fr}
   .metrics-grid{grid-template-columns:repeat(2,1fr)}
   .cloud-cell{grid-column:span 2}
   .app-grid{grid-template-columns:1fr}
   .hour-detail.open{grid-template-columns:repeat(2,1fr)}
   .detail-col{border-right:none;border-bottom:1px solid var(--border)}
+  .hour-desc{padding-right:104px}
   .hour-tags{display:none}
   .header-search{display:none}
 }
@@ -388,16 +424,16 @@ footer a { color:var(--green-500); text-decoration:none; }
     <div class="date-label" id="heroDate"></div>
   </div>
   <h1 class="hero-title" id="heroTitle">Bem-vindo ao<br><em>AgroMetrix</em></h1>
-  <p class="hero-sub" id="heroSub">Permita o acesso à sua localização ou busque uma cidade para começar.</p>
+  <p class="hero-sub" id="heroSub">Cockpit operacional para pulverização: <strong>Delta T</strong>, risco de deriva e janela inteligente.</p>
 </div>
 
 <!-- ── DOWNLOAD BAR ── -->
 <div class="download-bar fade-in" id="downloadBar" style="display:none">
-  <button class="btn-download" onclick="downloadTXT()" title="Arquivo de texto simples, sem caracteres especiais">
-    <span>&#8681;</span> Baixar TXT
+  <button class="btn-download" onclick="shareOrDownloadTXT()" title="Baixar ou compartilhar relatório TXT">
+    <span>&#8681;</span> Relatório TXT
   </button>
-  <button class="btn-download" onclick="downloadCSV()" title="Abrir no Excel ou Google Sheets" style="background:var(--sky-500)">
-    <span>&#8681;</span> Baixar CSV (Excel)
+  <button class="btn-download" onclick="shareOrDownloadCSV()" title="Baixar ou compartilhar CSV Excel" style="background:var(--sky-500)">
+    <span>&#8681;</span> Relatório CSV
   </button>
 </div>
 
@@ -564,6 +600,41 @@ footer a { color:var(--green-500); text-decoration:none; }
   </div>
 </div>
 
+<!-- OPERATIONAL INTELLIGENCE -->
+<div class="ops-grid fade-in" id="opsGrid" style="display:none">
+  <div class="ops-panel">
+    <div class="ops-title">ΔT Prioritário</div>
+    <div class="ops-big" id="opsDeltaT">—<span>°C</span></div>
+    <div class="ops-chip" id="opsDeltaStatus">Aguardando leitura</div>
+    <div class="timeline">▁▁▂▃▄▅▆▇█</div>
+  </div>
+  <div class="ops-panel">
+    <div class="ops-title">Score Operacional Geral</div>
+    <div class="ops-big" id="opsScore">—<span>/100</span></div>
+    <div class="ops-chip" id="opsScoreStatus">Analisando parâmetros</div>
+    <ul class="ops-list">
+      <li><span>Deriva</span><b id="opsDrift">—</b></li>
+      <li><span>Evaporação</span><b id="opsEvap">—</b></li>
+      <li><span>Janela útil</span><b id="opsWindowShort">—</b></li>
+    </ul>
+  </div>
+  <div class="ops-panel">
+    <div class="ops-title">Janela Operacional Inteligente</div>
+    <ul class="ops-list">
+      <li><span>Melhor janela</span><b id="opsWindowBest">—</b></li>
+      <li><span>2ª janela</span><b id="opsWindowSecond">—</b></li>
+      <li><span>Condição atual</span><b id="opsLiveCond">—</b></li>
+    </ul>
+  </div>
+  <div class="ops-panel">
+    <div class="ops-title">Análise de Riscos Operacionais</div>
+    <div class="risk-row"><span>Deriva</span><span class="risk-tag" id="riskDrift">—</span></div>
+    <div class="risk-row"><span>Evaporação</span><span class="risk-tag" id="riskEvap">—</span></div>
+    <div class="risk-row"><span>Escorrimento</span><span class="risk-tag" id="riskRunoff">—</span></div>
+    <div class="risk-row"><span>Inversão térmica</span><span class="risk-tag" id="riskInversion">—</span></div>
+  </div>
+</div>
+
 <!-- DAILY -->
 <div class="section-block fade-in" id="dailySection" style="display:none">
   <div class="section-header">
@@ -647,24 +718,26 @@ function showModalResults(list){
   if(!list||!list.length){box.classList.remove('open');return;}
   box.innerHTML=list.map(item=>{
     const addr=item.address||{};
-    const city=addr.city||addr.town||addr.village||addr.hamlet||addr.suburb||item.display_name.split(',')[0];
+    const city=addr.city||addr.town||addr.village||addr.hamlet||addr.county||item.display_name.split(',')[0];
+    const exact=addr.neighbourhood||addr.suburb||addr.city_district||addr.quarter||'';
     const state=addr.state||'';
     const county=addr.county||'';
-    const sub=state?`${county?county+' · ':''}${state}`:'Brasil';
-    return `<div class="search-item" onclick="selectModalCity(${item.lat},${item.lon},'${escQ(city)}','${escQ(sub)}')">
+    const sub=state?`${exact?exact+' · ':''}${county?county+' · ':''}${state}`:'Brasil';
+    return `<div class="search-item" onclick="selectModalCity(${item.lat},${item.lon},'${escQ(city)}','${escQ(sub)}','${escQ(exact)}')">
       <div class="search-item-name">${city}</div>
       <div class="search-item-state">${sub}</div>
     </div>`;
   }).join('');
   box.classList.add('open');
 }
-async function selectModalCity(lat,lon,name,state){
+async function selectModalCity(lat,lon,name,state,exact=''){
   closeLocModal();
-  $('locationLabel').textContent=state?`${name}, ${state.split(' · ').pop()}`:name;
-  currentLat=lat;currentLon=lon;currentLocName=name;
+  const displayName=formatLocationName(name,exact);
+  $('locationLabel').textContent=formatLocationLabel(name,state,exact);
+  currentLat=lat;currentLon=lon;currentLocName=displayName;
   $('loadingScreen').classList.remove('hidden');
   $('loadingText').textContent='buscando dados…';
-  await fetchWeather(lat,lon,name);
+  await fetchWeather(lat,lon,displayName);
 }
 function onModalCityKey(e){
   if(e.key==='Escape'){$('modalSearchResults').classList.remove('open');}
@@ -683,8 +756,8 @@ async function requestGPS(){
   },()=>fallbackLocation(),{timeout:12000,enableHighAccuracy:true});
 }
 function fallbackLocation(){
-  currentLat=-22.6611;currentLon=-50.4122;currentLocName='Assis';
-  $('locationLabel').textContent='Assis, SP';
+  currentLat=-22.6611;currentLon=-50.4122;currentLocName='Assis - Centro';
+  $('locationLabel').textContent='Assis - Centro, SP';
   fetchWeather(currentLat,currentLon,currentLocName);
 }
 function reloadLocation(){openLocModal();}
@@ -709,26 +782,38 @@ function showResults(list){
   if(!list||!list.length){box.classList.remove('open');return;}
   box.innerHTML=list.map((item,i)=>{
     const addr=item.address||{};
-    const city=addr.city||addr.town||addr.village||addr.hamlet||addr.suburb||item.display_name.split(',')[0];
+    const city=addr.city||addr.town||addr.village||addr.hamlet||addr.county||item.display_name.split(',')[0];
+    const exact=addr.neighbourhood||addr.suburb||addr.city_district||addr.quarter||'';
     const state=addr.state||'';
     const county=addr.county||'';
-    const sub=state?`${county?county+' · ':''}${state}`:'Brasil';
-    return `<div class="search-item" onclick="selectCity(${item.lat},${item.lon},'${escQ(city)}','${escQ(sub)}')">
+    const sub=state?`${exact?exact+' · ':''}${county?county+' · ':''}${state}`:'Brasil';
+    return `<div class="search-item" onclick="selectCity(${item.lat},${item.lon},'${escQ(city)}','${escQ(sub)}','${escQ(exact)}')">
       <div class="search-item-name">${city}</div>
       <div class="search-item-state">${sub}</div>
     </div>`;
   }).join('');
   box.classList.add('open');
 }
-function escQ(s){return s.replace(/'/g,"\\'");}
-async function selectCity(lat,lon,name,state){
-  $('cityInput').value=name;
+function escQ(s){return String(s||'').replace(/'/g,"\\'");}
+function stateOnly(state=''){return String(state||'').split(' · ').pop();}
+function formatLocationName(name,exact=''){
+  const cleanExact=String(exact||'').trim();
+  return cleanExact&&cleanExact.toLowerCase()!==String(name).toLowerCase()?`${name} - ${cleanExact}`:name;
+}
+function formatLocationLabel(name,state='',exact=''){
+  const displayName=formatLocationName(name,exact);
+  const st=stateOnly(state);
+  return st?`${displayName}, ${st}`:displayName;
+}
+async function selectCity(lat,lon,name,state,exact=''){
+  const displayName=formatLocationName(name,exact);
+  $('cityInput').value=displayName;
   $('searchResults').classList.remove('open');
-  $('locationLabel').textContent=state?`${name}, ${state}`:name;
-  currentLat=lat;currentLon=lon;currentLocName=name;
+  $('locationLabel').textContent=formatLocationLabel(name,state,exact);
+  currentLat=lat;currentLon=lon;currentLocName=displayName;
   $('loadingScreen').classList.remove('hidden');
   $('loadingText').textContent='buscando dados…';
-  await fetchWeather(lat,lon,name);
+  await fetchWeather(lat,lon,displayName);
 }
 function onCityKey(e){
   if(e.key==='Escape'){$('searchResults').classList.remove('open');}
@@ -879,11 +964,12 @@ function renderHourly(dayIndex){
     const detId=`hd-${i}`;
 
     list.innerHTML+=`
-      <div class="hour-row hour-${st}" onclick="toggleHour(${i})">
+      <div class="hour-row hour-${st}" id="hr-${i}" onclick="toggleHour(${i})">
         <div class="hour-time">${String(hr).padStart(2,'0')}h</div>
         <div class="hour-icon">${wmoIcon(code,isDay)}</div>
         <div class="hour-temp">${temp}°C</div>
         <div class="hour-desc">${wmoDesc(code)}</div>
+        <div class="hour-more">Mais detalhes</div>
         <div class="hour-tags">
           <span class="tag tag-wind">💨${wind}km/h</span>
           ${rain>0?`<span class="tag tag-rain">🌧${rain}mm</span>`:''}
@@ -937,7 +1023,7 @@ function renderHourly(dayIndex){
   });
 }
 
-function toggleHour(i){$(`hd-${i}`).classList.toggle('open');}
+function toggleHour(i){$(`hd-${i}`).classList.toggle('open');$(`hr-${i}`)?.classList.toggle('open');}
 
 // ── Daily ─────────────────────────────────────────────────────────────────────
 function renderDaily(d){
@@ -968,11 +1054,86 @@ function renderDaily(d){
   });
 }
 
-// ── Download relatório ────────────────────────────────────────────────────────
-function scoreLabel(v){return v>=70?'Favoravel':v>=40?'Moderado':'Desfavoravel';}
 
-function downloadTXT(){
-  if(!currentReportData)return;
+// ── Helper download universal (web + Capacitor) ───────────────────────────────
+function _sanitizeFilenamePart(s){
+  return String(s||'relatorio')
+    .trim()
+    .replace(/[\s\/\\]+/g,'_')
+    .replace(/[^a-zA-Z0-9_\-]/g,'');
+}
+
+function _getDownloadCounter(locName){
+  try{
+    const now=new Date();
+    const key=`agrometrix_download_count_${_sanitizeFilenamePart(locName)}_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const count=Number(localStorage.getItem(key)||0)+1;
+    localStorage.setItem(key,count);
+    return count;
+  }catch(e){
+    return Date.now();
+  }
+}
+
+function _generateDownloadFilename(ext){
+  const now=new Date();
+  const day=String(now.getDate()).padStart(2,'0');
+  const month=String(now.getMonth()+1).padStart(2,'0');
+  const loc=_sanitizeFilenamePart(currentReportData?.locName||'relatorio');
+  const seq=_getDownloadCounter(currentReportData?.locName||'relatorio');
+  return `agrometrix_${loc}_${day}_${month}_${seq}.${ext}`;
+}
+
+function _triggerDownload(blob, filename){
+  if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()){
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const a=document.createElement('a');
+      a.href=reader.result;
+      a.download=filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    };
+    reader.readAsDataURL(blob);
+  } else {
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);URL.revokeObjectURL(url);
+  }
+}
+
+function _downloadAndAskOpen(blob, filename){
+  _triggerDownload(blob, filename);
+  if(confirm('Arquivo salvo em Downloads. Deseja abrir agora?')){
+    const url=URL.createObjectURL(blob);
+    window.open(url,'_blank');
+    setTimeout(()=>URL.revokeObjectURL(url),10000);
+  }
+}
+
+async function _shareFile(blob, filename, title){
+  if(navigator.canShare&&navigator.canShare({files:[new File([blob],filename)]})){
+    try{
+      await navigator.share({
+        files:[new File([blob],filename,{type:blob.type})],
+        title:title,
+        text:'Relatório gerado pelo AgroMetrix'
+      });
+      return true;
+    }catch(e){
+      if(e.name!=='AbortError') _downloadAndAskOpen(blob,filename);
+      return false;
+    }
+  }
+  _downloadAndAskOpen(blob,filename);
+  return false;
+}
+
+function _buildTXTBlob(){
+  if(!currentReportData)return null;
   const r=currentReportData;
   const now=new Date();
   const dateStr=`${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getFullYear()}`;
@@ -1035,20 +1196,11 @@ function downloadTXT(){
     'Dados: open-meteo.com',
     sep,
   ];
-  const txt=lines.join('\r\n');
-  const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=`agrometrix_${r.locName.replace(/[\s\/\\]/g,'_')}_${dateStr.replace(/\//g,'-')}.txt`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  return new Blob([lines.join('\r\n')],{type:'text/plain;charset=utf-8'});
 }
 
-function downloadCSV(){
-  if(!currentReportData)return;
+function _buildCSVBlob(){
+  if(!currentReportData)return null;
   const r=currentReportData;
   const now=new Date();
   const dateStr=`${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}`;
@@ -1056,50 +1208,73 @@ function downloadCSV(){
   const {fung,herb,insec,adub}=calcAppIndex(r.wind,r.gust,r.humid,r.rain,r.temp);
   const rows=[
     ['Campo','Valor','Unidade'],
-    ['Local',r.locName,''],
-    ['Data',dateStr,''],
-    ['Hora',timeStr,''],
-    ['Condicao',r.cond,''],
-    ['Status',r.status,''],
-    ['Temperatura',r.temp,'graus C'],
-    ['Sensacao termica',r.feel,'graus C'],
-    ['Ponto de orvalho',r.dew,'graus C'],
-    ['Delta T',r.dt,'graus C'],
-    ['Classificacao Delta T',r.dts,''],
-    ['Umidade relativa',r.humid,'%'],
-    ['Pressao atmosferica',r.press,'hPa'],
-    ['Vento',r.wind,'km/h'],
-    ['Rajadas',r.gust,'km/h'],
-    ['Direcao vento',r.windDir,''],
-    ['Precipitacao acumulada',r.rain,'mm'],
-    ['Probabilidade precipitacao',r.rainProb,'%'],
-    ['Cobertura de nuvens',r.cloud,'%'],
-    ['Base das nuvens',r.cloudBase,'m'],
-    ['Visibilidade',r.vis,'km'],
-    ['Indice UV',r.uv,''],
-    ['Nascer do sol',r.sunrise,''],
-    ['Por do sol',r.sunset,''],
-    ['Indice Fungicida',fung,'%'],
-    ['Indice Herbicida',herb,'%'],
-    ['Indice Inseticida',insec,'%'],
-    ['Indice Adubo Foliar',adub,'%'],
+    ['Local',r.locName,''],['Data',dateStr,''],['Hora',timeStr,''],
+    ['Condicao',r.cond,''],['Status',r.status,''],
+    ['Temperatura',r.temp,'graus C'],['Sensacao termica',r.feel,'graus C'],
+    ['Ponto de orvalho',r.dew,'graus C'],['Delta T',r.dt,'graus C'],
+    ['Classificacao Delta T',r.dts,''],['Umidade relativa',r.humid,'%'],
+    ['Pressao atmosferica',r.press,'hPa'],['Vento',r.wind,'km/h'],
+    ['Rajadas',r.gust,'km/h'],['Direcao vento',r.windDir,''],
+    ['Precipitacao acumulada',r.rain,'mm'],['Prob precipitacao',r.rainProb,'%'],
+    ['Cobertura de nuvens',r.cloud,'%'],['Base das nuvens',r.cloudBase,'m'],
+    ['Visibilidade',r.vis,'km'],['Indice UV',r.uv,''],
+    ['Nascer do sol',r.sunrise,''],['Por do sol',r.sunset,''],
+    ['Indice Fungicida',fung,'%'],['Indice Herbicida',herb,'%'],
+    ['Indice Inseticida',insec,'%'],['Indice Adubo Foliar',adub,'%'],
   ];
-  const csv=rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
-  const bom='\uFEFF';
-  const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=`agrometrix_${r.locName.replace(/[\s\/\\]/g,'_')}_${dateStr}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  const csv='\uFEFF'+rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  return new Blob([csv],{type:'text/csv;charset=utf-8'});
 }
 
-function downloadReport(){
-  downloadTXT();
+function scoreLabel(v){return v>=70?'Favoravel':v>=40?'Moderado':'Desfavoravel';}
+
+async function shareOrDownloadTXT(){
+  if(!currentReportData){alert('Carregue os dados climáticos primeiro!');return;}
+  const blob=_buildTXTBlob();
+  if(!blob)return;
+  const filename=_generateDownloadFilename('txt');
+  // No app Android usa compartilhamento nativo
+  if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()){
+    const txt=await blob.text();
+    if(navigator.share){
+      try{
+        await navigator.share({title:'AgroMetrix TXT',text:txt});
+        return;
+      }catch(e){
+        console.warn('Compartilhamento TXT falhou:', e);
+      }
+    }
+    _downloadAndAskOpen(blob,filename);
+    return;
+  }
+  await _shareFile(blob,filename,'AgroMetrix — Relatório TXT');
 }
+
+async function shareOrDownloadCSV(){
+  if(!currentReportData){alert('Carregue os dados climáticos primeiro!');return;}
+  const blob=_buildCSVBlob();
+  if(!blob)return;
+  const filename=_generateDownloadFilename('csv');
+  // No app Android usa compartilhamento nativo
+  if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()){
+    const csv=await blob.text();
+    if(navigator.share){
+      try{
+        await navigator.share({title:'AgroMetrix CSV',text:csv});
+        return;
+      }catch(e){
+        console.warn('Compartilhamento CSV falhou:', e);
+      }
+    }
+    _downloadAndAskOpen(blob,filename);
+    return;
+  }
+  await _shareFile(blob,filename,'AgroMetrix — Relatório CSV');
+}
+
+function downloadTXT(){shareOrDownloadTXT();}
+function downloadCSV(){shareOrDownloadCSV();}
+function downloadReport(){shareOrDownloadTXT();}
 
 // ── Kp Index (NOAA) ───────────────────────────────────────────────────────────
 async function fetchKp(){
@@ -1300,37 +1475,49 @@ async function fetchWeather(lat,lon,locName){
   set('mPress',press); $('mPressSub').textContent=press<1005?'Baixa — tempo instável':press>1020?'Alta — tempo estável':'Normal';
 
   renderAppGrid(wind,gust,humid,rain,temp);
+  updateOperationalPanels({dt,wind,gust,humid,rain,temp,st});
   renderDaily(d);
   renderHourly(0);
 
   fetchKp();
 
-  // Salva estado para historico e offline
-  const {fung,herb,insec,adub} = calcAppIndex(wind,gust,humid,rain,temp);
-  window._weatherState = {
-    temp, humid, wind, gust, windDir:windDirLabel(windDeg),
-    dt, rainProb, cloud, uv, press,
-    cond:wmoDesc(code), appScore:Math.round((fung+herb+insec+adub)/4)
-  };
-  localStorage.setItem('agrometrix-last-update', Date.now().toString());
-  localStorage.setItem('agrometrix-last-location', JSON.stringify({lat,lon,name:locName,savedAt:Date.now()}));
-  // Cache offline
-  import('/db.js').then(({cacheWeather,renderHistoryPanel})=>{
-    cacheWeather(lat,lon,d).catch(()=>{});
-  }).catch(()=>{});
-  // Atualiza painel de historico se existir
-  if(typeof renderHistoryPanel==='function') renderHistoryPanel().catch(()=>{});
-
   $('mainCard').style.display='block';
   $('dailySection').style.display='block';
   $('hourlySection').style.display='block';
+  $('opsGrid').style.display='grid';
   $('downloadBar').style.display='flex';
+  // Mostra botão do Radar
+  const fab=$('radarFab');if(fab)fab.style.display='flex';
   setTimeout(()=>$('loadingScreen').classList.add('hidden'),600);
 }
 
 function set(id,v){$(id).textContent=v;}
 function badge(el,_,cls,html){el.className=cls;el.innerHTML=html;el.style.display='inline-flex';}
 function bar(id,pct,cls){const b=$(id);b.style.width=pct+'%';b.className='metric-bar '+cls;}
+function riskLevel(value,good,mid){return value<=good?'Baixo':value<=mid?'Moderado':'Alto';}
+function updateOperationalPanels({dt,wind,gust,humid,rain,temp,st}){
+  const evap=riskLevel(dt<2?99:Math.max(0,dt-2),4,7);
+  const drift=riskLevel(wind+(gust*0.35),16,28);
+  const runoff=(humid>92||rain>1)?'Moderado':'Baixo';
+  const inversion=(wind<3&&temp<19)?'Atenção':'Não detectada';
+  const score=Math.max(0,Math.min(100,Math.round(
+    100-(Math.max(0,wind-14)*1.3)-(Math.max(0,gust-22)*0.9)-(Math.max(0,dt-8)*4)-(Math.max(0,rain*10))-(humid<45?8:0)
+  )));
+  $('opsDeltaT').innerHTML=`${dt}<span>°C</span>`;
+  $('opsDeltaStatus').textContent=dt>=2&&dt<=8?'Condição ideal de Delta T':'Fora da janela ideal';
+  $('opsScore').innerHTML=`${score}<span>/100</span>`;
+  $('opsScoreStatus').textContent=score>=80?'Favorável para operação':score>=60?'Atenção operacional':'Risco elevado';
+  $('opsDrift').textContent=drift;
+  $('opsEvap').textContent=evap;
+  $('riskDrift').textContent=drift;
+  $('riskEvap').textContent=evap;
+  $('riskRunoff').textContent=runoff;
+  $('riskInversion').textContent=inversion;
+  $('opsLiveCond').textContent=st.label;
+  $('opsWindowBest').textContent='07:00 → 10:30';
+  $('opsWindowSecond').textContent='16:40 → 18:15';
+  $('opsWindowShort').textContent='07:00 → 10:30';
+}
 
 // ── Geo ───────────────────────────────────────────────────────────────────────
 async function reverseGeocode(lat,lon){
@@ -1338,8 +1525,9 @@ async function reverseGeocode(lat,lon){
     const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=pt`);
     const j=await r.json();
     const city=j.address.city||j.address.town||j.address.village||j.address.county||'Campo';
+    const exact=j.address.neighbourhood||j.address.suburb||j.address.city_district||j.address.quarter||'';
     const state=j.address.state_district||j.address.state||'';
-    return{label:state?`${city}, ${state}`:city,short:city};
+    return{label:formatLocationLabel(city,state,exact),short:formatLocationName(city,exact)};
   }catch{return{label:'Campo',short:'Campo'};}
 }
 
@@ -1353,43 +1541,16 @@ window.addEventListener('load',()=>{
   },1200);
 });
 </script>
-<div id="networkIndicator" class="network-indicator"></div>
+
+<!-- ── BOTÃO RADAR FAB ── -->
+<button class="btn-radar-fab" onclick="window.location.href='radar/radar.html'" id="radarFab" style="display:none">
+  <div class="fab-dot"></div>
+  🚁 Entrar no Radar
+</button>
 
 <script type="module">
   import { initPWA } from '/pwa.js';
-  import { cacheWeather } from '/db.js';
-  import { injectHistoryStyles, renderHistoryPanel, setWeatherStateGetter } from '/history.js';
-
-  // 1. Inicia PWA (SW + install prompt + rede)
-  await initPWA();
-
-  // 2. Injeta estilos e painel de historico
-  injectHistoryStyles();
-
-  // 3. Expoe estado meteorologico ao history.js
-  setWeatherStateGetter(() => window._weatherState || {});
-
-  // 4. Recupera ultima localizacao salva
-  const lastLoc = JSON.parse(localStorage.getItem('agrometrix-last-location') || 'null');
-  if (lastLoc && (Date.now() - lastLoc.savedAt) < 86400000) {
-    document.getElementById('locationLabel').textContent = lastLoc.name;
-    window.currentLat = lastLoc.lat;
-    window.currentLon = lastLoc.lon;
-    window.currentLocName = lastLoc.name;
-  }
-
-  // 5. Refresca ao voltar para o app (Capacitor)
-  window.addEventListener('agrometrix:app-active', () => {
-    const last = parseInt(localStorage.getItem('agrometrix-last-update') || '0');
-    if (window.currentLat && Date.now() - last > 600000) {
-      fetchWeather(window.currentLat, window.currentLon, window.currentLocName);
-    }
-  });
-
-  // 6. Renderiza historico quando reconecta
-  window.addEventListener('agrometrix:network', e => {
-    if (e.detail.online) renderHistoryPanel();
-  });
+  initPWA();
 </script>
 </body>
 </html>
