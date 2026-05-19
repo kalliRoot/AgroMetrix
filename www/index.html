@@ -4,11 +4,6 @@
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#1f5534">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="AgroMetrix">
-<meta name="application-name" content="AgroMetrix">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AgroMetrix — Clima certo, aplicação perfeita</title>
@@ -168,6 +163,21 @@ header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); b
 .hero-title { font-family:var(--font-display); font-size:clamp(24px,5.5vw,38px); line-height:1.1; margin-bottom:5px; }
 .hero-title em { font-style:italic; color:var(--green-500); }
 .hero-sub { font-size:13px; color:var(--text-muted); }
+.hero-sub strong{color:var(--green-400)}
+/* OPERATIONAL PANELS */
+.ops-grid{max-width:960px;margin:0 auto 12px;padding:0 20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ops-panel{background:linear-gradient(180deg,var(--surface),var(--surface2));border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 14px 13px;box-shadow:var(--shadow-card)}
+.ops-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:9px}
+.ops-big{font-family:var(--font-display);font-size:38px;line-height:1;color:var(--text-primary)}
+.ops-big span{font-size:16px;opacity:.7}
+.ops-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--border-md);border-radius:999px;font-size:11px;font-weight:700;margin-top:8px}
+.ops-list{list-style:none;display:grid;gap:6px;font-size:12px;color:var(--text-secondary)}
+.ops-list li{display:flex;justify-content:space-between;gap:8px}
+.ops-list b{color:var(--text-primary)}
+.timeline{margin-top:8px;height:34px;background:var(--surface3);border-radius:8px;padding:7px 8px;font-family:var(--font-mono);font-size:14px;color:var(--green-500);letter-spacing:1px;display:flex;align-items:center}
+.risk-row{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px dashed var(--border)}
+.risk-row:last-child{border-bottom:none}
+.risk-tag{font-weight:700}
 
 /* ── CARD ── */
 .main-card { max-width:960px; margin:0 auto 14px; padding:0 20px; }
@@ -296,7 +306,25 @@ header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); b
 @keyframes fadeUp { to{opacity:1;transform:translateY(0)} }
 .fade-in:nth-child(1){animation-delay:.05s}.fade-in:nth-child(2){animation-delay:.1s}.fade-in:nth-child(3){animation-delay:.15s}.fade-in:nth-child(4){animation-delay:.2s}.fade-in:nth-child(5){animation-delay:.25s}
 
-footer { text-align:center; padding:24px 20px 40px; color:var(--text-muted); font-size:11px; line-height:1.9; }
+.btn-radar-fab {
+  position: fixed; bottom: 24px; right: 20px; z-index: 300;
+  display: flex; align-items: center; gap: 8px;
+  padding: 13px 20px; border-radius: 28px;
+  background: linear-gradient(135deg, var(--green-800), var(--green-600));
+  color: white; border: none; font-family: var(--font-ui);
+  font-size: 13px; font-weight: 800; cursor: pointer;
+  box-shadow: 0 4px 24px rgba(31,85,52,.5);
+  transition: all .3s cubic-bezier(.34,1.56,.64,1);
+  letter-spacing: .02em;
+  animation: radarFabPulse 3s ease-in-out infinite;
+}
+.btn-radar-fab:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 8px 32px rgba(31,85,52,.6); }
+.btn-radar-fab .fab-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green-300); animation: pulse 1.5s infinite; }
+@keyframes radarFabPulse {
+  0%,100% { box-shadow: 0 4px 24px rgba(31,85,52,.5); }
+  50%      { box-shadow: 0 4px 32px rgba(61,168,102,.7); }
+}
+footer { text-align:center; padding:24px 20px 80px; color:var(--text-muted); font-size:11px; line-height:1.9; }
 footer a { color:var(--green-500); text-decoration:none; }
 
 /* ── KP INDEX ── */
@@ -325,6 +353,7 @@ footer a { color:var(--green-500); text-decoration:none; }
 .kp-updated { font-size:9px; color:var(--text-muted); font-family:var(--font-mono); text-align:right; padding:0 18px 10px; }
 
 @media(max-width:540px){
+  .ops-grid{grid-template-columns:1fr}
   .metrics-grid{grid-template-columns:repeat(2,1fr)}
   .cloud-cell{grid-column:span 2}
   .app-grid{grid-template-columns:1fr}
@@ -395,16 +424,16 @@ footer a { color:var(--green-500); text-decoration:none; }
     <div class="date-label" id="heroDate"></div>
   </div>
   <h1 class="hero-title" id="heroTitle">Bem-vindo ao<br><em>AgroMetrix</em></h1>
-  <p class="hero-sub" id="heroSub">Permita o acesso à sua localização ou busque uma cidade para começar.</p>
+  <p class="hero-sub" id="heroSub">Cockpit operacional para pulverização: <strong>Delta T</strong>, risco de deriva e janela inteligente.</p>
 </div>
 
 <!-- ── DOWNLOAD BAR ── -->
 <div class="download-bar fade-in" id="downloadBar" style="display:none">
-  <button class="btn-download" onclick="downloadTXT()" title="Arquivo de texto simples, sem caracteres especiais">
-    <span>&#8681;</span> Baixar TXT
+  <button class="btn-download" onclick="shareOrDownloadTXT()" title="Baixar ou compartilhar relatório TXT">
+    <span>&#8681;</span> Relatório TXT
   </button>
-  <button class="btn-download" onclick="downloadCSV()" title="Abrir no Excel ou Google Sheets" style="background:var(--sky-500)">
-    <span>&#8681;</span> Baixar CSV (Excel)
+  <button class="btn-download" onclick="shareOrDownloadCSV()" title="Baixar ou compartilhar CSV Excel" style="background:var(--sky-500)">
+    <span>&#8681;</span> Relatório CSV
   </button>
 </div>
 
@@ -568,6 +597,41 @@ footer a { color:var(--green-500); text-decoration:none; }
       <div class="section-title">Índice de aplicação agronômica</div>
       <div class="app-grid" id="appGrid"></div>
     </div>
+  </div>
+</div>
+
+<!-- OPERATIONAL INTELLIGENCE -->
+<div class="ops-grid fade-in" id="opsGrid" style="display:none">
+  <div class="ops-panel">
+    <div class="ops-title">ΔT Prioritário</div>
+    <div class="ops-big" id="opsDeltaT">—<span>°C</span></div>
+    <div class="ops-chip" id="opsDeltaStatus">Aguardando leitura</div>
+    <div class="timeline">▁▁▂▃▄▅▆▇█</div>
+  </div>
+  <div class="ops-panel">
+    <div class="ops-title">Score Operacional Geral</div>
+    <div class="ops-big" id="opsScore">—<span>/100</span></div>
+    <div class="ops-chip" id="opsScoreStatus">Analisando parâmetros</div>
+    <ul class="ops-list">
+      <li><span>Deriva</span><b id="opsDrift">—</b></li>
+      <li><span>Evaporação</span><b id="opsEvap">—</b></li>
+      <li><span>Janela útil</span><b id="opsWindowShort">—</b></li>
+    </ul>
+  </div>
+  <div class="ops-panel">
+    <div class="ops-title">Janela Operacional Inteligente</div>
+    <ul class="ops-list">
+      <li><span>Melhor janela</span><b id="opsWindowBest">—</b></li>
+      <li><span>2ª janela</span><b id="opsWindowSecond">—</b></li>
+      <li><span>Condição atual</span><b id="opsLiveCond">—</b></li>
+    </ul>
+  </div>
+  <div class="ops-panel">
+    <div class="ops-title">Análise de Riscos Operacionais</div>
+    <div class="risk-row"><span>Deriva</span><span class="risk-tag" id="riskDrift">—</span></div>
+    <div class="risk-row"><span>Evaporação</span><span class="risk-tag" id="riskEvap">—</span></div>
+    <div class="risk-row"><span>Escorrimento</span><span class="risk-tag" id="riskRunoff">—</span></div>
+    <div class="risk-row"><span>Inversão térmica</span><span class="risk-tag" id="riskInversion">—</span></div>
   </div>
 </div>
 
@@ -990,11 +1054,86 @@ function renderDaily(d){
   });
 }
 
-// ── Download relatório ────────────────────────────────────────────────────────
-function scoreLabel(v){return v>=70?'Favoravel':v>=40?'Moderado':'Desfavoravel';}
 
-function downloadTXT(){
-  if(!currentReportData)return;
+// ── Helper download universal (web + Capacitor) ───────────────────────────────
+function _sanitizeFilenamePart(s){
+  return String(s||'relatorio')
+    .trim()
+    .replace(/[\s\/\\]+/g,'_')
+    .replace(/[^a-zA-Z0-9_\-]/g,'');
+}
+
+function _getDownloadCounter(locName){
+  try{
+    const now=new Date();
+    const key=`agrometrix_download_count_${_sanitizeFilenamePart(locName)}_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const count=Number(localStorage.getItem(key)||0)+1;
+    localStorage.setItem(key,count);
+    return count;
+  }catch(e){
+    return Date.now();
+  }
+}
+
+function _generateDownloadFilename(ext){
+  const now=new Date();
+  const day=String(now.getDate()).padStart(2,'0');
+  const month=String(now.getMonth()+1).padStart(2,'0');
+  const loc=_sanitizeFilenamePart(currentReportData?.locName||'relatorio');
+  const seq=_getDownloadCounter(currentReportData?.locName||'relatorio');
+  return `agrometrix_${loc}_${day}_${month}_${seq}.${ext}`;
+}
+
+function _triggerDownload(blob, filename){
+  if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()){
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const a=document.createElement('a');
+      a.href=reader.result;
+      a.download=filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    };
+    reader.readAsDataURL(blob);
+  } else {
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);URL.revokeObjectURL(url);
+  }
+}
+
+function _downloadAndAskOpen(blob, filename){
+  _triggerDownload(blob, filename);
+  if(confirm('Arquivo salvo em Downloads. Deseja abrir agora?')){
+    const url=URL.createObjectURL(blob);
+    window.open(url,'_blank');
+    setTimeout(()=>URL.revokeObjectURL(url),10000);
+  }
+}
+
+async function _shareFile(blob, filename, title){
+  if(navigator.canShare&&navigator.canShare({files:[new File([blob],filename)]})){
+    try{
+      await navigator.share({
+        files:[new File([blob],filename,{type:blob.type})],
+        title:title,
+        text:'Relatório gerado pelo AgroMetrix'
+      });
+      return true;
+    }catch(e){
+      if(e.name!=='AbortError') _downloadAndAskOpen(blob,filename);
+      return false;
+    }
+  }
+  _downloadAndAskOpen(blob,filename);
+  return false;
+}
+
+function _buildTXTBlob(){
+  if(!currentReportData)return null;
   const r=currentReportData;
   const now=new Date();
   const dateStr=`${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getFullYear()}`;
@@ -1057,20 +1196,11 @@ function downloadTXT(){
     'Dados: open-meteo.com',
     sep,
   ];
-  const txt=lines.join('\r\n');
-  const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=`agrometrix_${r.locName.replace(/[\s\/\\]/g,'_')}_${dateStr.replace(/\//g,'-')}.txt`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  return new Blob([lines.join('\r\n')],{type:'text/plain;charset=utf-8'});
 }
 
-function downloadCSV(){
-  if(!currentReportData)return;
+function _buildCSVBlob(){
+  if(!currentReportData)return null;
   const r=currentReportData;
   const now=new Date();
   const dateStr=`${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}`;
@@ -1078,50 +1208,73 @@ function downloadCSV(){
   const {fung,herb,insec,adub}=calcAppIndex(r.wind,r.gust,r.humid,r.rain,r.temp);
   const rows=[
     ['Campo','Valor','Unidade'],
-    ['Local',r.locName,''],
-    ['Data',dateStr,''],
-    ['Hora',timeStr,''],
-    ['Condicao',r.cond,''],
-    ['Status',r.status,''],
-    ['Temperatura',r.temp,'graus C'],
-    ['Sensacao termica',r.feel,'graus C'],
-    ['Ponto de orvalho',r.dew,'graus C'],
-    ['Delta T',r.dt,'graus C'],
-    ['Classificacao Delta T',r.dts,''],
-    ['Umidade relativa',r.humid,'%'],
-    ['Pressao atmosferica',r.press,'hPa'],
-    ['Vento',r.wind,'km/h'],
-    ['Rajadas',r.gust,'km/h'],
-    ['Direcao vento',r.windDir,''],
-    ['Precipitacao acumulada',r.rain,'mm'],
-    ['Probabilidade precipitacao',r.rainProb,'%'],
-    ['Cobertura de nuvens',r.cloud,'%'],
-    ['Base das nuvens',r.cloudBase,'m'],
-    ['Visibilidade',r.vis,'km'],
-    ['Indice UV',r.uv,''],
-    ['Nascer do sol',r.sunrise,''],
-    ['Por do sol',r.sunset,''],
-    ['Indice Fungicida',fung,'%'],
-    ['Indice Herbicida',herb,'%'],
-    ['Indice Inseticida',insec,'%'],
-    ['Indice Adubo Foliar',adub,'%'],
+    ['Local',r.locName,''],['Data',dateStr,''],['Hora',timeStr,''],
+    ['Condicao',r.cond,''],['Status',r.status,''],
+    ['Temperatura',r.temp,'graus C'],['Sensacao termica',r.feel,'graus C'],
+    ['Ponto de orvalho',r.dew,'graus C'],['Delta T',r.dt,'graus C'],
+    ['Classificacao Delta T',r.dts,''],['Umidade relativa',r.humid,'%'],
+    ['Pressao atmosferica',r.press,'hPa'],['Vento',r.wind,'km/h'],
+    ['Rajadas',r.gust,'km/h'],['Direcao vento',r.windDir,''],
+    ['Precipitacao acumulada',r.rain,'mm'],['Prob precipitacao',r.rainProb,'%'],
+    ['Cobertura de nuvens',r.cloud,'%'],['Base das nuvens',r.cloudBase,'m'],
+    ['Visibilidade',r.vis,'km'],['Indice UV',r.uv,''],
+    ['Nascer do sol',r.sunrise,''],['Por do sol',r.sunset,''],
+    ['Indice Fungicida',fung,'%'],['Indice Herbicida',herb,'%'],
+    ['Indice Inseticida',insec,'%'],['Indice Adubo Foliar',adub,'%'],
   ];
-  const csv=rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
-  const bom='\uFEFF';
-  const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=`agrometrix_${r.locName.replace(/[\s\/\\]/g,'_')}_${dateStr}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  const csv='\uFEFF'+rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  return new Blob([csv],{type:'text/csv;charset=utf-8'});
 }
 
-function downloadReport(){
-  downloadTXT();
+function scoreLabel(v){return v>=70?'Favoravel':v>=40?'Moderado':'Desfavoravel';}
+
+async function shareOrDownloadTXT(){
+  if(!currentReportData){alert('Carregue os dados climáticos primeiro!');return;}
+  const blob=_buildTXTBlob();
+  if(!blob)return;
+  const filename=_generateDownloadFilename('txt');
+  // No app Android usa compartilhamento nativo
+  if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()){
+    const txt=await blob.text();
+    if(navigator.share){
+      try{
+        await navigator.share({title:'AgroMetrix TXT',text:txt});
+        return;
+      }catch(e){
+        console.warn('Compartilhamento TXT falhou:', e);
+      }
+    }
+    _downloadAndAskOpen(blob,filename);
+    return;
+  }
+  await _shareFile(blob,filename,'AgroMetrix — Relatório TXT');
 }
+
+async function shareOrDownloadCSV(){
+  if(!currentReportData){alert('Carregue os dados climáticos primeiro!');return;}
+  const blob=_buildCSVBlob();
+  if(!blob)return;
+  const filename=_generateDownloadFilename('csv');
+  // No app Android usa compartilhamento nativo
+  if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()){
+    const csv=await blob.text();
+    if(navigator.share){
+      try{
+        await navigator.share({title:'AgroMetrix CSV',text:csv});
+        return;
+      }catch(e){
+        console.warn('Compartilhamento CSV falhou:', e);
+      }
+    }
+    _downloadAndAskOpen(blob,filename);
+    return;
+  }
+  await _shareFile(blob,filename,'AgroMetrix — Relatório CSV');
+}
+
+function downloadTXT(){shareOrDownloadTXT();}
+function downloadCSV(){shareOrDownloadCSV();}
+function downloadReport(){shareOrDownloadTXT();}
 
 // ── Kp Index (NOAA) ───────────────────────────────────────────────────────────
 async function fetchKp(){
@@ -1322,37 +1475,49 @@ async function fetchWeather(lat,lon,locName){
   set('mPress',press); $('mPressSub').textContent=press<1005?'Baixa — tempo instável':press>1020?'Alta — tempo estável':'Normal';
 
   renderAppGrid(wind,gust,humid,rain,temp);
+  updateOperationalPanels({dt,wind,gust,humid,rain,temp,st});
   renderDaily(d);
   renderHourly(0);
 
   fetchKp();
 
-  // Salva estado para historico e offline
-  const {fung,herb,insec,adub} = calcAppIndex(wind,gust,humid,rain,temp);
-  window._weatherState = {
-    temp, humid, wind, gust, windDir:windDirLabel(windDeg),
-    dt, rainProb, cloud, uv, press,
-    cond:wmoDesc(code), appScore:Math.round((fung+herb+insec+adub)/4)
-  };
-  localStorage.setItem('agrometrix-last-update', Date.now().toString());
-  localStorage.setItem('agrometrix-last-location', JSON.stringify({lat,lon,name:locName,savedAt:Date.now()}));
-  // Cache offline
-  import('/db.js').then(({cacheWeather,renderHistoryPanel})=>{
-    cacheWeather(lat,lon,d).catch(()=>{});
-  }).catch(()=>{});
-  // Atualiza painel de historico se existir
-  if(typeof renderHistoryPanel==='function') renderHistoryPanel().catch(()=>{});
-
   $('mainCard').style.display='block';
   $('dailySection').style.display='block';
   $('hourlySection').style.display='block';
+  $('opsGrid').style.display='grid';
   $('downloadBar').style.display='flex';
+  // Mostra botão do Radar
+  const fab=$('radarFab');if(fab)fab.style.display='flex';
   setTimeout(()=>$('loadingScreen').classList.add('hidden'),600);
 }
 
 function set(id,v){$(id).textContent=v;}
 function badge(el,_,cls,html){el.className=cls;el.innerHTML=html;el.style.display='inline-flex';}
 function bar(id,pct,cls){const b=$(id);b.style.width=pct+'%';b.className='metric-bar '+cls;}
+function riskLevel(value,good,mid){return value<=good?'Baixo':value<=mid?'Moderado':'Alto';}
+function updateOperationalPanels({dt,wind,gust,humid,rain,temp,st}){
+  const evap=riskLevel(dt<2?99:Math.max(0,dt-2),4,7);
+  const drift=riskLevel(wind+(gust*0.35),16,28);
+  const runoff=(humid>92||rain>1)?'Moderado':'Baixo';
+  const inversion=(wind<3&&temp<19)?'Atenção':'Não detectada';
+  const score=Math.max(0,Math.min(100,Math.round(
+    100-(Math.max(0,wind-14)*1.3)-(Math.max(0,gust-22)*0.9)-(Math.max(0,dt-8)*4)-(Math.max(0,rain*10))-(humid<45?8:0)
+  )));
+  $('opsDeltaT').innerHTML=`${dt}<span>°C</span>`;
+  $('opsDeltaStatus').textContent=dt>=2&&dt<=8?'Condição ideal de Delta T':'Fora da janela ideal';
+  $('opsScore').innerHTML=`${score}<span>/100</span>`;
+  $('opsScoreStatus').textContent=score>=80?'Favorável para operação':score>=60?'Atenção operacional':'Risco elevado';
+  $('opsDrift').textContent=drift;
+  $('opsEvap').textContent=evap;
+  $('riskDrift').textContent=drift;
+  $('riskEvap').textContent=evap;
+  $('riskRunoff').textContent=runoff;
+  $('riskInversion').textContent=inversion;
+  $('opsLiveCond').textContent=st.label;
+  $('opsWindowBest').textContent='07:00 → 10:30';
+  $('opsWindowSecond').textContent='16:40 → 18:15';
+  $('opsWindowShort').textContent='07:00 → 10:30';
+}
 
 // ── Geo ───────────────────────────────────────────────────────────────────────
 async function reverseGeocode(lat,lon){
@@ -1376,43 +1541,16 @@ window.addEventListener('load',()=>{
   },1200);
 });
 </script>
-<div id="networkIndicator" class="network-indicator"></div>
+
+<!-- ── BOTÃO RADAR FAB ── -->
+<button class="btn-radar-fab" onclick="window.location.href='radar/radar.html'" id="radarFab" style="display:none">
+  <div class="fab-dot"></div>
+  🚁 Entrar no Radar
+</button>
 
 <script type="module">
   import { initPWA } from '/pwa.js';
-  import { cacheWeather } from '/db.js';
-  import { injectHistoryStyles, renderHistoryPanel, setWeatherStateGetter } from '/history.js';
-
-  // 1. Inicia PWA (SW + install prompt + rede)
-  await initPWA();
-
-  // 2. Injeta estilos e painel de historico
-  injectHistoryStyles();
-
-  // 3. Expoe estado meteorologico ao history.js
-  setWeatherStateGetter(() => window._weatherState || {});
-
-  // 4. Recupera ultima localizacao salva
-  const lastLoc = JSON.parse(localStorage.getItem('agrometrix-last-location') || 'null');
-  if (lastLoc && (Date.now() - lastLoc.savedAt) < 86400000) {
-    document.getElementById('locationLabel').textContent = lastLoc.name;
-    window.currentLat = lastLoc.lat;
-    window.currentLon = lastLoc.lon;
-    window.currentLocName = lastLoc.name;
-  }
-
-  // 5. Refresca ao voltar para o app (Capacitor)
-  window.addEventListener('agrometrix:app-active', () => {
-    const last = parseInt(localStorage.getItem('agrometrix-last-update') || '0');
-    if (window.currentLat && Date.now() - last > 600000) {
-      fetchWeather(window.currentLat, window.currentLon, window.currentLocName);
-    }
-  });
-
-  // 6. Renderiza historico quando reconecta
-  window.addEventListener('agrometrix:network', e => {
-    if (e.detail.online) renderHistoryPanel();
-  });
+  initPWA();
 </script>
 </body>
 </html>
