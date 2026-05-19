@@ -1105,6 +1105,11 @@ function _triggerDownload(blob, filename){
   }
 }
 
+function _makeUtf8Blob(content, mimeType){
+  const utf8Bom='\uFEFF';
+  return new Blob([utf8Bom, content],{type:`${mimeType};charset=utf-8`});
+}
+
 function _downloadAndAskOpen(blob, filename){
   _triggerDownload(blob, filename);
   if(confirm('Arquivo salvo em Downloads. Deseja abrir agora?')){
@@ -1196,7 +1201,7 @@ function _buildTXTBlob(){
     'Dados: open-meteo.com',
     sep,
   ];
-  return new Blob([lines.join('\r\n')],{type:'text/plain;charset=utf-8'});
+  return _makeUtf8Blob(lines.join('\r\n'),'text/plain');
 }
 
 function _buildCSVBlob(){
@@ -1222,8 +1227,8 @@ function _buildCSVBlob(){
     ['Indice Fungicida',fung,'%'],['Indice Herbicida',herb,'%'],
     ['Indice Inseticida',insec,'%'],['Indice Adubo Foliar',adub,'%'],
   ];
-  const csv='\uFEFF'+rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
-  return new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const csv=rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  return _makeUtf8Blob(csv,'text/csv');
 }
 
 function scoreLabel(v){return v>=70?'Favoravel':v>=40?'Moderado':'Desfavoravel';}
@@ -1233,20 +1238,6 @@ async function shareOrDownloadTXT(){
   const blob=_buildTXTBlob();
   if(!blob)return;
   const filename=_generateDownloadFilename('txt');
-  // No app Android usa compartilhamento nativo
-  if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()){
-    const txt=await blob.text();
-    if(navigator.share){
-      try{
-        await navigator.share({title:'AgroMetrix TXT',text:txt});
-        return;
-      }catch(e){
-        console.warn('Compartilhamento TXT falhou:', e);
-      }
-    }
-    _downloadAndAskOpen(blob,filename);
-    return;
-  }
   await _shareFile(blob,filename,'AgroMetrix — Relatório TXT');
 }
 
@@ -1255,20 +1246,6 @@ async function shareOrDownloadCSV(){
   const blob=_buildCSVBlob();
   if(!blob)return;
   const filename=_generateDownloadFilename('csv');
-  // No app Android usa compartilhamento nativo
-  if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()){
-    const csv=await blob.text();
-    if(navigator.share){
-      try{
-        await navigator.share({title:'AgroMetrix CSV',text:csv});
-        return;
-      }catch(e){
-        console.warn('Compartilhamento CSV falhou:', e);
-      }
-    }
-    _downloadAndAskOpen(blob,filename);
-    return;
-  }
   await _shareFile(blob,filename,'AgroMetrix — Relatório CSV');
 }
 
