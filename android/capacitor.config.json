@@ -1,0 +1,12 @@
+{
+  "appId": "com.agrometrix.app",
+  "appName": "AgroMetrix",
+  "webDir": "www",
+  "server": {
+    "hostname": "agrometrix.radar",
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

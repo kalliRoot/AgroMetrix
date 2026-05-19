@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "65595075086",
+    "firebase_url": "https://agrometrix-radar-default-rtdb.firebaseio.com",
+    "project_id": "agrometrix-radar",
+    "storage_bucket": "agrometrix-radar.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:65595075086:android:5aacca7d68e88e332caa5f",
+        "android_client_info": {
+          "package_name": "com.agrometrix.radar"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "65595075086-260obqo3v2g2prvr0p7glpe0e8i83u9q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWh4qkGX4u-63_uOm45AS7tfPel1wgx_k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "65595075086-260obqo3v2g2prvr0p7glpe0e8i83u9q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

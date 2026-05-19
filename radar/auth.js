@@ -36,17 +36,24 @@ export async function initFirebase() {
 
 export async function loginGoogle() {
   try {
+    // Fluxo Forçado via signInWithPopup (Web/WebView)
+    // Com o WebChromeClient configurado na MainActivity, isso abrirá um modal interno no Android
+    console.log('[Auth] Iniciando fluxo signInWithPopup dentro da WebView...');
+
     const provider = new window._GoogleProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
+
+    // IMPORTANTE: Não usamos signInWithRedirect pois ele quebra o contexto do Capacitor no Chrome externo
     const result = await window._signInWithPopup(window._firebaseAuth, provider);
     const user = result.user;
     await ensureProfile(user);
     return user;
   } catch (err) {
-    if (err.code !== 'auth/popup-closed-by-user') {
-      console.error('[Auth] Login falhou:', err);
+    console.error('[Auth] Erro no fluxo de popup:', err);
+    if (err.code === 'auth/popup-closed-by-user') {
+      return null;
     }
-    return null;
+    throw err;
   }
 }
 

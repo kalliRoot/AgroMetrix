@@ -1,11 +1,12 @@
 {
-  "appId": "com.agrometrix.app",
+  "appId": "com.agrometrix.radar",
   "appName": "AgroMetrix",
   "webDir": "www",
   "bundledWebRuntime": false,
   "server": {
     "androidScheme": "https",
     "allowNavigation": [
+      "agrometrix-one.vercel.app",
       "api.open-meteo.com",
       "nominatim.openstreetmap.org",
       "services.swpc.noaa.gov",

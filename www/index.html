@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#1f5534">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>AgroMetrix — Clima certo, aplicação perfeita</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -64,8 +64,8 @@
   --radius-sm:8px;--radius-md:14px;--radius-lg:22px;
 }
 
-html { scroll-behavior: smooth; }
-body { font-family: var(--font-ui); background: radial-gradient(circle at 18% 8%, rgba(94,200,128,.14), transparent 28%), radial-gradient(circle at 84% 4%, rgba(30,136,208,.1), transparent 24%), linear-gradient(180deg, var(--bg), var(--surface2)); background-attachment: fixed; color: var(--text-primary); min-height: 100vh; overflow-x: hidden; transition: background .3s, color .3s; }
+html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; max-width: 100vw; }
+body { font-family: var(--font-ui); background: radial-gradient(circle at 18% 8%, rgba(94,200,128,.14), transparent 28%), radial-gradient(circle at 84% 4%, rgba(30,136,208,.1), transparent 24%), linear-gradient(180deg, var(--bg), var(--surface2)); background-attachment: fixed; color: var(--text-primary); min-height: 100vh; overflow-x: hidden; width: 100%; max-width: 100vw; position: relative; transition: background .3s, color .3s; }
 
 /* ── HEADER ── */
 header { position: sticky; top: 0; z-index: 200; background: var(--header-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 0 16px; }
@@ -363,6 +363,55 @@ footer a { color:var(--green-500); text-decoration:none; }
   .hour-tags{display:none}
   .header-search{display:none}
 }
+
+.btn-radar-fab {
+  position: fixed;
+  bottom: 30px;
+  right: 20px;
+  z-index: 999;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, var(--green-700), var(--green-500));
+  color: white;
+  border: none;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(13, 43, 26, 0.3);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  letter-spacing: 0.01em;
+  opacity: 0;
+  transform: translateY(20px);
+}
+.btn-radar-fab.show {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+.btn-radar-fab:hover {
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: 0 8px 20px rgba(13, 43, 26, 0.4);
+}
+.btn-radar-fab:active {
+  transform: scale(0.95);
+}
+.btn-radar-fab .fab-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green-200);
+  box-shadow: 0 0 10px var(--green-200);
+  animation: fabPulse 2s infinite;
+}
+@keyframes fabPulse {
+  0% { box-shadow: 0 0 0 0 rgba(160, 228, 181, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(160, 228, 181, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(160, 228, 181, 0); }
+}
 </style>
 </head>
 <body>
@@ -659,6 +708,12 @@ footer a { color:var(--green-500); text-decoration:none; }
   Geocodificação: <a href="https://nominatim.openstreetmap.org" target="_blank">Nominatim / OSM</a><br>
   © 2026 <strong>AgroMetrix</strong> — Clima certo, aplicação perfeita
 </footer>
+
+<!-- ── BOTÃO RADAR FAB ── -->
+<button class="btn-radar-fab" onclick="window.location.href='radar/radar.html'" id="radarFab">
+  <div class="fab-dot"></div>
+  🚁 Entrar no Radar
+</button>
 
 <script>
 // ── Globals ──────────────────────────────────────────────────────────────────
@@ -1516,6 +1571,15 @@ window.addEventListener('load',()=>{
     $('loadingScreen').classList.add('hidden');
     $('locModal').classList.remove('hidden');
   },1200);
+
+  // Mostra o botão do Radar após 6 segundos
+  setTimeout(() => {
+    const fab = document.getElementById('radarFab');
+    if (fab) {
+      fab.style.display = 'flex';
+      setTimeout(() => fab.classList.add('show'), 50);
+    }
+  }, 6000);
 });
 </script>
 
