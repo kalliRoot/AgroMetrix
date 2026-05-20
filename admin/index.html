@@ -9,9 +9,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f12; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #0b0f12; 
+        }
+        .mono { 
+            font-family: 'JetBrains Mono', monospace; 
+        }
+        /* Custom Premium Cockpit Cards */
         .premium-card {
             background: linear-gradient(145deg, #11181c, #0e1317);
             border: 1px solid rgba(34, 197, 94, 0.1);
@@ -23,19 +30,27 @@
             box-shadow: 0 4px 30px rgba(34, 197, 94, 0.05);
             transform: translateY(-2px);
         }
-        .pulse-online { box-shadow: 0 0 12px rgba(34, 197, 94, 0.7); animation: pulse 2s infinite; }
+        /* Glow status indicators */
+        .pulse-online { 
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.7); 
+            animation: pulse 2s infinite; 
+        }
         @keyframes pulse {
             0% { transform: scale(0.95); opacity: 0.5; }
             50% { transform: scale(1); opacity: 1; }
             100% { transform: scale(0.95); opacity: 0.5; }
         }
+        /* Hide scrollbars for clean look */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0f12; }
+        ::-webkit-scrollbar-thumb { background: #1c262e; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #22c55e; }
     </style>
 </head>
 <body class="text-slate-200 antialiased h-screen flex overflow-hidden">
 
-    <!-- TELA DE LOGIN / LOCKSCREEN (2FA) -->
     <div id="lockscreen" class="fixed inset-0 z-[100] bg-[#0b0f12] flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-[#0e1418] border border-emerald-950 p-6 rounded-2xl shadow-2xl">
+        <div class="w-full max-w-md bg-[#0e1418] border border-emerald-950/60 p-6 rounded-2xl shadow-2xl">
             <div class="text-center mb-6">
                 <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-600 to-green-400 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-emerald-900/20">
                     <i data-lucide="shield-alert" class="w-6 h-6 text-slate-900 stroke-[2.5]"></i>
@@ -58,7 +73,7 @@
                     <input type="text" id="securityCode" required autocomplete="off" placeholder="Código contido na célula A1" class="w-full bg-[#11181c] border border-emerald-950 rounded-xl px-4 py-2.5 text-sm font-semibold tracking-widest text-center text-emerald-400 focus:outline-none focus:border-emerald-500 transition-all uppercase mono">
                 </div>
                 
-                <div id="loginError" class="text-xs text-red-400 hidden bg-red-950/20 border border-red-900/30 p-2.5 rounded-lg text-center"></div>
+                <div id="loginError" class="text-xs text-red-400 hidden bg-red-950/20 border border-red-900/30 p-2.5 rounded-lg text-center font-medium"></div>
 
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-900 font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-emerald-700/20 text-sm mt-2 flex items-center justify-center gap-2">
                     <i data-lucide="unlock" class="w-4 h-4"></i> Autenticar Cockpit
@@ -67,9 +82,8 @@
         </div>
     </div>
 
-    <!-- PAINEL ADMINISTRATIVO PRINCIPAL (Fica oculto por padrão até validar o login) -->
     <div id="adminLayout" class="hidden w-full h-full flex overflow-hidden">
-        <!-- SIDEBAR -->
+        
         <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0e1418] border-r border-emerald-950/40 transform -translate-x-full lg:translate-x-0 lg:relative lg:flex lg:flex-col transition-transform duration-300 ease-in-out">
             <div class="h-16 flex items-center px-6 border-b border-emerald-950/40 gap-3">
                 <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-600 to-green-400 flex items-center justify-center shadow-lg shadow-emerald-900/30">
@@ -101,8 +115,8 @@
 
         <div id="sidebarOverlay" class="fixed inset-0 z-40 bg-black/60 hidden lg:hidden"></div>
 
-        <!-- CONTEÚDO PRINCIPAL -->
         <div class="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
+            
             <header class="h-16 bg-[#0e1418]/80 backdrop-blur-md border-b border-emerald-950/40 px-4 sm:px-6 flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-3">
                     <button id="menuBtn" class="p-2 -ml-2 rounded-lg hover:bg-slate-800 text-slate-400 lg:hidden"><i data-lucide="menu" class="w-5 h-5"></i></button>
@@ -121,7 +135,7 @@
             </header>
 
             <main class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-                <!-- GRID DE CARDS USUÁRIOS -->
+                
                 <section>
                     <div class="flex items-center gap-2 mb-3">
                         <i data-lucide="users" class="w-4 h-4 text-emerald-500"></i>
@@ -138,6 +152,119 @@
                         </div>
                         <div class="premium-card p-4 rounded-xl">
                             <div class="flex justify-between items-start text-slate-400"><span class="text-xs font-medium">Novos Cadastros</span><i data-lucide="user-plus" class="w-4 h-4 text-emerald-500/70"></i></div>
+                            <div class="mt-2 flex items-baseline gap-2"><span id="val-usr-novos" class="text-2xl font-bold text-white tracking-tight mono">--</span></div>
+                        </div>
+                        <div class="premium-card p-4 rounded-xl bg-gradient-to-b from-emerald-950/20 to-transparent">
+                            <div class="flex justify-between items-start text-slate-400"><span class="text-xs font-medium text-emerald-400">Premium Ativos</span><i data-lucide="zap" class="w-4 h-4 text-amber-400 fill-amber-400/20"></i></div>
+                            <div class="mt-2 flex items-baseline gap-2"><span id="val-usr-premium" class="text-2xl font-bold text-white tracking-tight mono">--</span><span id="val-usr-taxa" class="text-xs text-emerald-400 font-medium ml-2 mono">--</span></div>
+                        </div>
+                        <div class="premium-card p-4 rounded-xl">
+                            <div class="flex justify-between items-start text-slate-400"><span class="text-xs font-medium">Sessões Ativas</span><i data-lucide="monitor" class="w-4 h-4 text-slate-500"></i></div>
+                            <div class="mt-2 flex items-baseline gap-2"><span id="val-usr-sessoes" class="text-2xl font-bold text-white tracking-tight mono">--</span></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2"><i data-lucide="radar" class="w-4 h-4 text-emerald-500"></i><h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400">Métricas do Radar Climatológico</h2></div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="premium-card p-4 rounded-xl"><span class="text-xs text-slate-400 block font-medium">Acessos ao Radar</span><span id="val-rad-acessos" class="text-2xl font-bold text-white block mt-1 mono">--</span></div>
+                            <div class="premium-card p-4 rounded-xl"><span class="text-xs text-slate-400 block font-medium">Tempo Médio</span><span id="val-rad-tempo" class="text-2xl font-bold text-white block mt-1 mono">--</span></div>
+                            <div class="premium-card p-4 rounded-xl"><span class="text-xs text-slate-400 block font-medium">Sessões Hoje</span><span id="val-rad-sessoes" class="text-2xl font-bold text-white block mt-1 mono">--</span></div>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2"><i data-lucide="file-text" class="w-4 h-4 text-emerald-500"></i><h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400">Relatórios & Distribuição</h2></div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="premium-card p-4 rounded-xl"><span class="text-xs text-slate-400 block font-medium">Relatórios Gerados</span><span id="val-rep-qtd" class="text-2xl font-bold text-white block mt-1 mono">--</span></div>
+                            <div class="premium-card p-4 rounded-xl"><span class="text-xs text-slate-400 block font-medium">Downloads Android</span><span id="val-rep-android" class="text-2xl font-bold text-white block mt-1 mono">--</span></div>
+                            <div class="premium-card p-4 rounded-xl"><span class="text-xs text-slate-400 block font-medium">Downloads Web</span><span id="val-rep-web" class="text-2xl font-bold text-white block mt-1 mono">--</span></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="space-y-3 lg:col-span-1">
+                        <div class="flex items-center gap-2"><i data-lucide="server" class="w-4 h-4 text-emerald-500"></i><h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400">Status Infra / APIs</h2></div>
+                        <div class="premium-card p-4 rounded-xl space-y-3.5">
+                            <div class="flex items-center justify-between border-b border-slate-800/60 pb-2"><div class="flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4 text-amber-500"></i><span class="text-sm font-medium text-slate-200">Firebase Auth</span></div><span id="status-firebase" class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-500/20 mono">--</span></div>
+                            <div class="flex items-center justify-between border-b border-slate-800/60 pb-2"><div class="flex items-center gap-2"><i data-lucide="cloud-rain" class="w-4 h-4 text-sky-400"></i><span class="text-sm font-medium text-slate-200">Clima API</span></div><span id="status-clima" class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-500/20 mono">--</span></div>
+                            <div class="flex items-center justify-between"><div class="flex items-center gap-2"><i data-lucide="radio" class="w-4 h-4 text-emerald-400"></i><span class="text-sm font-medium text-slate-200">Radar API</span></div><span id="status-radar" class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-500/20 mono">--</span></div>
+                        </div>
+                    </div>
+                    <div class="space-y-3 lg:col-span-2">
+                        <div class="flex items-center gap-2"><i data-lucide="sliders" class="w-4 h-4 text-emerald-500"></i><h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400">Métricas Operacionais Base</h2></div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="premium-card p-4 rounded-xl"><span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-3 mono">Cidades Mais Ativas</span><div id="cities-list" class="space-y-2 text-sm"></div></div>
+                            <div class="premium-card p-4 rounded-xl flex flex-col justify-between"><div><span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2 mono">Horários de Pico</span><p class="text-sm text-slate-300">Concentrado entre:</p><span id="val-ope-pico" class="text-lg font-bold text-emerald-400 block mt-1 tracking-tight mono">--</span></div><p id="val-ope-nota" class="text-[11px] text-slate-500 mt-2 border-t border-slate-800/60 pt-2">--</p></div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script type="module">
+        import { AuthService, AnalyticsService, FirestoreService, CrashlyticsService } from './services/firebase-admin.js';
+
+        // Renderização de Ícones Lucide
+        lucide.createIcons();
+
+        // Relógio Cockpit Operacional
+        setInterval(() => {
+            const clockEl = document.getElementById('liveClock');
+            if(clockEl) clockEl.textContent = `BRT ${new Date().toLocaleTimeString('pt-BR', { hour12: false })}`;
+        }, 1000);
+
+        // Captura e Tratamento do Formulário de Login 2FA
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // Trava o reload indesejado do navegador (efeito piscar)
+            loginError.classList.add('hidden');
+            
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const token = document.getElementById('securityCode').value;
+
+            try {
+                const success = await AuthService.login(u, p, token);
+                if (success) {
+                    // Transição imediata de tela via DOM
+                    document.getElementById('lockscreen').classList.add('hidden');
+                    document.getElementById('adminLayout').classList.remove('hidden');
+                    await loadDataTelemetry();
+                }
+            } catch (err) {
+                // Injeta a string de erro retornada pela API ou da planilha na tela
+                loginError.textContent = err.message;
+                loginError.classList.remove('hidden');
+            }
+        });
+
+        // Evento Logout do Cockpit
+        document.getElementById('logoutBtn').addEventListener('click', () => AuthService.logout());
+
+        // Validador de Fluxo ao Inicializar Página (Persistência de Sessão)
+        async function checkAuthAndRender() {
+            if (AuthService.isAuthenticated()) {
+                document.getElementById('lockscreen').classList.add('hidden');
+                document.getElementById('adminLayout').classList.remove('hidden');
+                await loadDataTelemetry();
+            } else {
+                document.getElementById('lockscreen').classList.remove('hidden');
+                document.getElementById('adminLayout').classList.add('hidden');
+            }
+        }
+
+        // Popula os Elementos HTML mapeados
+        async function loadDataTelemetry() {
+            try {
+                const analytics = await AnalyticsService.getLiveTrafficMetrics();
+                const dist = aw                            <div class="flex justify-between items-start text-slate-400"><span class="text-xs font-medium">Novos Cadastros</span><i data-lucide="user-plus" class="w-4 h-4 text-emerald-500/70"></i></div>
                             <div class="mt-2 flex items-baseline gap-2"><span id="val-usr-novos" class="text-2xl font-bold text-white tracking-tight mono">--</span></div>
                         </div>
                         <div class="premium-card p-4 rounded-xl bg-gradient-to-b from-emerald-950/20 to-transparent">
