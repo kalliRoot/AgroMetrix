@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.gstatic.com https://cdn.tailwindcss.com https://unpkg.com https://fonts.googleapis.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://docs.google.com https://sheets.googleapis.com https://unpkg.com wss://*.firebaseio.com; img-src 'self' data: blob:;">
     <title>AgroMetrix // Control Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,7 +19,6 @@
         .mono { 
             font-family: 'JetBrains Mono', monospace; 
         }
-        /* Custom Premium Cockpit Cards */
         .premium-card {
             background: linear-gradient(145deg, #11181c, #0e1317);
             border: 1px solid rgba(34, 197, 94, 0.1);
@@ -30,7 +30,6 @@
             box-shadow: 0 4px 30px rgba(34, 197, 94, 0.05);
             transform: translateY(-2px);
         }
-        /* Glow status indicators */
         .pulse-online { 
             box-shadow: 0 0 12px rgba(34, 197, 94, 0.7); 
             animation: pulse 2s infinite; 
@@ -40,7 +39,6 @@
             50% { transform: scale(1); opacity: 1; }
             100% { transform: scale(0.95); opacity: 0.5; }
         }
-        /* Hide scrollbars for clean look */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0b0f12; }
         ::-webkit-scrollbar-thumb { background: #1c262e; border-radius: 3px; }
@@ -208,16 +206,13 @@
     <script type="module">
         import { AuthService, AnalyticsService, FirestoreService, CrashlyticsService } from './services/firebase-admin.js';
 
-        // Renderização de Ícones Lucide
         lucide.createIcons();
 
-        // Relógio Cockpit Operacional
         setInterval(() => {
             const clockEl = document.getElementById('liveClock');
             if(clockEl) clockEl.textContent = `BRT ${new Date().toLocaleTimeString('pt-BR', { hour12: false })}`;
         }, 1000);
 
-        // Captura e Tratamento do Formulário de Login 2FA
         const loginForm = document.getElementById('loginForm');
         const loginError = document.getElementById('loginError');
 
@@ -243,10 +238,8 @@
             }
         });
 
-        // Evento Logout do Cockpit
         document.getElementById('logoutBtn').addEventListener('click', () => AuthService.logout());
 
-        // Validador de Fluxo ao Inicializar Página (Persistência de Sessão)
         async function checkAuthAndRender() {
             if (AuthService.isAuthenticated()) {
                 document.getElementById('lockscreen').classList.add('hidden');
@@ -258,7 +251,6 @@
             }
         }
 
-        // Popula os Elementos HTML mapeados
         async function loadDataTelemetry() {
             try {
                 const analytics = await AnalyticsService.getLiveTrafficMetrics();
@@ -291,28 +283,17 @@
                 const targetList = document.getElementById('cities-list');
                 if (targetList) {
                     targetList.innerHTML = '';
-                    
-                    const item1 = document.createElement('div');
-                    item1.style.display = 'flex';
-                    item1.style.justifyContent = 'between';
-                    item1.style.alignItems = 'center';
-                    item1.innerHTML = '<span class="text-slate-300">1. Sorocaba - SP</span><span class="mono font-semibold text-slate-400 ml-auto">412 ac.</span>';
-                    
-                    const item2 = document.createElement('div');
-                    item2.style.display = 'flex';
-                    item2.style.justifyContent = 'between';
-                    item2.style.alignItems = 'center';
-                    item2.innerHTML = '<span class="text-slate-300">2. Uberlândia - MG</span><span class="mono font-semibold text-slate-400 ml-auto">389 ac.</span>';
-                    
-                    const item3 = document.createElement('div');
-                    item3.style.display = 'flex';
-                    item3.style.justifyContent = 'between';
-                    item3.style.alignItems = 'center';
-                    item3.innerHTML = '<span class="text-slate-300">3. Rio Verde - GO</span><span class="mono font-semibold text-slate-400 ml-auto">311 ac.</span>';
-                    
-                    targetList.appendChild(item1);
-                    targetList.appendChild(item2);
-                    targetList.appendChild(item3);
+                    const cities = [
+                        { name: "Sorocaba - SP", count: "412 ac." },
+                        { name: "Uberlândia - MG", count: "389 ac." },
+                        { name: "Rio Verde - GO", count: "311 ac." }
+                    ];
+                    cities.forEach((city, i) => {
+                        const item = document.createElement('div');
+                        item.className = 'flex items-center justify-between';
+                        item.innerHTML = `<span class="text-slate-300">${i+1}. ${city.name}</span><span class="mono font-semibold text-slate-400">${city.count}</span>`;
+                        targetList.appendChild(item);
+                    });
                 }
 
             } catch (e) {
