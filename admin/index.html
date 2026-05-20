@@ -61,15 +61,15 @@
 
             <form id="loginForm" class="space-y-4">
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1 mono">Operador</label>
+                    <label for="username" class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1 mono">Operador</label>
                     <input type="text" id="username" required autocomplete="off" placeholder="Nome do usuário" class="w-full bg-[#11181c] border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-all">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1 mono">Senha</label>
+                    <label for="password" class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1 mono">Senha</label>
                     <input type="password" id="password" required placeholder="••••••••" class="w-full bg-[#11181c] border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-all">
                 </div>
                 <div class="border-t border-slate-800/60 pt-3">
-                    <label class="block text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1 mono">Código de Acesso (2FA Planilha)</label>
+                    <label for="securityCode" class="block text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1 mono">Código de Acesso (2FA Planilha)</label>
                     <input type="text" id="securityCode" required autocomplete="off" placeholder="Código contido na célula A1" class="w-full bg-[#11181c] border border-emerald-950 rounded-xl px-4 py-2.5 text-sm font-semibold tracking-widest text-center text-emerald-400 focus:outline-none focus:border-emerald-500 transition-all uppercase mono">
                 </div>
                 
@@ -223,7 +223,7 @@
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            e.stopPropagation(); // Trava o reload indesejado do navegador (efeito piscar)
+            e.stopPropagation(); 
             loginError.classList.add('hidden');
             
             const u = document.getElementById('username').value;
@@ -233,13 +233,11 @@
             try {
                 const success = await AuthService.login(u, p, token);
                 if (success) {
-                    // Transição imediata de tela via DOM
                     document.getElementById('lockscreen').classList.add('hidden');
                     document.getElementById('adminLayout').classList.remove('hidden');
                     await loadDataTelemetry();
                 }
             } catch (err) {
-                // Injeta a string de erro retornada pela API ou da planilha na tela
                 loginError.textContent = err.message;
                 loginError.classList.remove('hidden');
             }
@@ -268,7 +266,6 @@
                 const premium = await FirestoreService.getPremiumSubscribers();
                 const health = await CrashlyticsService.getSystemHealth();
 
-                // Distribuição estrutural nos seletores dinâmicos
                 document.getElementById('val-usr-hoje').textContent = analytics.usuariosHoje;
                 document.getElementById('val-usr-online').textContent = analytics.usuariosOnline;
                 document.getElementById('val-usr-novos').textContent = analytics.novosCadastros;
@@ -291,7 +288,6 @@
                 document.getElementById('val-ope-pico').textContent = "05:30 às 08:45";
                 document.getElementById('val-ope-nota').textContent = "Baseado na região de operação (BRT).";
 
-                // Injeção limpa de nós estruturais nativos no DOM (Elimina erros de aspas)
                 const targetList = document.getElementById('cities-list');
                 if (targetList) {
                     targetList.innerHTML = '';
@@ -324,10 +320,8 @@
             }
         }
 
-        // Execução primária na abertura da rota
         checkAuthAndRender();
 
-        // Tratamento da Gaveta Lateral (Menu Responsivo Mobile)
         const menuBtn = document.getElementById('menuBtn');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
