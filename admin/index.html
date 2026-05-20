@@ -4,23 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgroMetrix // Control Center</title>
-    <!-- Google Fonts & Tailwind para prototipagem rápida e limpa -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <!-- Lucide Icons para os indicadores do Cockpit -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
     <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #0b0f12; /* Deep Carbon Black */
-        }
-        .mono {
-            font-family: 'JetBrains Mono', monospace;
-        }
-        /* Custom Premium Glassmorphism & Borders */
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f12; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
         .premium-card {
             background: linear-gradient(145deg, #11181c, #0e1317);
             border: 1px solid rgba(34, 197, 94, 0.1);
@@ -32,84 +23,239 @@
             box-shadow: 0 4px 30px rgba(34, 197, 94, 0.05);
             transform: translateY(-2px);
         }
-        /* Glow status indicators */
-        .pulse-online {
-            box-shadow: 0 0 12px rgba(34, 197, 94, 0.7);
-            animation: pulse 2s infinite;
-        }
+        .pulse-online { box-shadow: 0 0 12px rgba(34, 197, 94, 0.7); animation: pulse 2s infinite; }
         @keyframes pulse {
             0% { transform: scale(0.95); opacity: 0.5; }
             50% { transform: scale(1); opacity: 1; }
             100% { transform: scale(0.95); opacity: 0.5; }
         }
-        /* Hide scrollbar for clean cockpit feel */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0b0f12;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #1c262e;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #22c55e;
-        }
     </style>
 </head>
 <body class="text-slate-200 antialiased h-screen flex overflow-hidden">
 
-    <!-- SIDEBAR SIMPLES (Retraível no Mobile) -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0e1418] border-r border-emerald-950/40 transform -translate-x-full lg:translate-x-0 lg:relative lg:flex lg:flex-col transition-transform duration-300 ease-in-out">
-        <!-- Logo / Brand Header -->
-        <div class="h-16 flex items-center px-6 border-b border-emerald-950/40 gap-3">
-            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-600 to-green-400 flex items-center justify-center shadow-lg shadow-emerald-900/30">
-                <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-900 stroke-[2.5]"></i>
-            </div>
-            <div>
-                <span class="font-bold tracking-tight text-white block">AgroMetrix</span>
-                <span class="text-[10px] uppercase tracking-widest text-emerald-500 font-semibold mono">Control Center</span>
-            </div>
-        </div>
-
-        <!-- Navigation Links -->
-        <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl bg-emerald-950/30 text-emerald-400 border border-emerald-500/20 transition-all">
-                <i data-lucide="activity" class="w-4 h-4"></i> Overview Geral
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:text-emerald-400 hover:bg-emerald-950/10 border border-transparent hover:border-emerald-500/10 transition-all">
-                <i data-lucide="users" class="w-4 h-4"></i> Usuários & Planos
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:text-emerald-400 hover:bg-emerald-950/10 border border-transparent hover:border-emerald-500/10 transition-all">
-                <i data-lucide="radar" class="w-4 h-4"></i> Métricas do Radar
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:text-emerald-400 hover:bg-emerald-950/10 border border-transparent hover:border-emerald-500/10 transition-all">
-                <i data-lucide="database" class="w-4 h-4"></i> Infraestrutura
-            </a>
-        </nav>
-
-        <!-- Footer da Sidebar (Usuário logado interno) -->
-        <div class="p-4 border-t border-emerald-950/40 bg-[#0b0f12]">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-emerald-900/50 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-semibold text-sm">
-                    OP
+    <!-- TELA DE LOGIN / LOCKSCREEN (2FA) -->
+    <div id="lockscreen" class="fixed inset-0 z-[100] bg-[#0b0f12] flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-[#0e1418] border border-emerald-950 p-6 rounded-2xl shadow-2xl">
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-600 to-green-400 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-emerald-900/20">
+                    <i data-lucide="shield-alert" class="w-6 h-6 text-slate-900 stroke-[2.5]"></i>
                 </div>
-                <div class="flex-1 min-w-0">
-                    <span class="text-xs font-semibold text-slate-200 block truncate">Operador Principal</span>
-                    <span class="text-[10px] text-emerald-500 mono block truncate">ID-4029</span>
+                <h2 class="text-xl font-bold text-white tracking-tight">Acesso Restrito</h2>
+                <p class="text-xs text-slate-400 mt-1">Insira as credenciais operacionais e o token de 2 fatores.</p>
+            </div>
+
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1 mono">Operador</label>
+                    <input type="text" id="username" required autocomplete="off" placeholder="Nome do usuário" class="w-full bg-[#11181c] border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-all">
                 </div>
-                <button class="text-slate-500 hover:text-red-400 transition-colors">
-                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1 mono">Senha</label>
+                    <input type="password" id="password" required placeholder="••••••••" class="w-full bg-[#11181c] border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-all">
+                </div>
+                <div class="border-t border-slate-800/60 pt-3">
+                    <label class="block text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1 mono">Código de Acesso (2FA Planilha)</label>
+                    <input type="text" id="securityCode" required autocomplete="off" placeholder="Código contido na célula A1" class="w-full bg-[#11181c] border border-emerald-950 rounded-xl px-4 py-2.5 text-sm font-semibold tracking-widest text-center text-emerald-400 focus:outline-none focus:border-emerald-500 transition-all uppercase mono">
+                </div>
+                
+                <div id="loginError" class="text-xs text-red-400 hidden bg-red-950/20 border border-red-900/30 p-2.5 rounded-lg text-center"></div>
+
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-900 font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-emerald-700/20 text-sm mt-2 flex items-center justify-center gap-2">
+                    <i data-lucide="unlock" class="w-4 h-4"></i> Autenticar Cockpit
                 </button>
-            </div>
+            </form>
         </div>
-    </aside>
+    </div>
 
-    <!-- Overlay para fechar sidebar no mobile -->
-    <div id="sidebarOverlay" class="fixed inset-0 z-40 bg-black/60 hidden lg:hidden"></div>
+    <!-- PAINEL ADMINISTRATIVO PRINCIPAL (Fica oculto por padrão até validar o login) -->
+    <div id="adminLayout" class="hidden w-full h-full flex overflow-hidden">
+        <!-- SIDEBAR -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0e1418] border-r border-emerald-950/40 transform -translate-x-full lg:translate-x-0 lg:relative lg:flex lg:flex-col transition-transform duration-300 ease-in-out">
+            <div class="h-16 flex items-center px-6 border-b border-emerald-950/40 gap-3">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-600 to-green-400 flex items-center justify-center shadow-lg shadow-emerald-900/30">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-900 stroke-[2.5]"></i>
+                </div>
+                <div>
+                    <span class="font-bold tracking-tight text-white block">AgroMetrix</span>
+                    <span class="text-[10px] uppercase tracking-widest text-emerald-500 font-semibold mono">Control Center</span>
+                </div>
+            </div>
+            <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+                <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl bg-emerald-950/30 text-emerald-400 border border-emerald-500/20 transition-all">
+                    <i data-lucide="activity" class="w-4 h-4"></i> Overview Geral
+                </a>
+            </nav>
+            <div class="p-4 border-t border-emerald-950/40 bg-[#0b0f12]">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-emerald-900/50 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-semibold text-sm">OP</div>
+                    <div class="flex-1 min-w-0">
+                        <span class="text-xs font-semibold text-slate-200 block truncate">Operador Principal</span>
+                        <span class="text-[10px] text-emerald-500 mono block truncate">ID-4029</span>
+                    </div>
+                    <button id="logoutBtn" class="text-slate-500 hover:text-red-400 transition-colors">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
 
+        <div id="sidebarOverlay" class="fixed inset-0 z-40 bg-black/60 hidden lg:hidden"></div>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <div class="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
+            <header class="h-16 bg-[#0e1418]/80 backdrop-blur-md border-b border-emerald-950/40 px-4 sm:px-6 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3">
+                    <button id="menuBtn" class="p-2 -ml-2 rounded-lg hover:bg-slate-800 text-slate-400 lg:hidden"><i data-lucide="menu" class="w-5 h-5"></i></button>
+                    <div>
+                        <h1 class="text-base font-semibold text-white tracking-tight">Painel Executivo Real</h1>
+                        <p class="text-xs text-slate-400">Telemetria operacional conectada.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div class="flex items-center gap-2 bg-[#11181c] px-3 py-1.5 rounded-lg border border-slate-800">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-online"></span>
+                        <span class="text-xs font-medium text-slate-300 uppercase tracking-wider mono text-[11px]">Sistema Estável</span>
+                    </div>
+                    <span id="liveClock" class="text-xs font-medium text-slate-400 mono hidden md:block">--:--:--</span>
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+                <!-- GRID DE CARDS USUÁRIOS -->
+                <section>
+                    <div class="flex items-center gap-2 mb-3">
+                        <i data-lucide="users" class="w-4 h-4 text-emerald-500"></i>
+                        <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400">Métricas de Usuários & Engajamento</h2>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div class="premium-card p-4 rounded-xl">
+                            <div class="flex justify-between items-start text-slate-400"><span class="text-xs font-medium">Usuários Hoje</span><i data-lucide="user-check" class="w-4 h-4 text-emerald-500/70"></i></div>
+                            <div class="mt-2 flex items-baseline gap-2"><span id="val-usr-hoje" class="text-2xl font-bold text-white tracking-tight mono">--</span></div>
+                        </div>
+                        <div class="premium-card p-4 rounded-xl border-l-2 border-l-emerald-500">
+                            <div class="flex justify-between items-start text-slate-400"><span class="text-xs font-medium">Usuários Online</span><span class="w-2 h-2 rounded-full bg-emerald-500 pulse-online mt-1"></span></div>
+                            <div class="mt-2 flex items-baseline gap-2"><span id="val-usr-online" class="text-2xl font-bold text-white tracking-tight mono">--</span></div>
+                        </div>
+                        <div class="premium-card p-4 rounded-xl">
+                            <div class="flex justify-between items-start text-slate-400"><span class="text-xs font-medium">Novos Cadastros</span><i data-lucide="user-plus" class="w-4 h-4 text-emerald-500/70"></i></div>
+                            <div class="mt-2 flex items-baseline gap-2"><span id="val-usr-novos" class="text-2xl font-bold text-white tracking-tight mono">--</span></div>
+                        </div>
+                        <div class="premium-card p-4 rounded-xl bg-gradient-to-b from-emerald-950/20 to-transparent">
+                            <div class="flex justify-between items-start text-slate-400"><span class="text-xs font-medium text-emerald-400">Premium Ativos</span><i data-lucide="zap" class="w-4 h-4 text-amber-400 fill-amber-400/20"></i></div>
+                            <div class="mt-2 flex items-baseline gap-2"><span id="val-usr-premium" class="text-2xl font-bold text-white tracking-tight mono">--</span><span id="val-usr-taxa" class="text-xs text-emerald-400 font-medium mono">--</span></div>
+                        </div>
+                        <div class="premium-card p-4 rounded-xl">
+                            <div class="flex justify-between items-start text-slate-400"><span class="text-xs font-medium">Sessões Ativas</span><i data-lucide="monitor" class="w-4 h-4 text-slate-500"></i></div>
+                            <div class="mt-2 flex items-baseline gap-2"><span id="val-usr-sessoes" class="text-2xl font-bold text-white tracking-tight mono">--</span></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SEÇÃO DO RADAR E DISTRIBUIÇÃO -->
+                <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2"><i data-lucide="radar" class="w-4 h-4 text-emerald-500"></i><h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400">Métricas do Radar Climatológico</h2></div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="premium-card p-4 rounded-xl"><span class="text-xs text-slate-400 block font-medium">Acessos ao Radar</span><span id="val-rad-acessos" class="text-2xl font-bold text-white block mt-1 mono">--</span></div>
+                            <div class="premium-card p-4 rounded-xl"><span class="text-xs text-slate-400 block font-medium">Tempo Médio</span><span id="val-rad-tempo" class="text-2xl font-bold text-white block mt-1 mono">--</span></div>
+                            <div class="premium-card p-4 rounded-xl"><span class="text-xs text-slate-400 block font-medium">Sessões Hoje</span><span id="val-rad-sessoes" class="text-2xl font-bold text-white block mt-1 mono">--</span></div>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2"><i data-lucide="file-text" class="w-4 h-4 text-emerald-500"></i><h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400">Relatórios & Distribuição</h2></div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="premium-card p-4 rounded-xl"><span class="text-xs text-slate-400 block font-medium">Relatórios Gerados</span><span id="val-rep-qtd" class="text-2xl font-bold text-white block mt-1 mono">--</span></div>
+                            <div class="premium-card p-4 rounded-xl"><span class="text-xs text-slate-400 block font-medium">Downloads Android</span><span id="val-rep-android" class="text-2xl font-bold text-white block mt-1 mono">--</span></div>
+                            <div class="premium-card p-4 rounded-xl"><span class="text-xs text-slate-400 block font-medium">Downloads Web</span><span id="val-rep-web" class="text-2xl font-bold text-white block mt-1 mono">--</span></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- STATUS DAS APIS -->
+                <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="space-y-3 lg:col-span-1">
+                        <div class="flex items-center gap-2"><i data-lucide="server" class="w-4 h-4 text-emerald-500"></i><h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400">Status Infra / APIs</h2></div>
+                        <div class="premium-card p-4 rounded-xl space-y-3.5">
+                            <div class="flex items-center justify-between border-b border-slate-800/60 pb-2"><div class="flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4 text-amber-500"></i><span class="text-sm font-medium text-slate-200">Firebase Auth</span></div><span id="status-firebase" class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-500/20 mono">--</span></div>
+                            <div class="flex items-center justify-between border-b border-slate-800/60 pb-2"><div class="flex items-center gap-2"><i data-lucide="cloud-rain" class="w-4 h-4 text-sky-400"></i><span class="text-sm font-medium text-slate-200">Clima API</span></div><span id="status-clima" class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-500/20 mono">--</span></div>
+                            <div class="flex items-center justify-between"><div class="flex items-center gap-2"><i data-lucide="radio" class="w-4 h-4 text-emerald-400"></i><span class="text-sm font-medium text-slate-200">Radar API</span></div><span id="status-radar" class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-500/20 mono">--</span></div>
+                        </div>
+                    </div>
+                    <div class="space-y-3 lg:col-span-2">
+                        <div class="flex items-center gap-2"><i data-lucide="sliders" class="w-4 h-4 text-emerald-500"></i><h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400">Métricas Operacionais Base</h2></div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="premium-card p-4 rounded-xl"><span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-3 mono">Cidades Mais Ativas</span><div id="cities-list" class="space-y-2 text-sm"></div></div>
+                            <div class="premium-card p-4 rounded-xl flex flex-col justify-between"><div><span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2 mono">Horários de Pico</span><p class="text-sm text-slate-300">Concentrado entre:</p><span id="val-ope-pico" class="text-lg font-bold text-emerald-400 block mt-1 tracking-tight mono">--</span></div><p id="val-ope-nota" class="text-[11px] text-slate-500 mt-2 border-t border-slate-800/60 pt-2">--</p></div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- CONTROLADOR FLUXO AUTENTICAÇÃO E RENDERIZAÇÃO -->
+    <script type="module">
+        import { AuthService, AnalyticsService, FirestoreService, CrashlyticsService } from './services/firebase-admin.js';
+
+        lucide.createIcons();
+
+        // Relógio Operacional
+        setInterval(() => {
+            const clockEl = document.getElementById('liveClock');
+            if(clockEl) clockEl.textContent = `BRT ${new Date().toLocaleTimeString('pt-BR', { hour12: false })}`;
+        }, 1000);
+
+        // Tratamento do Formulário de Login
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loginError.classList.add('hidden');
+            
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const token = document.getElementById('securityCode').value;
+
+            try {
+                const success = await AuthService.login(u, p, token);
+                if (success) {
+                    checkAuthAndRender();
+                }
+            } catch (err) {
+                loginError.textContent = err.message;
+                loginError.classList.remove('hidden');
+            }
+        });
+
+        // Evento Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => AuthService.logout());
+
+        // Validador de Fluxo de Exibição
+        async function checkAuthAndRender() {
+            if (AuthService.isAuthenticated()) {
+                document.getElementById('lockscreen').classList.add('hidden');
+                document.getElementById('adminLayout').classList.remove('hidden');
+                await loadDataTelemetry();
+            } else {
+                document.getElementById('lockscreen').classList.remove('hidden');
+                document.getElementById('adminLayout').classList.add('hidden');
+            }
+        }
+
+        // Popula os Elementos HTML com as chamadas das APIs
+        async function loadDataTelemetry() {
+            try {
+                const analytics = await AnalyticsService.getLiveTrafficMetrics();
+                const dist = await AnalyticsService.getPlatformDistribution();
+                const premium = await FirestoreService.getPremiumSubscribers();
+                const health = await CrashlyticsService.getSystemHealth();
+
+                // Setando valores nos IDs respectivos
+                document.getElementById('val-usr-hoje').textContent = analytics.usuariosHoje;
+                document.getElementById('val-usr-online').textContent = analytics.usuariosOnline;
+                document.getElementById('val-usr-novos').textContent = analytics.novosCadastros;
+                document.getElementById('val-usr-premium').textContent = premium.premiumAtivos;
     <!-- CONTEÚDO PRINCIPAL (COCKPIT) -->
     <div class="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
         
