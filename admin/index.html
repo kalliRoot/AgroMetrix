@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgroMetrix // Control Center</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -291,22 +291,28 @@
                 document.getElementById('val-ope-pico').textContent = "05:30 às 08:45";
                 document.getElementById('val-ope-nota').textContent = "Baseado na região de operação (BRT).";
 
-                // Injeção estável estruturada sem conflito de renderização de strings
+                // Injeção limpa de nós estruturais nativos no DOM (Elimina erros de aspas)
                 const targetList = document.getElementById('cities-list');
                 if (targetList) {
                     targetList.innerHTML = '';
                     
                     const item1 = document.createElement('div');
-                    item1.className = 'flex justify-between items-center';
-                    item1.innerHTML = '<span class="text-slate-300">1. Sorocaba - SP</span><span class="mono font-semibold text-slate-400">412 ac.</span>';
+                    item1.style.display = 'flex';
+                    item1.style.justifyContent = 'between';
+                    item1.style.alignItems = 'center';
+                    item1.innerHTML = '<span class="text-slate-300">1. Sorocaba - SP</span><span class="mono font-semibold text-slate-400 ml-auto">412 ac.</span>';
                     
                     const item2 = document.createElement('div');
-                    item2.className = 'flex justify-between items-center';
-                    item2.innerHTML = '<span class="text-slate-300">2. Uberlândia - MG</span><span class="mono font-semibold text-slate-400">389 ac.</span>';
+                    item2.style.display = 'flex';
+                    item2.style.justifyContent = 'between';
+                    item2.style.alignItems = 'center';
+                    item2.innerHTML = '<span class="text-slate-300">2. Uberlândia - MG</span><span class="mono font-semibold text-slate-400 ml-auto">389 ac.</span>';
                     
                     const item3 = document.createElement('div');
-                    item3.className = 'flex justify-between items-center';
-                    item3.innerHTML = '<span class="text-slate-300">3. Rio Verde - GO</span><span class="mono font-semibold text-slate-400">311 ac.</span>';
+                    item3.style.display = 'flex';
+                    item3.style.justifyContent = 'between';
+                    item3.style.alignItems = 'center';
+                    item3.innerHTML = '<span class="text-slate-300">3. Rio Verde - GO</span><span class="mono font-semibold text-slate-400 ml-auto">311 ac.</span>';
                     
                     targetList.appendChild(item1);
                     targetList.appendChild(item2);
