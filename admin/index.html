@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroMetrix // Control Center</title>
+    <!-- Google Fonts & Tailwind para prototipagem rápida e limpa -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Lucide Icons para os indicadores do Cockpit -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0f12; /* Deep Carbon Black */
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom Premium Glassmorphism & Borders */
+        .premium-card {
+            background: linear-gradient(145deg, #11181c, #0e1317);
+            border: 1px solid rgba(34, 197, 94, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .premium-card:hover {
+            border-color: rgba(34, 197, 94, 0.3);
+            box-shadow: 0 4px 30px rgba(34, 197, 94, 0.05);
+            transform: translateY(-2px);
+        }
+        /* Glow status indicators */
+        .pulse-online {
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.7);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+        /* Hide scrollbar for clean cockpit feel */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1c262e;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #22c55e;
+        }
+    </style>
+</head>
+<body class="text-slate-200 antialiased h-screen flex overflow-hidden">
+
+    <!-- SIDEBAR SIMPLES (Retraível no Mobile) -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0e1418] border-r border-emerald-950/40 transform -translate-x-full lg:translate-x-0 lg:relative lg:flex lg:flex-col transition-transform duration-300 ease-in-out">
+        <!-- Logo / Brand Header -->
+        <div class="h-16 flex items-center px-6 border-b border-emerald-950/40 gap-3">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-600 to-green-400 flex items-center justify-center shadow-lg shadow-emerald-900/30">
+                <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-900 stroke-[2.5]"></i>
+            </div>
+            <div>
+                <span class="font-bold tracking-tight text-white block">AgroMetrix</span>
+                <span class="text-[10px] uppercase tracking-widest text-emerald-500 font-semibold mono">Control Center</span>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl bg-emerald-950/30 text-emerald-400 border border-emerald-500/20 transition-all">
+                <i data-lucide="activity" class="w-4 h-4"></i> Overview Geral
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:text-emerald-400 hover:bg-emerald-950/10 border border-transparent hover:border-emerald-500/10 transition-all">
+                <i data-lucide="users" class="w-4 h-4"></i> Usuários & Planos
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:text-emerald-400 hover:bg-emerald-950/10 border border-transparent hover:border-emerald-500/10 transition-all">
+                <i data-lucide="radar" class="w-4 h-4"></i> Métricas do Radar
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:text-emerald-400 hover:bg-emerald-950/10 border border-transparent hover:border-emerald-500/10 transition-all">
+                <i data-lucide="database" class="w-4 h-4"></i> Infraestrutura
+            </a>
+        </nav>
+
+        <!-- Footer da Sidebar (Usuário logado interno) -->
+        <div class="p-4 border-t border-emerald-950/40 bg-[#0b0f12]">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-emerald-900/50 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-semibold text-sm">
+                    OP
+                </div>
+                <div class="flex-1 min-w-0">
+                    <span class="text-xs font-semibold text-slate-200 block truncate">Operador Principal</span>
+                    <span class="text-[10px] text-emerald-500 mono block truncate">ID-4029</span>
+                </div>
+                <button class="text-slate-500 hover:text-red-400 transition-colors">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay para fechar sidebar no mobile -->
+    <div id="sidebarOverlay" class="fixed inset-0 z-40 bg-black/60 hidden lg:hidden"></div>
+
+    <!-- CONTEÚDO PRINCIPAL (COCKPIT) -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
+        
+        <!-- HEADER OPERACIONAL -->
+        <header class="h-16 bg-[#0e1418]/80 backdrop-blur-md border-b border-emerald-950/40 px-4 sm:px-6 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-3">
+                <button id="menuBtn" class="p-2 -ml-2 rounded-lg hover:bg-slate-800 text-slate-400 lg:hidden">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+                <div class="hidden sm:block">
+                    <h1 class="text-base font-semibold text-white tracking-tight">Painel Executivo</h1>
+                    <p class="text-xs text-slate-400">Monitoramento em tempo real de telemetria e acessos.</p>
+                </div>
+            </div>
+
+            <!-- Global Telemetry Statuses -->
+            <div class="flex items-center gap-4 sm:gap-6">
+                <div class="flex items-center gap-2 bg-[#11181c] px-3 py-1.5 rounded-lg border border-slate-800">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-online"></span>
+                    <span class="text-xs font-medium text-slate-300 uppercase tracking-wider mono text-[11px]">Sistema Estável</span>
+                </div>
+                <div class="text-right hidden md:block">
+                    <span id="liveClock" class="text-xs font-medium text-slate-400 mono">--:--:--</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD CONTAINER (Scrollable) -->
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+            
+            <!-- SECTION 1: USUÁRIOS & INFRAESTRUTURA RÁPIDA -->
+            <section>
+                <div class="flex items-center gap-2 mb-3">
+                    <i data-lucide="users" class="w-4 h-4 text-emerald-500"></i>
+                    <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400">Métricas de Usuários & Engajamento</h2>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <!-- Usuários Hoje -->
+                    <div class="premium-card p-4 rounded-xl">
+                        <div class="flex justify-between items-start text-slate-400">
+                            <span class="text-xs font-medium">Usuários Hoje</span>
+                            <i data-lucide="user-check" class="w-4 h-4 text-emerald-500/70"></i>
+                        </div>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            <span class="text-2xl font-bold text-white tracking-tight mono">1.420</span>
+                            <span class="text-xs text-emerald-400 font-medium mono">+12%</span>
+                        </div>
+                    </div>
+                    <!-- Usuários Online -->
+                    <div class="premium-card p-4 rounded-xl border-l-2 border-l-emerald-500">
+                        <div class="flex justify-between items-start text-slate-400">
+                            <span class="text-xs font-medium">Usuários Online</span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-online mt-1"></span>
+                        </div>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            <span class="text-2xl font-bold text-white tracking-tight mono">142</span>
+                            <span class="text-xs text-slate-400 font-medium tracking-wide">em tempo real</span>
+                        </div>
+                    </div>
+                    <!-- Novos Cadastros -->
+                    <div class="premium-card p-4 rounded-xl">
+                        <div class="flex justify-between items-start text-slate-400">
+                            <span class="text-xs font-medium">Novos Cadastros</span>
+                            <i data-lucide="user-plus" class="w-4 h-4 text-emerald-500/70"></i>
+                        </div>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            <span class="text-2xl font-bold text-white tracking-tight mono">38</span>
+                            <span class="text-xs text-emerald-400 font-medium mono">Mês +4%</span>
+                        </div>
+                    </div>
+                    <!-- Premium Ativos -->
+                    <div class="premium-card p-4 rounded-xl bg-gradient-to-b from-emerald-950/20 to-transparent">
+                        <div class="flex justify-between items-start text-slate-400">
+                            <span class="text-xs font-medium text-emerald-400">Premium Ativos</span>
+                            <i data-lucide="zap" class="w-4 h-4 text-amber-400 fill-amber-400/20"></i>
+                        </div>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            <span class="text-2xl font-bold text-white tracking-tight mono">314</span>
+                            <span class="text-xs text-emerald-400 font-medium mono">22.1% taxa</span>
+                        </div>
+                    </div>
+                    <!-- Sessões Ativas -->
+                    <div class="premium-card p-4 rounded-xl">
+                        <div class="flex justify-between items-start text-slate-400">
+                            <span class="text-xs font-medium">Sessões Ativas</span>
+                            <i data-lucide="monitor" class="w-4 h-4 text-slate-500"></i>
+                        </div>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            <span class="text-2xl font-bold text-white tracking-tight mono">189</span>
+                            <span class="text-xs text-slate-500 font-medium mono">web/app</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: METRICAS DO RADAR & RELATÓRIOS -->
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Bloco Radar -->
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="radar" class="w-4 h-4 text-emerald-500"></i>
+                        <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400">Métricas do Radar Climatológico</h2>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="premium-card p-4 rounded-xl">
+                            <span class="text-xs text-slate-400 block font-medium">Acessos ao Radar</span>
+                            <span class="text-2xl font-bold text-white block mt-1 mono">3.840</span>
+                            <div class="w-full bg-slate-800 h-1 rounded-full mt-3 overflow-hidden">
+                                <div class="bg-emerald-500 h-full rounded-full" style="width: 75%"></div>
+                            </div>
+                        </div>
+                        <div class="premium-card p-4 rounded-xl">
+                            <span class="text-xs text-slate-400 block font-medium">Tempo Médio</span>
+                            <span class="text-2xl font-bold text-white block mt-1 mono">4m 32s</span>
+                            <span class="text-[10px] text-emerald-400 block mt-2 font-medium mono">▲ +48s vs ontem</span>
+                        </div>
+                        <div class="premium-card p-4 rounded-xl">
+                            <span class="text-xs text-slate-400 block font-medium">Sessões Hoje</span>
+                            <span class="text-2xl font-bold text-white block mt-1 mono">812</span>
+                            <span class="text-[10px] text-slate-400 block mt-2 font-medium">Pico às 06:00 AM</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bloco Relatórios e Downloads -->
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="file-text" class="w-4 h-4 text-emerald-500"></i>
+                        <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400">Relatórios & Distribuição</h2>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="premium-card p-4 rounded-xl">
+                            <span class="text-xs text-slate-400 block font-medium">Relatórios Gerados</span>
+                            <span class="text-2xl font-bold text-white block mt-1 mono">247</span>
+                            <span class="text-[10px] text-emerald-500 block mt-2 font-medium">PDF / XLS exportados</span>
+                        </div>
+                        <div class="premium-card p-4 rounded-xl">
+                            <span class="text-xs text-slate-400 block font-medium">Downloads Android</span>
+                            <span class="text-2xl font-bold text-white block mt-1 mono">1.850</span>
+                            <span class="text-[10px] text-slate-500 block mt-2 font-medium">Versão v2.4.1 Production</span>
+                        </div>
+                        <div class="premium-card p-4 rounded-xl">
+                            <span class="text-xs text-slate-400 block font-medium">Downloads Web</span>
+                            <span class="text-2xl font-bold text-white block mt-1 mono">4.210</span>
+                            <span class="text-[10px] text-slate-500 block mt-2 font-medium">PWA Manifest Caches</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: STATUS DO SISTEMA & OPERACIONAL AVANÇADO -->
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Status APIs -->
+                <div class="space-y-3 lg:col-span-1">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="server" class="w-4 h-4 text-emerald-500"></i>
+                        <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400">Status Infra / APIs</h2>
+                    </div>
+                    <div class="premium-card p-4 rounded-xl space-y-3.5">
+                        <!-- Firebase Status -->
+                        <div class="flex items-center justify-between border-b border-slate-800/60 pb-2">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="shield-check" class="w-4 h-4 text-amber-500"></i>
+                                <span class="text-sm font-medium text-slate-200">Firebase Auth & DB</span>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-500/20 mono">99.98%</span>
+                        </div>
+                        <!-- Clima API status -->
+                        <div class="flex items-center justify-between border-b border-slate-800/60 pb-2">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="cloud-rain" class="w-4 h-4 text-sky-400"></i>
+                                <span class="text-sm font-medium text-slate-200">Clima API Gateway</span>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-500/20 mono">Operational</span>
+                        </div>
+                        <!-- Radar API status -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="radio" class="w-4 h-4 text-emerald-400"></i>
+                                <span class="text-sm font-medium text-slate-200">Radar Imagery API</span>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-500/20 mono">14ms latency</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dados de Operação Real -->
+                <div class="space-y-3 lg:col-span-2">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="sliders" class="w-4 h-4 text-emerald-500"></i>
+                        <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400">Métricas Operacionais Base</h2>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Cidades mais acessadas (Mocked List) -->
+                        <div class="premium-card p-4 rounded-xl">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-3 mono">Cidades Mais Ativas</span>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-slate-300">1. Sorocaba - SP</span>
+                                    <span class="mono font-semibold text-slate-400">412 ac.</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-slate-300">2. Uberlândia - MG</span>
+                                    <span class="mono font-semibold text-slate-400">389 ac.</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-slate-300">3. Rio Verde - GO</span>
+                                    <span class="mono font-semibold text-slate-400">311 ac.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Horários Pico (Mocked Analytics) -->
+                        <div class="premium-card p-4 rounded-xl flex flex-col justify-between">
+                            <div>
+                                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2 mono">Horários de Pico</span>
+                                <p class="text-sm text-slate-300">Maior volume de requisições concentrado entre:</p>
+                                <span class="text-lg font-bold text-emerald-400 block mt-1 tracking-tight mono">05:30 às 08:45</span>
+                            </div>
+                            <p class="text-[11px] text-slate-500 mt-2 border-t border-slate-800/60 pt-2">Fuso horário baseado na Região de Operação (BRT).</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- SCRIPT DE INTERAÇÃO FRONTEND E RELÓGIO -->
+    <script>
+        // Inicializa os ícones do Lucide
+        lucide.createIcons();
+
+        // Relógio Operacional em Tempo Real (Cockpit Style)
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('pt-BR', { hour12: false });
+            document.getElementById('liveClock').textContent = `BRT ${timeString}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Gerenciamento de Visibilidade da Sidebar (Mobile Responsive)
+        const menuBtn = document.getElementById('menuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        menuBtn.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+    </script>
+</body>
+</html>
